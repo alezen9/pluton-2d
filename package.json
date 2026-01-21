@@ -1,0 +1,21 @@
+{
+  "name": "pluton-2d",
+  "version": "0.0.0",
+  "description": "Abstraction over HTML SVG for easy blueprint drawing.",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest",
+    "test:watch": "vitest --watch"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4",
+    "vitest": "^4.0.17"
+  }
+}
