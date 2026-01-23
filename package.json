@@ -1,6 +1,6 @@
 {
   "name": "pluton-2d",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Abstraction over HTML SVG for easy blueprint drawing.",
   "type": "module",
   "main": "dist/index.js",
