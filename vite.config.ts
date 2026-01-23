@@ -8,5 +8,7 @@ export default defineConfig({
       fileName: "index"
     },
     sourcemap: true,
+    // Keep dist lean for npm publish; examples stay in /public only
+    copyPublicDir: false,
   },
 });

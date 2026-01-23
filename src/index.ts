@@ -1,1 +1,2 @@
-// Public API surface for pluton-2d
+import "./style.css";
+export { Pluton2D } from "./Pluton2D";

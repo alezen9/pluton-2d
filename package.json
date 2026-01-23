@@ -9,11 +9,13 @@
     "dist"
   ],
   "scripts": {
+    "dev": "vite --open examples.html",
     "build": "vite build",
     "test": "vitest",
     "test:watch": "vitest --watch"
   },
   "devDependencies": {
+    "prettier": "^3.8.1",
     "typescript": "~5.9.3",
     "vite": "^7.2.4",
     "vitest": "^4.0.17"
