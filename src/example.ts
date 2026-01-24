@@ -54,13 +54,30 @@ const onSliderChange = (name: string) => (value: number) =>
 addSlider({
   label: "Flange Width",
   onChange: onSliderChange("width"),
+  defaultValue: 300,
   max: 500,
 });
 
 addSlider({
   label: "Flange Height",
   onChange: onSliderChange("flangeThickness"),
+  defaultValue: 400,
   max: 200,
+});
+
+addSlider({
+  label: "Web Thickness",
+  onChange: onSliderChange("webThickness"),
+  defaultValue: 20,
+  min: 10,
+  max: 200,
+});
+
+addSlider({
+  label: "Fillet Radius",
+  onChange: onSliderChange("filletRadius"),
+  defaultValue: 15,
+  max: 100,
 });
 
 type SliderOptions = {
@@ -69,10 +86,11 @@ type SliderOptions = {
   min?: number;
   max?: number;
   step?: number;
+  defaultValue?: number;
   onChange: (value: number) => void; // called on input
 };
 
-export function addSlider(options: SliderOptions) {
+function addSlider(options: SliderOptions) {
   const {
     parent = document.body,
     label,
@@ -80,6 +98,7 @@ export function addSlider(options: SliderOptions) {
     max = 100,
     step = 0.01,
     onChange,
+    defaultValue = 50,
   } = options;
 
   const wrapper = document.createElement("div");
@@ -97,12 +116,14 @@ export function addSlider(options: SliderOptions) {
   range.min = String(min);
   range.max = String(max);
   range.step = String(step);
+  range.defaultValue = String(defaultValue);
 
   const number = document.createElement("input");
   number.type = "number";
   number.min = String(min);
   number.max = String(max);
   number.step = String(step);
+  number.defaultValue = String(defaultValue);
   number.style.cssText = "width: 80px;";
 
   const set = (raw: number) => {
