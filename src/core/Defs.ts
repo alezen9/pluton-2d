@@ -65,7 +65,7 @@ export class Defs {
     line.setAttribute("y1", "0");
     line.setAttribute("x2", "0");
     line.setAttribute("y2", "8");
-    line.setAttribute("stroke", "rgba(5, 0, 73, 0.22)");
+    line.setAttribute("stroke", "rgba(0, 39, 50, 0.2)");
     line.setAttribute("stroke-width", "12.5");
 
     pattern.appendChild(line);
