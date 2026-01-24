@@ -19,9 +19,13 @@
   shape-rendering: crispEdges;
 }
 
+.pluton-geometry {
+  filter: url("#pluton-filter-pencil");
+}
+
 .pluton-geometry path {
   fill: url("#pluton-pattern-fill-hatch-45");
-  stroke: rgba(0, 0, 0, 0.25);
+  stroke: rgba(0, 0, 0, 0.75);
   stroke-width: 1;
   shape-rendering: crispEdges;
 }
