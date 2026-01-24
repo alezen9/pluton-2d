@@ -57,6 +57,12 @@ addSlider({
   max: 500,
 });
 
+addSlider({
+  label: "Flange Height",
+  onChange: onSliderChange("flangeThickness"),
+  max: 200,
+});
+
 type SliderOptions = {
   parent?: HTMLElement; // defaults to document.body
   label: string;
