@@ -1,14 +1,14 @@
 import { SVG_NS } from "./constants";
 import { applyCenteredYUpTransform, getSvgViewport } from "./viewport";
-import { Group } from "./Group";
 
-export type GeometryLayer = {
-  group: () => Group;
+type RecordableGroup = {
+  beginRecord: VoidFunction;
+  commit: VoidFunction;
 };
 
-export class Layer implements GeometryLayer {
+export abstract class Layer<G extends RecordableGroup> {
   readonly root: SVGGElement;
-  private groups: Group[] = [];
+  private groups: G[] = [];
 
   constructor(svg: SVGSVGElement, className: string) {
     this.root = document.createElementNS(SVG_NS, "g");
@@ -22,7 +22,7 @@ export class Layer implements GeometryLayer {
   }
 
   group() {
-    const group = new Group(this.root);
+    const group = this.createGroup(this.root);
     this.groups.push(group);
     return group;
   }
@@ -34,4 +34,6 @@ export class Layer implements GeometryLayer {
   commit() {
     for (const g of this.groups) g.commit();
   }
+
+  protected abstract createGroup(parent: SVGGElement): G;
 }

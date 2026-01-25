@@ -6,6 +6,7 @@ if (!svg) throw new Error("SVG not found");
 const bp = new Pluton2D(svg);
 
 const iBeam = bp.geometry.group();
+const dimGroup = bp.dimensions.group();
 
 const params = bp.params({
   width: 300,
@@ -22,9 +23,10 @@ bp.draw((p) => {
   const h = p.height;
   const r = p.filletRadius;
 
-  const g = iBeam.path({ className: "i-beam" });
+  const path = iBeam.path({ className: "i-beam" });
 
-  g.moveTo(0, 0)
+  path
+    .moveTo(0, 0)
     .lineTo(fw / 2, 0)
     .lineTo(0, ft)
     .lineTo(-fw / 2 + wt / 2 + r, 0)
@@ -44,6 +46,28 @@ bp.draw((p) => {
     .lineTo(fw / 2, 0);
 
   iBeam.translate(0, -h / 2);
+
+  const dim = dimGroup.dimension({ className: "i-beam-dim" });
+  dim
+    .moveToAbs(-wt / 2, (h / 2 - ft - r) / 2)
+    .arrow(0)
+    .lineTo(-30, 0)
+    .moveToAbs(wt / 2, (h / 2 - ft - r) / 2)
+    .arrow(Math.PI)
+    .lineTo(50, 0)
+    .textAt(10, 0, `${wt} mm`, "start");
+
+  dim
+    .moveToAbs(-fw / 2, -h / 2 - 20)
+    .arrow(Math.PI)
+    .lineTo(fw, 0)
+    .arrow(0)
+    .textAt(-fw / 2, -16, `${fw} mm`, "middle");
+
+  dim.moveToAbs(wt / 2 + r, h / 2 - ft - r).arrow(Math.PI / 2 + Math.PI / 4);
+  // .lineTo(fw, 0)
+  // .arrow(0)
+  // .textAt(-fw / 2, -16, `${fw} mm`, "middle");
 });
 
 bp.render();
@@ -59,10 +83,17 @@ addSlider({
 });
 
 addSlider({
-  label: "Flange Height",
-  onChange: onSliderChange("flangeThickness"),
+  label: "Height",
+  onChange: onSliderChange("height"),
   defaultValue: 400,
-  max: 200,
+  max: 500,
+});
+
+addSlider({
+  label: "Flange Thickness",
+  onChange: onSliderChange("flangeThickness"),
+  defaultValue: 50,
+  max: params.height / 2,
 });
 
 addSlider({

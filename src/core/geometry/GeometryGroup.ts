@@ -1,5 +1,5 @@
 import { PathBuilder } from "./PathBuilder";
-import { SVG_NS } from "./constants";
+import { SVG_NS } from "../constants";
 
 export type GeometryGroup = {
   translate: (x: number, y: number) => void;
@@ -7,7 +7,7 @@ export type GeometryGroup = {
   clear: VoidFunction;
 };
 
-export class Group implements GeometryGroup {
+export class GeometryGroupInternal implements GeometryGroup {
   private g: SVGGElement;
   private paths: { builder: PathBuilder; path: SVGPathElement }[] = [];
 

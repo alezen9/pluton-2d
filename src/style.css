@@ -19,7 +19,8 @@
   shape-rendering: crispEdges;
 }
 
-.pluton-geometry {
+.pluton-geometry,
+.pluton-dimensions {
   filter: url("#pluton-filter-pencil");
 }
 
@@ -28,4 +29,17 @@
   stroke: rgba(0, 0, 0, 0.75);
   stroke-width: 1;
   shape-rendering: crispEdges;
+}
+
+.pluton-dimensions path {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.pluton-dimensions text {
+  fill: rgba(0, 0, 0, 0.65);
+  font-size: 12px;
+  letter-spacing: 0.02em;
 }

@@ -1,39 +1,42 @@
 import { SVG_NS } from "./constants";
-import { Layer } from "./Layer";
-import { getSvgViewport } from "./viewport";
+import { applyCenteredYUpTransform, getSvgViewport } from "./viewport";
 import type { Defs } from "./Defs";
 
-export class BackgroundLayer extends Layer {
-  constructor(svg: SVGSVGElement, className: string, defs: Defs) {
-    super(svg, className);
+export class Background {
+  readonly root: SVGGElement;
 
-    const viewport = getSvgViewport(svg);
-    this.graphPaper(viewport, defs);
-    this.axes(viewport);
+  constructor(svg: SVGSVGElement, className: string, defs: Defs) {
+    this.root = document.createElementNS(SVG_NS, "g");
+    this.root.classList.add("pluton-layer", className);
+    svg.appendChild(this.root);
+
+    const vp = getSvgViewport(svg);
+    applyCenteredYUpTransform(this.root, vp);
+
+    this.graphPaper(vp, defs);
+    this.axes(vp);
   }
 
-  private graphPaper(viewport: ReturnType<typeof getSvgViewport>, defs: Defs) {
-    const halfW = viewport.width / 2;
-    const halfH = viewport.height / 2;
-
+  private graphPaper(vp: ReturnType<typeof getSvgViewport>, defs: Defs) {
+    const halfW = vp.width / 2;
+    const halfH = vp.height / 2;
     const pad = 100;
 
     const grid = document.createElementNS(SVG_NS, "rect");
     grid.classList.add("pluton-paper-background");
     grid.setAttribute("x", String(-halfW - pad));
     grid.setAttribute("y", String(-halfH - pad));
-    grid.setAttribute("width", String(viewport.width + pad * 2));
-    grid.setAttribute("height", String(viewport.height + pad * 2));
-
+    grid.setAttribute("width", String(vp.width + pad * 2));
+    grid.setAttribute("height", String(vp.height + pad * 2));
     grid.setAttribute("fill", `url(#${defs.graphPaperPatternId})`);
     grid.setAttribute("mask", `url(#${defs.graphPaperMaskId})`);
 
     this.root.appendChild(grid);
   }
 
-  private axes(viewport: ReturnType<typeof getSvgViewport>) {
-    const halfW = viewport.width / 2;
-    const halfH = viewport.height / 2;
+  private axes(vp: ReturnType<typeof getSvgViewport>) {
+    const halfW = vp.width / 2;
+    const halfH = vp.height / 2;
 
     const axes = document.createElementNS(SVG_NS, "g");
     axes.classList.add("pluton-axes");

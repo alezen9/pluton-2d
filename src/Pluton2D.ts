@@ -1,3 +1,5 @@
+// src/Pluton2D.ts
+
 import { Engine } from "./core/Engine";
 import { Scene } from "./core/Scene";
 
@@ -7,19 +9,19 @@ export class Pluton2D<P extends Record<string, any>> {
 
   constructor(svg: SVGSVGElement) {
     this.scene = new Scene(svg);
+
     this.engine = new Engine<P>({
-      onRecord: () => {
-        this.scene.beginRecord();
-        // user draw callbacks run inside Engine
-      },
-      onCommit: () => {
-        this.scene.commit();
-      },
+      onRecord: () => this.scene.beginRecord(),
+      onCommit: () => this.scene.commit(),
     });
   }
 
   get geometry() {
     return this.scene.geometry;
+  }
+
+  get dimensions() {
+    return this.scene.dimensions;
   }
 
   params(initial: P) {

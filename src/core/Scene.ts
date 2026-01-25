@@ -1,33 +1,56 @@
-import { BackgroundLayer } from "./BackgroundLayer";
 import { SVG_NS } from "./constants";
-import { Layer } from "./Layer";
 import { Defs } from "./Defs";
+import { Background } from "./Background";
+import {
+  GeometryLayerInternal,
+  type GeometryLayer,
+} from "./geometry/GeometryLayer";
+import {
+  DimensionsLayerInternal,
+  type DimensionsLayer,
+} from "./dimensions/DimensionsLayer";
 
 export class Scene {
-  private geometryLayer: Layer;
+  private geometryLayer: GeometryLayerInternal;
+  private dimensionsLayer: DimensionsLayerInternal;
 
   constructor(svg: SVGSVGElement) {
+    // defs
     const defsEl = document.createElementNS(SVG_NS, "defs");
     svg.insertBefore(defsEl, svg.firstChild);
     const defs = new Defs(defsEl);
     defs.syncForSvg(svg);
 
-    const backgroundLayer = new BackgroundLayer(svg, "pluton-background", defs);
-    backgroundLayer.setCoordinateSystemCenteredYUp(svg);
+    // background
+    new Background(svg, "pluton-background", defs);
 
-    this.geometryLayer = new Layer(svg, "pluton-geometry");
+    // geometry
+    this.geometryLayer = new GeometryLayerInternal(svg, "pluton-geometry");
     this.geometryLayer.setCoordinateSystemCenteredYUp(svg);
+
+    // dimensions
+    this.dimensionsLayer = new DimensionsLayerInternal(
+      svg,
+      "pluton-dimensions",
+    );
+    this.dimensionsLayer.setCoordinateSystemCenteredYUp(svg);
   }
 
   get geometry() {
-    return this.geometryLayer;
+    return this.geometryLayer as GeometryLayer;
+  }
+
+  get dimensions() {
+    return this.dimensionsLayer as DimensionsLayer;
   }
 
   beginRecord() {
     this.geometryLayer.beginRecord();
+    this.dimensionsLayer.beginRecord();
   }
 
   commit() {
     this.geometryLayer.commit();
+    this.dimensionsLayer.commit();
   }
 }
