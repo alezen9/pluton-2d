@@ -5,10 +5,9 @@ export default defineConfig({
     lib: {
       entry: "src/index.ts",
       formats: ["es"],
-      fileName: "index"
+      fileName: "index",
     },
     sourcemap: true,
-    // Keep dist lean for npm publish; examples stay in /public only
     copyPublicDir: false,
   },
 });

@@ -25,7 +25,7 @@ export class PathBuilder {
    */
   arcTo(dx: number, dy: number, r: number, clockwise = false): this {
     if (r <= 0) {
-      // Sharp corner fallback
+      // sharp corner fallback
       this.commands.push(`l ${dx} ${dy}`);
       return this;
     }

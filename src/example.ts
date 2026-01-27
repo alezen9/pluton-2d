@@ -3,18 +3,16 @@ import { Pluton2D } from ".";
 const svg = document.getElementById("example") as SVGSVGElement | null;
 if (!svg) throw new Error("SVG not found");
 
-const bp = new Pluton2D(svg);
-
-const iBeam = bp.geometry.group();
-const dimGroup = bp.dimensions.group();
-
-const params = bp.params({
+const bp = new Pluton2D(svg, {
   width: 300,
   height: 400,
   flangeThickness: 50,
   webThickness: 20,
   filletRadius: 15,
 });
+
+const iBeam = bp.geometry.group();
+const dimGroup = bp.dimensions.group();
 
 bp.draw((p) => {
   const fw = p.width;
@@ -65,15 +63,12 @@ bp.draw((p) => {
     .textAt(-fw / 2, -16, `${fw} mm`, "middle");
 
   dim.moveToAbs(wt / 2 + r, h / 2 - ft - r).arrow(Math.PI / 2 + Math.PI / 4);
-  // .lineTo(fw, 0)
-  // .arrow(0)
-  // .textAt(-fw / 2, -16, `${fw} mm`, "middle");
 });
 
-bp.render();
-
-const onSliderChange = (name: string) => (value: number) =>
-  (params[name] = value);
+const onSliderChange = (name: string) => (value: number) => {
+  // @ts-ignore
+  bp.params[name] = value;
+};
 
 addSlider({
   label: "Flange Width",
@@ -93,7 +88,7 @@ addSlider({
   label: "Flange Thickness",
   onChange: onSliderChange("flangeThickness"),
   defaultValue: 50,
-  max: params.height / 2,
+  max: bp.params.height / 2,
 });
 
 addSlider({

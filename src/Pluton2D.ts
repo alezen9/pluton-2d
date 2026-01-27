@@ -1,19 +1,41 @@
-// src/Pluton2D.ts
+import { SVG_NS } from './core/constants';
+import { EventBus } from './core/EventBus';
+import { ContextInternal } from './core/Context';
+import { DefsRegistry } from './core/defs/DefsRegistry';
+import { Camera } from './core/Camera';
+import { Scene } from './core/Scene';
+import { Engine } from './core/Engine';
 
-import { Engine } from "./core/Engine";
-import { Scene } from "./core/Scene";
-
-export class Pluton2D<P extends Record<string, any>> {
+export class Pluton2D<P extends Record<string, unknown> = Record<string, unknown>> {
+  private context: ContextInternal;
+  private events: EventBus;
   private scene: Scene;
   private engine: Engine<P>;
+  private camera: Camera;
+  params: P;
 
-  constructor(svg: SVGSVGElement) {
-    this.scene = new Scene(svg);
+  constructor(svg: SVGSVGElement, initialParams: P) {
+    this.events = new EventBus();
 
-    this.engine = new Engine<P>({
-      onRecord: () => this.scene.beginRecord(),
-      onCommit: () => this.scene.commit(),
+    const defsEl = document.createElementNS(SVG_NS, 'defs');
+    svg.insertBefore(defsEl, svg.firstChild);
+    const defs = new DefsRegistry(defsEl);
+
+    this.camera = new Camera(svg, this.events);
+    this.context = new ContextInternal(svg, defs, this.camera);
+
+    defs.syncForViewport(this.context.viewport());
+
+    this.scene = new Scene(this.context, this.events);
+    this.engine = new Engine<P>(this.events, initialParams);
+    this.params = this.engine.getParams();
+
+    this.events.on('camera:changed', () => {
+      this.scene.updateTransforms();
+      this.engine.scheduleRender();
     });
+
+    this.setupControls(true);
   }
 
   get geometry() {
@@ -24,15 +46,17 @@ export class Pluton2D<P extends Record<string, any>> {
     return this.scene.dimensions;
   }
 
-  params(initial: P) {
-    return this.engine.params(initial);
-  }
-
   draw(callback: (params: P) => void) {
     this.engine.draw(callback);
   }
 
-  render() {
-    this.engine.render();
+  setupControls(enabled = true): void {
+    if (enabled) this.camera.enable();
+    else this.camera.disable();
+  }
+
+  dispose(): void {
+    this.camera.dispose();
+    this.events.clear();
   }
 }

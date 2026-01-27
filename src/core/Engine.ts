@@ -1,44 +1,36 @@
-type DrawCallback<P> = (params: P) => void;
+import type { EventBus } from './EventBus';
 
-type EngineHooks<P> = {
-  onRecord: (params: P) => void;
-  onCommit: VoidFunction;
-};
-
-export class Engine<P extends Record<string, any>> {
-  private drawCallbacks: DrawCallback<P>[] = [];
-  private paramsState!: P;
-
+export class Engine<P extends Record<string, unknown>> {
+  private drawCallbacks: ((params: P) => void)[] = [];
+  private paramsState: P;
   private isRenderScheduled = false;
   private autoRenderEnabled = false;
-  private hooks: EngineHooks<P>;
+  private events: EventBus;
 
-  constructor(hooks: EngineHooks<P>) {
-    this.hooks = hooks;
-  }
-
-  params(initial: P) {
-    this.paramsState = new Proxy(initial, {
+  constructor(events: EventBus, initialParams: P) {
+    this.events = events;
+    this.paramsState = new Proxy(initialParams, {
       set: (target, prop, value) => {
         target[prop as keyof P] = value;
         if (this.autoRenderEnabled) this.scheduleRender();
         return true;
       },
     });
+  }
 
+  getParams(): P {
     return this.paramsState;
   }
 
-  draw(callback: DrawCallback<P>) {
+  draw(callback: (params: P) => void) {
     this.drawCallbacks.push(callback);
+    if (!this.autoRenderEnabled) {
+      this.autoRenderEnabled = true;
+      this.scheduleRender();
+    }
   }
 
-  render() {
-    this.autoRenderEnabled = true;
-    this.scheduleRender();
-  }
-
-  private scheduleRender() {
+  scheduleRender() {
     if (this.isRenderScheduled) return;
     this.isRenderScheduled = true;
 
@@ -49,12 +41,12 @@ export class Engine<P extends Record<string, any>> {
   }
 
   private commit() {
-    this.hooks.onRecord(this.paramsState);
+    this.events.emit('layer:record-start', undefined);
 
     for (const cb of this.drawCallbacks) {
       cb(this.paramsState);
     }
 
-    this.hooks.onCommit();
+    this.events.emit('layer:record-end', undefined);
   }
 }

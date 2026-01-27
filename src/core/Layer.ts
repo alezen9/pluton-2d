@@ -1,5 +1,4 @@
 import { SVG_NS } from "./constants";
-import { applyCenteredYUpTransform, getSvgViewport } from "./viewport";
 
 type RecordableGroup = {
   beginRecord: VoidFunction;
@@ -10,15 +9,10 @@ export abstract class Layer<G extends RecordableGroup> {
   readonly root: SVGGElement;
   private groups: G[] = [];
 
-  constructor(svg: SVGSVGElement, className: string) {
+  constructor(parent: SVGGElement, className: string) {
     this.root = document.createElementNS(SVG_NS, "g");
     this.root.classList.add("pluton-layer", className);
-    svg.appendChild(this.root);
-  }
-
-  setCoordinateSystemCenteredYUp(svg: SVGSVGElement) {
-    const vp = getSvgViewport(svg);
-    applyCenteredYUpTransform(this.root, vp);
+    parent.appendChild(this.root);
   }
 
   group() {

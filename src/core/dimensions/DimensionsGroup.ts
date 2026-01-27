@@ -11,7 +11,7 @@ type DimensionEntry = {
   builder: DimensionsBuilder;
 
   texts: SVGTextElement[];
-  textWriteIndex: number;
+  activeTextCursor: number;
 };
 
 export type DimensionsGroup = {
@@ -24,7 +24,8 @@ export class DimensionsGroupInternal {
   private g: SVGGElement;
 
   private entries: DimensionEntry[] = [];
-  private writeIndex = 0;
+  // cursor tracks current dimension write position during record cycle
+  private activeCursor = 0;
 
   private tx = 0;
   private ty = 0;
@@ -35,14 +36,12 @@ export class DimensionsGroupInternal {
   }
 
   beginRecord() {
-    this.writeIndex = 0;
-    // reset text cursors per entry during record start
-    for (const e of this.entries) e.textWriteIndex = 0;
+    this.activeCursor = 0;
+    for (const e of this.entries) e.activeTextCursor = 0;
   }
 
   commit() {
-    // commit only used entries
-    for (let i = 0; i < this.writeIndex; i++) {
+    for (let i = 0; i < this.activeCursor; i++) {
       const e = this.entries[i];
 
       const d = e.builder.toPathData();
@@ -50,14 +49,13 @@ export class DimensionsGroupInternal {
 
       const texts = e.builder.consumeTexts();
       for (const t of texts) {
-        const idx = e.textWriteIndex++;
+        const idx = e.activeTextCursor++;
         const textEl = idx < e.texts.length ? e.texts[idx] : this.createText(e);
 
         textEl.setAttribute("x", String(t.x));
         textEl.setAttribute("y", String(t.y));
         textEl.setAttribute("text-anchor", t.align);
 
-        // keep labels upright in a Y-up scene (layer root is scale(1,-1))
         textEl.setAttribute(
           "transform",
           `translate(${t.x} ${t.y}) scale(1,-1)`,
@@ -69,16 +67,14 @@ export class DimensionsGroupInternal {
         textEl.textContent = t.text;
       }
 
-      // remove leftover texts
-      while (e.texts.length > e.textWriteIndex) {
+      while (e.texts.length > e.activeTextCursor) {
         const n = e.texts.pop();
         n?.remove();
       }
     }
 
-    // trim leftover entries (dimensions) from previous frame
-    if (this.entries.length > this.writeIndex) {
-      for (let i = this.entries.length - 1; i >= this.writeIndex; i--) {
+    if (this.entries.length > this.activeCursor) {
+      for (let i = this.entries.length - 1; i >= this.activeCursor; i--) {
         this.entries[i].root.remove();
         this.entries.pop();
       }
@@ -87,7 +83,7 @@ export class DimensionsGroupInternal {
 
   clear() {
     this.entries.length = 0;
-    this.writeIndex = 0;
+    this.activeCursor = 0;
     this.g.replaceChildren();
 
     this.tx = 0;
@@ -102,7 +98,7 @@ export class DimensionsGroupInternal {
   }
 
   dimension(options?: DimensionOptions) {
-    const i = this.writeIndex++;
+    const i = this.activeCursor++;
 
     if (i < this.entries.length) {
       const e = this.entries[i];
@@ -127,7 +123,7 @@ export class DimensionsGroupInternal {
       path,
       builder,
       texts: [],
-      textWriteIndex: 0,
+      activeTextCursor: 0,
     };
     this.entries.push(entry);
 

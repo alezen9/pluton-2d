@@ -11,7 +11,8 @@ export class GeometryGroupInternal implements GeometryGroup {
   private g: SVGGElement;
   private paths: { builder: PathBuilder; path: SVGPathElement }[] = [];
 
-  private writeIndex = 0;
+  // cursor tracks current write position during record cycle
+  private activeCursor = 0;
   private tx = 0;
   private ty = 0;
 
@@ -21,17 +22,17 @@ export class GeometryGroupInternal implements GeometryGroup {
   }
 
   beginRecord() {
-    this.writeIndex = 0;
+    this.activeCursor = 0;
   }
 
   commit() {
-    for (let i = 0; i < this.writeIndex; i++) {
+    for (let i = 0; i < this.activeCursor; i++) {
       const { builder, path } = this.paths[i];
       path.setAttribute("d", builder.toString());
     }
 
-    if (this.paths.length > this.writeIndex) {
-      for (let i = this.paths.length - 1; i >= this.writeIndex; i--) {
+    if (this.paths.length > this.activeCursor) {
+      for (let i = this.paths.length - 1; i >= this.activeCursor; i--) {
         this.paths[i].path.remove();
         this.paths.pop();
       }
@@ -45,7 +46,7 @@ export class GeometryGroupInternal implements GeometryGroup {
   }
 
   path(options?: { className?: string }) {
-    const i = this.writeIndex++;
+    const i = this.activeCursor++;
 
     if (i < this.paths.length) {
       const entry = this.paths[i];
@@ -70,7 +71,7 @@ export class GeometryGroupInternal implements GeometryGroup {
 
   clear() {
     this.paths.length = 0;
-    this.writeIndex = 0;
+    this.activeCursor = 0;
     this.g.replaceChildren();
 
     this.tx = 0;
