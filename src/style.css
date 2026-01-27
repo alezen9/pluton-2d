@@ -31,10 +31,16 @@
   shape-rendering: crispEdges;
 }
 
-.pluton-dimensions path {
+.pluton-dimensions .pluton-dim-stroke {
   fill: none;
-  stroke: rgba(0, 0, 0, 0.35);
+  stroke: black;
   stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.pluton-dimensions .pluton-dim-filled {
+  fill: black;
+  stroke: none;
   shape-rendering: crispEdges;
 }
 

@@ -8,6 +8,7 @@ type DimensionOptions = {
 type DimensionEntry = {
   root: SVGGElement;
   path: SVGPathElement;
+  filledPath: SVGPathElement;
   builder: DimensionsBuilder;
 
   texts: SVGTextElement[];
@@ -46,6 +47,9 @@ export class DimensionsGroupInternal {
 
       const d = e.builder.toPathData();
       if (d) e.path.setAttribute("d", d);
+
+      const fd = e.builder.toFilledPathData();
+      if (fd) e.filledPath.setAttribute("d", fd);
 
       const texts = e.builder.consumeTexts();
       for (const t of texts) {
@@ -98,14 +102,15 @@ export class DimensionsGroupInternal {
   }
 
   dimension(options?: DimensionOptions) {
+    const { className = "" } = options ?? {};
     const i = this.activeCursor++;
 
     if (i < this.entries.length) {
       const e = this.entries[i];
       e.builder.reset();
 
-      if (options?.className) e.path.setAttribute("class", options.className);
-      else e.path.removeAttribute("class");
+      e.path.setAttribute("class", `pluton-dim-stroke ${className}`);
+      e.filledPath.setAttribute("class", `pluton-dim-filled ${className}`);
 
       return e.builder;
     }
@@ -114,13 +119,18 @@ export class DimensionsGroupInternal {
     this.g.appendChild(root);
 
     const path = document.createElementNS(SVG_NS, "path");
-    if (options?.className) path.setAttribute("class", options.className);
+    path.setAttribute("class", `pluton-dim-stroke ${className}`);
     root.appendChild(path);
+
+    const filledPath = document.createElementNS(SVG_NS, "path");
+    filledPath.setAttribute("class", `pluton-dim-filled ${className}`);
+    root.appendChild(filledPath);
 
     const builder = new DimensionsBuilder();
     const entry: DimensionEntry = {
       root,
       path,
+      filledPath,
       builder,
       texts: [],
       activeTextCursor: 0,

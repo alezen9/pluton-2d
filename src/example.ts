@@ -44,8 +44,18 @@ bp.draw((p) => {
     .lineTo(fw / 2, 0);
 
   iBeam.translate(0, -h / 2);
+});
+
+bp.draw((p) => {
+  const fw = p.width;
+  const ft = p.flangeThickness;
+  const wt = p.webThickness;
+  const h = p.height;
+  const r = p.filletRadius;
 
   const dim = dimGroup.dimension({ className: "i-beam-dim" });
+
+  // web thickness
   dim
     .moveToAbs(-wt / 2, (h / 2 - ft - r) / 2)
     .arrow(0)
@@ -55,15 +65,24 @@ bp.draw((p) => {
     .lineTo(50, 0)
     .textAt(10, 0, `${wt} mm`, "start");
 
+  // flange width
   dim
     .moveToAbs(-fw / 2, -h / 2 - 20)
-    .arrow(Math.PI)
+    .tick(0)
     .lineTo(fw, 0)
-    .arrow(0)
+    .tick(0)
     .textAt(-fw / 2, -16, `${fw} mm`, "middle");
 
-  dim.moveToAbs(wt / 2 + r, h / 2 - ft - r).arrow(Math.PI / 2 + Math.PI / 4);
+  //height
+  dim
+    .moveToAbs(fw / 2 + 40, -h / 2)
+    .arrowFilled(-Math.PI / 2)
+    .lineTo(0, h)
+    .arrowFilled(Math.PI / 2)
+    .textAt(18, -h / 2, `${h} mm`, "start");
 });
+
+// ===============
 
 const onSliderChange = (name: string) => (value: number) => {
   // @ts-ignore
