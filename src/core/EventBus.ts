@@ -10,11 +10,12 @@ export type EventMap = {
 export class EventBus {
   private listeners = new Map<keyof EventMap, Set<(data: any) => void>>();
 
-  on<K extends keyof EventMap>(event: K, handler: (data: EventMap[K]) => void): void {
+  on<K extends keyof EventMap>(event: K, handler: (data: EventMap[K]) => void): () => void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
     this.listeners.get(event)!.add(handler);
+    return () => this.off(event, handler);
   }
 
   off<K extends keyof EventMap>(event: K, handler: (data: EventMap[K]) => void): void {
@@ -22,7 +23,13 @@ export class EventBus {
   }
 
   emit<K extends keyof EventMap>(event: K, data: EventMap[K]): void {
-    this.listeners.get(event)?.forEach(fn => fn(data));
+    this.listeners.get(event)?.forEach(fn => {
+      try {
+        fn(data);
+      } catch (e) {
+        console.error('EventBus listener error:', e);
+      }
+    });
   }
 
   clear(): void {

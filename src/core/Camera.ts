@@ -20,6 +20,7 @@ export class Camera {
   private isResetting = false;
   private lastX = 0;
   private lastY = 0;
+  private cachedRect: DOMRect | null = null;
   private listeners: Array<{ target: EventTarget; type: string; handler: EventListener }> = [];
 
   constructor(svg: SVGSVGElement, events: EventBus) {
@@ -57,21 +58,19 @@ export class Camera {
     this.events.emit('camera:changed', this.state());
   }
 
+  private smoothStep(current: number, target: number): number {
+    return current + (target - current) * this.dampingFactor;
+  }
+
   private interpolateToTarget(): void {
     const epsilon = 0.01;
     const oldX = this.panX;
     const oldY = this.panY;
     const oldScale = this.scale;
 
-    // exponential smoothing with damping for smoother motion
-    const smoothStep = (current: number, target: number) => {
-      const delta = target - current;
-      return current + delta * this.dampingFactor;
-    };
-
-    this.panX = smoothStep(this.panX, this.targetPanX);
-    this.panY = smoothStep(this.panY, this.targetPanY);
-    this.scale = smoothStep(this.scale, this.targetScale);
+    this.panX = this.smoothStep(this.panX, this.targetPanX);
+    this.panY = this.smoothStep(this.panY, this.targetPanY);
+    this.scale = this.smoothStep(this.scale, this.targetScale);
 
     // Atomic snapping: snap all values together to prevent glitches
     const allWithinEpsilon =
@@ -97,11 +96,21 @@ export class Camera {
     }
   }
 
+  private updateCachedRect(): void {
+    this.cachedRect = this.svg.getBoundingClientRect();
+  }
+
+  private getRect(): DOMRect {
+    if (!this.cachedRect) this.updateCachedRect();
+    return this.cachedRect!;
+  }
+
   private addListeners() {
     const onMouseDown = (e: MouseEvent) => {
       if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
         e.preventDefault();
         this.isPanning = true;
+        this.updateCachedRect();
         this.lastX = e.clientX;
         this.lastY = e.clientY;
       }
@@ -114,8 +123,7 @@ export class Camera {
       this.targetPanX += dx;
       this.targetPanY += dy;
 
-      // scale limits by zoom level - more pan range when zoomed in
-      const rect = this.svg.getBoundingClientRect();
+      const rect = this.getRect();
       const maxPanX = rect.width * 0.5 * this.targetScale;
       const maxPanY = rect.height * 0.5 * this.targetScale;
       this.targetPanX = Math.max(-maxPanX, Math.min(maxPanX, this.targetPanX));
@@ -129,13 +137,15 @@ export class Camera {
     const onMouseUp = (e: MouseEvent) => {
       if (e.button === 1 || e.button === 0) {
         this.isPanning = false;
+        this.cachedRect = null;
       }
     };
 
     const onWheel = (e: WheelEvent) => {
       if (this.isResetting) return;
       e.preventDefault();
-      const rect = this.svg.getBoundingClientRect();
+      this.updateCachedRect();
+      const rect = this.cachedRect!;
       const originX = e.clientX - rect.left - rect.width * 0.5;
       const originY = e.clientY - rect.top - rect.height * 0.5;
 

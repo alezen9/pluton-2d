@@ -1,3 +1,9 @@
+.pluton-viewport-layer,
+.pluton-background-layer,
+.pluton-world-layer {
+  will-change: transform;
+}
+
 .pluton-pattern-graph-paper-minor {
   fill: none;
   stroke: rgba(0, 0, 0, 0.03);

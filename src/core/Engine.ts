@@ -30,6 +30,11 @@ export class Engine<P extends Record<string, unknown>> {
     }
   }
 
+  dispose(): void {
+    this.drawCallbacks.length = 0;
+    this.autoRenderEnabled = false;
+  }
+
   scheduleRender() {
     if (this.isRenderScheduled) return;
     this.isRenderScheduled = true;

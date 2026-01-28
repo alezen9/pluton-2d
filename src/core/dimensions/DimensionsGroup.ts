@@ -56,18 +56,11 @@ export class DimensionsGroupInternal {
         const idx = e.activeTextCursor++;
         const textEl = idx < e.texts.length ? e.texts[idx] : this.createText(e);
 
-        textEl.setAttribute("x", String(t.x));
-        textEl.setAttribute("y", String(t.y));
         textEl.setAttribute("text-anchor", t.align);
-
-        textEl.setAttribute(
-          "transform",
-          `translate(${t.x} ${t.y}) scale(1,-1)`,
-        );
+        textEl.setAttribute("transform", `translate(${t.x} ${t.y}) scale(1,-1)`);
         textEl.setAttribute("x", "0");
         textEl.setAttribute("y", "0");
         textEl.setAttribute("dominant-baseline", "middle");
-
         textEl.textContent = t.text;
       }
 

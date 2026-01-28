@@ -7,6 +7,8 @@ export class DefsRegistry {
   readonly patterns: PatternDefs;
   readonly gradients: GradientDefs;
   readonly filters: FilterDefs;
+  private lastWidth = 0;
+  private lastHeight = 0;
 
   constructor(defsEl: SVGDefsElement, pencilIntensity = 1) {
     this.patterns = new PatternDefs(defsEl);
@@ -15,6 +17,12 @@ export class DefsRegistry {
   }
 
   syncForViewport(viewport: Viewport): void {
+    if (this.lastWidth === viewport.width && this.lastHeight === viewport.height) {
+      return;
+    }
+    this.lastWidth = viewport.width;
+    this.lastHeight = viewport.height;
+
     this.patterns.sync();
     this.gradients.syncForViewport(viewport);
     this.filters.sync();

@@ -60,6 +60,12 @@ export class Scene {
     return this.dimensionsLayer as DimensionsLayer;
   }
 
+  dispose(): void {
+    this.viewportLayer.remove();
+    this.backgroundLayer.parentElement?.remove();
+    this.worldLayer.parentElement?.remove();
+  }
+
   updateTransforms() {
     const viewport = this.context.viewport();
     const camera = this.context.camera();
@@ -80,14 +86,14 @@ export class Scene {
     const ty = cy + camera.panY;
     const s = camera.scale;
 
-    g.setAttribute('transform', `translate(${tx}, ${ty}) scale(${s}, ${-s})`);
+    g.style.transform = `translate(${tx}px, ${ty}px) scale(${s}, ${-s})`;
   }
 
   private applyCenteredYUpTransform(g: SVGGElement, viewport: Viewport) {
     const cx = viewport.x + viewport.width * 0.5;
     const cy = viewport.y + viewport.height * 0.5;
 
-    g.setAttribute('transform', `translate(${cx}, ${cy}) scale(1, -1)`);
+    g.style.transform = `translate(${cx}px, ${cy}px) scale(1, -1)`;
   }
 
   setPencilFilter(enabled: boolean): void {

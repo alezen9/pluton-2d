@@ -79,6 +79,9 @@ export class Pluton2D<
 
   dispose(): void {
     this.camera.dispose();
+    this.scene.dispose();
+    this.engine.dispose();
+    this.context.dispose();
     this.events.clear();
   }
 }
