@@ -29,8 +29,8 @@ export class PatternDefs {
     line.setAttribute('y1', '0');
     line.setAttribute('x2', '0');
     line.setAttribute('y2', '8');
-    line.setAttribute('stroke', 'rgba(0, 39, 50, 0.2)');
     line.setAttribute('stroke-width', '12.5');
+    line.classList.add('pluton-pattern-hatch');
 
     pattern.appendChild(line);
     return pattern;
