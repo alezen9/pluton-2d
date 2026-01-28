@@ -11,6 +11,8 @@ const { bp: iBeam } = createIBeam(document.getElementById("i-beam-canvas")!, {
   webThickness: 20,
   filletRadius: 12,
   scale: 1,
+  enablePencilFilter: true,
+  enableCameraControls: true,
 });
 
 const { bp: rhsBeam } = createRHSBeam(document.getElementById("rhs-canvas")!, {
@@ -20,12 +22,16 @@ const { bp: rhsBeam } = createRHSBeam(document.getElementById("rhs-canvas")!, {
   outerRadius: 10,
   innerRadius: 10,
   scale: 1,
+  enablePencilFilter: true,
+  enableCameraControls: true,
 });
 
 const { bp: chsBeam } = createCHSBeam(document.getElementById("chs-canvas")!, {
   radius: 110,
   thickness: 12,
   scale: 1,
+  enablePencilFilter: true,
+  enableCameraControls: true,
 });
 
 // Tweakpane setup
@@ -42,6 +48,15 @@ iFolder.addBinding(iBeam.params, "flangeThickness", {
 });
 iFolder.addBinding(iBeam.params, "webThickness", { min: 5, max: 50, step: 1 });
 iFolder.addBinding(iBeam.params, "filletRadius", { min: 0, max: 30, step: 1 });
+iFolder.addBinding(iBeam.params, "enablePencilFilter").on("change", (ev) => {
+  iBeam.setPencilFilter(ev.value);
+});
+iFolder.addBinding(iBeam.params, "enableCameraControls").on("change", (ev) => {
+  iBeam.setupControls(ev.value);
+});
+iFolder.addButton({ title: "Reset Camera" }).on("click", () => {
+  iBeam.resetCamera();
+});
 
 // RHS folder
 const rhsFolder = pane.addFolder({ title: "RHS", expanded: true });
@@ -58,6 +73,19 @@ rhsFolder.addBinding(rhsBeam.params, "innerRadius", {
   max: 30,
   step: 1,
 });
+rhsFolder
+  .addBinding(rhsBeam.params, "enablePencilFilter")
+  .on("change", (ev) => {
+    rhsBeam.setPencilFilter(ev.value);
+  });
+rhsFolder
+  .addBinding(rhsBeam.params, "enableCameraControls")
+  .on("change", (ev) => {
+    rhsBeam.setupControls(ev.value);
+  });
+rhsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
+  rhsBeam.resetCamera();
+});
 
 // CHS folder
 const chsFolder = pane.addFolder({ title: "CHS", expanded: true });
@@ -67,3 +95,16 @@ chsFolder.addBinding(chsBeam.params, "radius", {
   step: 1,
 });
 chsFolder.addBinding(chsBeam.params, "thickness", { min: 3, max: 50, step: 1 });
+chsFolder
+  .addBinding(chsBeam.params, "enablePencilFilter")
+  .on("change", (ev) => {
+    chsBeam.setPencilFilter(ev.value);
+  });
+chsFolder
+  .addBinding(chsBeam.params, "enableCameraControls")
+  .on("change", (ev) => {
+    chsBeam.setupControls(ev.value);
+  });
+chsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
+  chsBeam.resetCamera();
+});

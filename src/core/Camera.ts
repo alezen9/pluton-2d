@@ -17,6 +17,7 @@ export class Camera {
   private readonly dampingFactor = 0.2;
 
   private isPanning = false;
+  private isResetting = false;
   private lastX = 0;
   private lastY = 0;
   private listeners: Array<{ target: EventTarget; type: string; handler: EventListener }> = [];
@@ -46,6 +47,16 @@ export class Camera {
     return { panX: this.panX, panY: this.panY, scale: this.scale };
   }
 
+  reset(): void {
+    if (this.isResetting) return;
+
+    this.isResetting = true;
+    this.targetPanX = 0;
+    this.targetPanY = 0;
+    this.targetScale = 1;
+    this.events.emit('camera:changed', this.state());
+  }
+
   private interpolateToTarget(): void {
     const epsilon = 0.01;
     const oldX = this.panX;
@@ -62,9 +73,22 @@ export class Camera {
     this.panY = smoothStep(this.panY, this.targetPanY);
     this.scale = smoothStep(this.scale, this.targetScale);
 
-    if (Math.abs(this.targetPanX - this.panX) < epsilon) this.panX = this.targetPanX;
-    if (Math.abs(this.targetPanY - this.panY) < epsilon) this.panY = this.targetPanY;
-    if (Math.abs(this.targetScale - this.scale) < epsilon) this.scale = this.targetScale;
+    // Atomic snapping: snap all values together to prevent glitches
+    const allWithinEpsilon =
+      Math.abs(this.targetPanX - this.panX) < epsilon &&
+      Math.abs(this.targetPanY - this.panY) < epsilon &&
+      Math.abs(this.targetScale - this.scale) < epsilon;
+
+    if (allWithinEpsilon) {
+      this.panX = this.targetPanX;
+      this.panY = this.targetPanY;
+      this.scale = this.targetScale;
+
+      // Clear resetting flag when reached home
+      if (this.isResetting && this.panX === 0 && this.panY === 0 && this.scale === 1) {
+        this.isResetting = false;
+      }
+    }
 
     const changed = oldX !== this.panX || oldY !== this.panY || oldScale !== this.scale;
 
@@ -84,7 +108,7 @@ export class Camera {
     };
 
     const onMouseMove = (e: MouseEvent) => {
-      if (!this.isPanning) return;
+      if (!this.isPanning || this.isResetting) return;
       const dx = e.clientX - this.lastX;
       const dy = e.clientY - this.lastY;
       this.targetPanX += dx;
@@ -109,6 +133,7 @@ export class Camera {
     };
 
     const onWheel = (e: WheelEvent) => {
+      if (this.isResetting) return;
       e.preventDefault();
       const rect = this.svg.getBoundingClientRect();
       const originX = e.clientX - rect.left - rect.width * 0.5;

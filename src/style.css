@@ -19,11 +19,6 @@
   shape-rendering: crispEdges;
 }
 
-.pluton-geometry,
-.pluton-dimensions {
-  filter: url("#pluton-filter-pencil");
-}
-
 .pluton-geometry path {
   fill: url("#pluton-pattern-fill-hatch-45");
   fill-rule: evenodd;

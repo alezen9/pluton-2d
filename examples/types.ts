@@ -1,5 +1,7 @@
 export type BeamParams = {
   scale: number;
+  enablePencilFilter: boolean;
+  enableCameraControls: boolean;
 };
 
 export type IBeamParams = BeamParams & {

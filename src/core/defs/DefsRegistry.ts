@@ -1,17 +1,17 @@
-import type { Viewport } from '../Context';
-import { PatternDefs } from './PatternDefs';
-import { GradientDefs } from './GradientDefs';
-import { FilterDefs } from './FilterDefs';
+import type { Viewport } from "../Context";
+import { PatternDefs } from "./PatternDefs";
+import { GradientDefs } from "./GradientDefs";
+import { FilterDefs } from "./FilterDefs";
 
 export class DefsRegistry {
   readonly patterns: PatternDefs;
   readonly gradients: GradientDefs;
   readonly filters: FilterDefs;
 
-  constructor(defsEl: SVGDefsElement) {
+  constructor(defsEl: SVGDefsElement, pencilIntensity = 1) {
     this.patterns = new PatternDefs(defsEl);
     this.gradients = new GradientDefs(defsEl);
-    this.filters = new FilterDefs(defsEl);
+    this.filters = new FilterDefs(defsEl, pencilIntensity);
   }
 
   syncForViewport(viewport: Viewport): void {

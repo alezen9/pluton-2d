@@ -14,9 +14,11 @@ export class Scene {
   private background: Background;
   private geometryLayer: GeometryLayerInternal;
   private dimensionsLayer: DimensionsLayerInternal;
+  private pencilFilterEnabled: boolean;
 
-  constructor(context: Context, events: EventBus) {
+  constructor(context: Context, events: EventBus, pencilFilterEnabled = true) {
     this.context = context;
+    this.pencilFilterEnabled = pencilFilterEnabled;
 
     const svg = context.svg;
 
@@ -46,6 +48,7 @@ export class Scene {
     this.geometryLayer = new GeometryLayerInternal(this.worldLayer, events);
     this.dimensionsLayer = new DimensionsLayerInternal(this.worldLayer, events);
 
+    this.applyPencilFilter();
     this.updateTransforms();
   }
 
@@ -85,5 +88,18 @@ export class Scene {
     const cy = viewport.y + viewport.height * 0.5;
 
     g.setAttribute('transform', `translate(${cx}, ${cy}) scale(1, -1)`);
+  }
+
+  setPencilFilter(enabled: boolean): void {
+    this.pencilFilterEnabled = enabled;
+    this.applyPencilFilter();
+  }
+
+  private applyPencilFilter(): void {
+    const filterId = this.context.defs.pencilFilterId;
+    const filterValue = this.pencilFilterEnabled ? `url(#${filterId})` : 'none';
+
+    this.geometryLayer.root.style.filter = filterValue;
+    this.dimensionsLayer.root.style.filter = filterValue;
   }
 }
