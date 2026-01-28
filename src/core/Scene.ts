@@ -60,7 +60,7 @@ export class Scene {
     return this.dimensionsLayer as DimensionsLayer;
   }
 
-  dispose(): void {
+  dispose() {
     this.viewportLayer.remove();
     this.backgroundLayer.parentElement?.remove();
     this.worldLayer.parentElement?.remove();
@@ -96,12 +96,12 @@ export class Scene {
     g.style.transform = `translate(${cx}px, ${cy}px) scale(1, -1)`;
   }
 
-  setPencilFilter(enabled: boolean): void {
+  enablePencilFilter(enabled: boolean) {
     this.pencilFilterEnabled = enabled;
     this.applyPencilFilter();
   }
 
-  private applyPencilFilter(): void {
+  private applyPencilFilter() {
     const filterId = this.context.defs.pencilFilterId;
     const filterValue = this.pencilFilterEnabled ? `url(#${filterId})` : 'none';
 

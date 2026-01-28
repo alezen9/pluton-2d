@@ -15,9 +15,27 @@ type DimensionEntry = {
   activeTextCursor: number;
 };
 
+/**
+ * Dimensions group for drawing annotations and measurements.
+ */
 export type DimensionsGroup = {
+  /**
+   * Translate the entire group.
+   * @param x - horizontal translation
+   * @param y - vertical translation
+   */
   translate: (x: number, y: number) => void;
+
+  /**
+   * Create or reuse a dimension builder for drawing annotations.
+   * @param options - optional configuration object with className
+   * @returns dimension builder for chaining drawing commands
+   */
   dimension: (options?: DimensionOptions) => DimensionsBuilder;
+
+  /**
+   * Clear all dimensions in this group.
+   */
   clear: VoidFunction;
 };
 
@@ -25,24 +43,32 @@ export class DimensionsGroupInternal {
   private g: SVGGElement;
 
   private entries: DimensionEntry[] = [];
-  // cursor tracks current dimension write position during record cycle
-  private activeCursor = 0;
+  // tracks current dimension write position during record cycle
+  private activeIndex = 0;
 
-  private tx = 0;
-  private ty = 0;
+  private translateX = 0;
+  private translateY = 0;
 
   constructor(parent: SVGGElement) {
     this.g = document.createElementNS(SVG_NS, "g");
     parent.appendChild(this.g);
   }
 
+  /**
+   * Begin recording phase - reset index to reuse existing dimensions.
+   * Part of the record/commit lifecycle for efficient DOM updates.
+   */
   beginRecord() {
-    this.activeCursor = 0;
+    this.activeIndex = 0;
     for (const e of this.entries) e.activeTextCursor = 0;
   }
 
+  /**
+   * Commit recorded dimensions to the DOM.
+   * Updates path data and text content, removes unused elements.
+   */
   commit() {
-    for (let i = 0; i < this.activeCursor; i++) {
+    for (let i = 0; i < this.activeIndex; i++) {
       const e = this.entries[i];
 
       const d = e.builder.toPathData();
@@ -51,7 +77,7 @@ export class DimensionsGroupInternal {
       const fd = e.builder.toFilledPathData();
       if (fd) e.filledPath.setAttribute("d", fd);
 
-      const texts = e.builder.consumeTexts();
+      const texts = e.builder.getTexts();
       for (const t of texts) {
         const idx = e.activeTextCursor++;
         const textEl = idx < e.texts.length ? e.texts[idx] : this.createText(e);
@@ -70,8 +96,8 @@ export class DimensionsGroupInternal {
       }
     }
 
-    if (this.entries.length > this.activeCursor) {
-      for (let i = this.entries.length - 1; i >= this.activeCursor; i--) {
+    if (this.entries.length > this.activeIndex) {
+      for (let i = this.entries.length - 1; i >= this.activeIndex; i--) {
         this.entries[i].root.remove();
         this.entries.pop();
       }
@@ -80,23 +106,23 @@ export class DimensionsGroupInternal {
 
   clear() {
     this.entries.length = 0;
-    this.activeCursor = 0;
+    this.activeIndex = 0;
     this.g.replaceChildren();
 
-    this.tx = 0;
-    this.ty = 0;
+    this.translateX = 0;
+    this.translateY = 0;
     this.applyTransform();
   }
 
   translate(x: number, y: number) {
-    this.tx = x;
-    this.ty = y;
+    this.translateX = x;
+    this.translateY = y;
     this.applyTransform();
   }
 
   dimension(options?: DimensionOptions) {
     const { className = "" } = options ?? {};
-    const i = this.activeCursor++;
+    const i = this.activeIndex++;
 
     if (i < this.entries.length) {
       const e = this.entries[i];
@@ -134,9 +160,14 @@ export class DimensionsGroupInternal {
   }
 
   private applyTransform() {
-    this.g.setAttribute("transform", `translate(${this.tx}, ${this.ty})`);
+    this.g.setAttribute("transform", `translate(${this.translateX}, ${this.translateY})`);
   }
 
+  /**
+   * Create a new text element and add it to the dimension entry.
+   * @param entry - dimension entry to add text to
+   * @returns newly created text element
+   */
   private createText(entry: DimensionEntry) {
     const t = document.createElementNS(SVG_NS, "text");
     entry.root.appendChild(t);

@@ -45,12 +45,22 @@ export function createCHSBeam(container: HTMLElement, params: CHSParams) {
     const x = r * Math.cos(angle);
     const y = r * Math.sin(angle);
 
-    // radius
+    // center mark
+    dim.moveToAbs(0, 0).centerMark(20);
+
+    // radius line
     dim
       .moveToAbs(0, 0)
       .lineToAbs(x, y)
       .arrowFilled(angle)
       .textAtAbs(x / 2 - 10, y / 2, `${r}mm`, "end");
+
+    // angular dimension showing 45° angle
+    const arcRadius = 40;
+    dim
+      .moveToAbs(0, 0)
+      .arc(arcRadius, 0, angle)
+      .textAtAbs(arcRadius * 0.7, 12, "45°", "middle");
   });
 
   return {

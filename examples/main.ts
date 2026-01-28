@@ -49,10 +49,10 @@ iFolder.addBinding(iBeam.params, "flangeThickness", {
 iFolder.addBinding(iBeam.params, "webThickness", { min: 5, max: 50, step: 1 });
 iFolder.addBinding(iBeam.params, "filletRadius", { min: 0, max: 30, step: 1 });
 iFolder.addBinding(iBeam.params, "enablePencilFilter").on("change", (ev) => {
-  iBeam.setPencilFilter(ev.value);
+  iBeam.enablePencilFilter(ev.value);
 });
 iFolder.addBinding(iBeam.params, "enableCameraControls").on("change", (ev) => {
-  iBeam.setupControls(ev.value);
+  iBeam.enableCameraControls(ev.value);
 });
 iFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   iBeam.resetCamera();
@@ -76,12 +76,12 @@ rhsFolder.addBinding(rhsBeam.params, "innerRadius", {
 rhsFolder
   .addBinding(rhsBeam.params, "enablePencilFilter")
   .on("change", (ev) => {
-    rhsBeam.setPencilFilter(ev.value);
+    rhsBeam.enablePencilFilter(ev.value);
   });
 rhsFolder
   .addBinding(rhsBeam.params, "enableCameraControls")
   .on("change", (ev) => {
-    rhsBeam.setupControls(ev.value);
+    rhsBeam.enableCameraControls(ev.value);
   });
 rhsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   rhsBeam.resetCamera();
@@ -98,12 +98,12 @@ chsFolder.addBinding(chsBeam.params, "thickness", { min: 3, max: 50, step: 1 });
 chsFolder
   .addBinding(chsBeam.params, "enablePencilFilter")
   .on("change", (ev) => {
-    chsBeam.setPencilFilter(ev.value);
+    chsBeam.enablePencilFilter(ev.value);
   });
 chsFolder
   .addBinding(chsBeam.params, "enableCameraControls")
   .on("change", (ev) => {
-    chsBeam.setupControls(ev.value);
+    chsBeam.enableCameraControls(ev.value);
   });
 chsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   chsBeam.resetCamera();

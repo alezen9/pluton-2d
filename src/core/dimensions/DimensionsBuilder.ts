@@ -12,75 +12,157 @@ export class DimensionsBuilder {
   private commands: string[] = [];
   private filledCommands: string[] = [];
   private textRecords: TextRecord[] = [];
-  private cx = 0;
-  private cy = 0;
+  private currentX = 0;
+  private currentY = 0;
 
+  /**
+   * Reset builder to initial state.
+   * Clears all commands, text records, and position.
+   */
   reset() {
     this.commands.length = 0;
     this.textRecords.length = 0;
     this.filledCommands.length = 0;
-    this.cx = 0;
-    this.cy = 0;
+    this.currentX = 0;
+    this.currentY = 0;
   }
 
+  /**
+   * Get SVG path data for dimension lines.
+   * @returns SVG path data string
+   */
   toPathData() {
     return this.commands.join(" ");
   }
 
+  /**
+   * Get SVG path data for filled shapes (arrows).
+   * @returns SVG path data string
+   */
   toFilledPathData() {
     return this.filledCommands.join(" ");
   }
 
-  consumeTexts() {
+  /**
+   * Get all text records.
+   * Returns a reference to the internal array.
+   * @returns array of text records with positions and alignment
+   */
+  getTexts() {
     return this.textRecords;
   }
 
   // ------------------------------------
-  // Positioning
+  // positioning
   // ------------------------------------
 
-  /** Relative move (starts from 0,0 if first command). */
+  /**
+   * Move to a position relative to current position.
+   * @param dx - horizontal offset
+   * @param dy - vertical offset
+   * @returns this builder for chaining
+   */
   moveTo(dx: number, dy: number) {
-    this.cx += dx;
-    this.cy += dy;
-    this.commands.push(`M ${this.cx} ${this.cy}`);
+    this.currentX += dx;
+    this.currentY += dy;
+    this.commands.push(`M ${this.currentX} ${this.currentY}`);
     return this;
   }
 
-  /** Absolute move. */
+  /**
+   * Move to an absolute position.
+   * @param x - absolute x coordinate
+   * @param y - absolute y coordinate
+   * @returns this builder for chaining
+   */
   moveToAbs(x: number, y: number) {
-    this.cx = x;
-    this.cy = y;
+    this.currentX = x;
+    this.currentY = y;
     this.commands.push(`M ${x} ${y}`);
     return this;
   }
 
-  /** Relative line. */
+  /**
+   * Draw a line to a position relative to current position.
+   * @param dx - horizontal offset
+   * @param dy - vertical offset
+   * @returns this builder for chaining
+   */
   lineTo(dx: number, dy: number) {
-    this.cx += dx;
-    this.cy += dy;
+    this.currentX += dx;
+    this.currentY += dy;
     this.commands.push(`l ${dx} ${dy}`);
     return this;
   }
 
-  /** Absolute line. */
+  /**
+   * Draw a line to an absolute position.
+   * @param x - absolute x coordinate
+   * @param y - absolute y coordinate
+   * @returns this builder for chaining
+   */
   lineToAbs(x: number, y: number) {
-    this.cx = x;
-    this.cy = y;
+    this.currentX = x;
+    this.currentY = y;
     this.commands.push(`L ${x} ${y}`);
     return this;
   }
 
+  /**
+   * Draw an arc centered at current position.
+   * Direction is determined by angle order: startAngle < endAngle draws CCW.
+   * @param r - arc radius
+   * @param startAngle - start angle in radians (0 = right, π/2 = up)
+   * @param endAngle - end angle in radians
+   * @returns this builder for chaining
+   */
+  arc(r: number, startAngle: number, endAngle: number) {
+    const centerX = this.currentX;
+    const centerY = this.currentY;
+
+    // calculate start and end points
+    const startX = centerX + r * Math.cos(startAngle);
+    const startY = centerY + r * Math.sin(startAngle);
+    const endX = centerX + r * Math.cos(endAngle);
+    const endY = centerY + r * Math.sin(endAngle);
+
+    // determine direction from angle order
+    const angleDiff = endAngle - startAngle;
+    const sweep = angleDiff > 0 ? 1 : 0; // positive = CCW in math coords = sweep=1 in SVG
+
+    // determine if we need large arc (>180°)
+    const absDiff = Math.abs(angleDiff);
+    const largeArc = absDiff > Math.PI ? 1 : 0;
+
+    // move to start point
+    this.commands.push(`M ${startX} ${startY}`);
+
+    // draw arc to end point
+    const dx = endX - startX;
+    const dy = endY - startY;
+    this.commands.push(`a ${r} ${r} 0 ${largeArc} ${sweep} ${dx} ${dy}`);
+
+    // update current position to end of arc
+    this.currentX = endX;
+    this.currentY = endY;
+
+    return this;
+  }
+
   // ------------------------------------
-  // Primitives
+  // primitives
   // ------------------------------------
 
-  /** Open arrow points in angleRad direction. */
+  /**
+   * Draw an open arrow at current position.
+   * @param angleRad - direction the arrow points in radians (0 = right, π/2 = up)
+   * @returns this builder for chaining
+   */
   arrow(angleRad: number) {
     const size = 8;
     const wingAngleRad = Math.PI / 4;
-    const tipX = this.cx;
-    const tipY = this.cy;
+    const tipX = this.currentX;
+    const tipY = this.currentY;
 
     const baseX = tipX - Math.cos(angleRad) * size;
     const baseY = tipY - Math.sin(angleRad) * size;
@@ -97,12 +179,16 @@ export class DimensionsBuilder {
     return this;
   }
 
-  /** Filled arrow points in angleRad direction. */
+  /**
+   * Draw a filled arrow at current position.
+   * @param angleRad - direction the arrow points in radians (0 = right, π/2 = up)
+   * @returns this builder for chaining
+   */
   arrowFilled(angleRad: number) {
     const size = 8;
     const wingAngleRad = Math.PI / 4;
-    const tipX = this.cx;
-    const tipY = this.cy;
+    const tipX = this.currentX;
+    const tipY = this.currentY;
 
     const baseX = tipX - Math.cos(angleRad) * size;
     const baseY = tipY - Math.sin(angleRad) * size;
@@ -120,14 +206,16 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Draw a tick mark at the current point.
-   * Architectural standard: single -45° slash crossing dimension line.
+   * Draw a tick mark at current position.
+   * Architectural standard: parallel vertical and -45° slash lines.
+   * @param angleRad - orientation angle in radians (dimension line direction)
+   * @returns this builder for chaining
    */
   tick(angleRad: number) {
     const size = 15;
 
-    const centerX = this.cx;
-    const centerY = this.cy;
+    const centerX = this.currentX;
+    const centerY = this.currentY;
 
     const halfSize = size / 2;
 
@@ -195,6 +283,40 @@ export class DimensionsBuilder {
     return this;
   }
 
+  /**
+   * Draw a center mark (crosshair) at current position.
+   * Standard technical drawing style with small gap at center.
+   * @param size - total size of the crosshair (default: 10)
+   * @param gap - gap at center intersection (default: 2)
+   * @returns this builder for chaining
+   */
+  centerMark(size = 10, gap = 2) {
+    const half = size / 2;
+    const halfGap = gap / 2;
+    const x = this.currentX;
+    const y = this.currentY;
+
+    this.commands.push(
+      `M ${x - half} ${y} L ${x - halfGap} ${y}`,
+      `M ${x + halfGap} ${y} L ${x + half} ${y}`,
+      `M ${x} ${y - half} L ${x} ${y - halfGap}`,
+      `M ${x} ${y + halfGap} L ${x} ${y + half}`,
+      `M ${x} ${y}`,
+    );
+
+    return this;
+  }
+
+  /**
+   * Rotate a point around a center point by a given angle.
+   * Uses 2D rotation matrix transformation.
+   * @param x - point x coordinate
+   * @param y - point y coordinate
+   * @param centerX - rotation center x
+   * @param centerY - rotation center y
+   * @param radians - rotation angle in radians
+   * @returns rotated point coordinates
+   */
   private rotateAround = (
     x: number,
     y: number,
@@ -215,25 +337,40 @@ export class DimensionsBuilder {
   };
 
   /**
-   * Place text at (current + dx/dy).
-   * `align` maps to SVG `text-anchor`.
+   * Place text at position relative to current position.
+   * @param dx - horizontal offset from current position
+   * @param dy - vertical offset from current position
+   * @param text - text content to display
+   * @param align - text alignment (maps to SVG text-anchor: start, middle, end)
+   * @returns this builder for chaining
    */
   textAt(dx: number, dy: number, text: string, align: TextAlign = "middle") {
     this.textRecords.push({
-      x: this.cx + dx,
-      y: this.cy + dy,
+      x: this.currentX + dx,
+      y: this.currentY + dy,
       text,
       align,
     });
     return this;
   }
 
-  /** Place text at an absolute position. */
+  /**
+   * Place text at absolute position.
+   * @param x - absolute x coordinate
+   * @param y - absolute y coordinate
+   * @param text - text content to display
+   * @param align - text alignment (maps to SVG text-anchor: start, middle, end)
+   * @returns this builder for chaining
+   */
   textAtAbs(x: number, y: number, text: string, align: TextAlign = "middle") {
     this.textRecords.push({ x, y, text, align });
     return this;
   }
 
+  /**
+   * Close the current path.
+   * @returns this builder for chaining
+   */
   close() {
     this.commands.push("z");
     return this;
