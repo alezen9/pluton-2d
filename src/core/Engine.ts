@@ -7,6 +7,9 @@ export class Engine<P extends Record<string, unknown>> {
   private autoRenderEnabled = false;
   private events: EventBus;
 
+  private readonly frameBudget = 1000 / 60; // 60 FPS cap (~16.67ms)
+  private lastFrameTime = 0;
+
   constructor(events: EventBus, initialParams: P) {
     this.events = events;
     this.paramsState = new Proxy(initialParams, {
@@ -39,9 +42,19 @@ export class Engine<P extends Record<string, unknown>> {
     if (this.isRenderScheduled) return;
     this.isRenderScheduled = true;
 
-    requestAnimationFrame(() => {
-      this.isRenderScheduled = false;
-      this.commit();
+    requestAnimationFrame((now) => {
+      const elapsed = now - this.lastFrameTime;
+
+      if (elapsed >= this.frameBudget) {
+        // Account for drift by aligning to frame grid
+        this.lastFrameTime = now - (elapsed % this.frameBudget);
+        this.isRenderScheduled = false;
+        this.commit();
+      } else {
+        // Re-schedule, not enough time has passed
+        this.isRenderScheduled = false;
+        this.scheduleRender();
+      }
     });
   }
 

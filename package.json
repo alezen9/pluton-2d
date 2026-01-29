@@ -28,7 +28,7 @@
   "author": "Aleksandar Gjoreski",
   "license": "MIT",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build && tsc -p tsconfig.build.json",
     "demo": "vite build --config vite.demo.config.ts",
     "test": "vitest",

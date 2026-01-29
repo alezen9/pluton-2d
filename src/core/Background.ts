@@ -1,10 +1,8 @@
 import { SVG_NS } from './constants';
-import type { Context, Viewport } from './Context';
+import type { Context } from './Context';
 
 export class Background {
   readonly root: SVGGElement;
-  private xAxis!: SVGLineElement;
-  private yAxis!: SVGLineElement;
 
   constructor(parent: SVGGElement, context: Context) {
     this.root = document.createElementNS(SVG_NS, 'g');
@@ -12,49 +10,39 @@ export class Background {
     parent.appendChild(this.root);
 
     const viewport = context.viewport();
+    const extent = Math.sqrt(viewport.width ** 2 + viewport.height ** 2) * 3;
 
     const patternRect = document.createElementNS(SVG_NS, 'rect');
     patternRect.classList.add('pluton-graph-paper');
     patternRect.setAttribute('fill', `url(#${context.defs.graphPaperPatternId})`);
-
-    const size = Math.sqrt(viewport.width ** 2 + viewport.height ** 2) * 3;
-    patternRect.setAttribute('x', String(-size / 2));
-    patternRect.setAttribute('y', String(-size / 2));
-    patternRect.setAttribute('width', String(size));
-    patternRect.setAttribute('height', String(size));
+    patternRect.setAttribute('x', String(-extent / 2));
+    patternRect.setAttribute('y', String(-extent / 2));
+    patternRect.setAttribute('width', String(extent));
+    patternRect.setAttribute('height', String(extent));
     this.root.appendChild(patternRect);
 
-    this.createAxes();
+    this.createAxes(extent);
   }
 
-  private createAxes(): void {
+  private createAxes(extent: number): void {
     const axes = document.createElementNS(SVG_NS, 'g');
     axes.classList.add('pluton-axes');
 
-    this.xAxis = document.createElementNS(SVG_NS, 'line');
-    this.xAxis.classList.add('pluton-axis', 'pluton-axis-x');
-    this.xAxis.setAttribute('y1', '0');
-    this.xAxis.setAttribute('y2', '0');
+    const xAxis = document.createElementNS(SVG_NS, 'line');
+    xAxis.classList.add('pluton-axis', 'pluton-axis-x');
+    xAxis.setAttribute('x1', String(-extent));
+    xAxis.setAttribute('x2', String(extent));
+    xAxis.setAttribute('y1', '0');
+    xAxis.setAttribute('y2', '0');
 
-    this.yAxis = document.createElementNS(SVG_NS, 'line');
-    this.yAxis.classList.add('pluton-axis', 'pluton-axis-y');
-    this.yAxis.setAttribute('x1', '0');
-    this.yAxis.setAttribute('x2', '0');
+    const yAxis = document.createElementNS(SVG_NS, 'line');
+    yAxis.classList.add('pluton-axis', 'pluton-axis-y');
+    yAxis.setAttribute('x1', '0');
+    yAxis.setAttribute('x2', '0');
+    yAxis.setAttribute('y1', String(-extent));
+    yAxis.setAttribute('y2', String(extent));
 
-    axes.append(this.xAxis, this.yAxis);
+    axes.append(xAxis, yAxis);
     this.root.appendChild(axes);
-  }
-
-  updateAxesExtent(viewport: Viewport): void {
-    // fixed world-space extent: viewport + max pan range
-    // max pan in world space = 0.5 * viewport (at any scale)
-    // coverage needed = 1.0 * viewport (center view) + 0.5 * viewport (pan) = 1.5x
-    const extentX = viewport.width * 1.5;
-    const extentY = viewport.height * 1.5;
-
-    this.xAxis.x1.baseVal.value = -extentX;
-    this.xAxis.x2.baseVal.value = extentX;
-    this.yAxis.y1.baseVal.value = -extentY;
-    this.yAxis.y2.baseVal.value = extentY;
   }
 }

@@ -5,13 +5,23 @@ type DimensionOptions = {
   className?: string;
 };
 
+type TextCache = {
+  el: SVGTextElement;
+  lastTransform: string;
+  lastAnchor: string;
+  lastText: string;
+};
+
 type DimensionEntry = {
   root: SVGGElement;
   path: SVGPathElement;
   filledPath: SVGPathElement;
   builder: DimensionsBuilder;
+  lastD: string;
+  lastFd: string;
+  lastClass: string;
 
-  texts: SVGTextElement[];
+  texts: TextCache[];
   activeTextCursor: number;
 };
 
@@ -48,9 +58,11 @@ export class DimensionsGroupInternal {
 
   private translateX = 0;
   private translateY = 0;
+  private lastTransform = "";
 
   constructor(parent: SVGGElement) {
     this.g = document.createElementNS(SVG_NS, "g");
+    this.g.style.contain = "strict";
     parent.appendChild(this.g);
   }
 
@@ -65,34 +77,47 @@ export class DimensionsGroupInternal {
 
   /**
    * Commit recorded dimensions to the DOM.
-   * Updates path data and text content, removes unused elements.
+   * Updates only changed path data and text content, removes unused elements.
    */
   commit() {
     for (let i = 0; i < this.activeIndex; i++) {
       const e = this.entries[i];
 
-      const d = e.builder.toPathData();
-      if (d) e.path.setAttribute("d", d);
+      const d = e.builder.toPathData() ?? "";
+      if (d !== e.lastD) {
+        if (d) e.path.setAttribute("d", d);
+        e.lastD = d;
+      }
 
-      const fd = e.builder.toFilledPathData();
-      if (fd) e.filledPath.setAttribute("d", fd);
+      const fd = e.builder.toFilledPathData() ?? "";
+      if (fd !== e.lastFd) {
+        if (fd) e.filledPath.setAttribute("d", fd);
+        e.lastFd = fd;
+      }
 
       const texts = e.builder.getTexts();
       for (const t of texts) {
         const idx = e.activeTextCursor++;
-        const textEl = idx < e.texts.length ? e.texts[idx] : this.createText(e);
+        const cached = idx < e.texts.length ? e.texts[idx] : this.createText(e);
+        const transform = `translate(${t.x} ${t.y}) scale(1,-1)`;
 
-        textEl.setAttribute("text-anchor", t.align);
-        textEl.setAttribute("transform", `translate(${t.x} ${t.y}) scale(1,-1)`);
-        textEl.setAttribute("x", "0");
-        textEl.setAttribute("y", "0");
-        textEl.setAttribute("dominant-baseline", "middle");
-        textEl.textContent = t.text;
+        if (t.align !== cached.lastAnchor) {
+          cached.el.setAttribute("text-anchor", t.align);
+          cached.lastAnchor = t.align;
+        }
+        if (transform !== cached.lastTransform) {
+          cached.el.setAttribute("transform", transform);
+          cached.lastTransform = transform;
+        }
+        if (t.text !== cached.lastText) {
+          cached.el.textContent = t.text;
+          cached.lastText = t.text;
+        }
       }
 
       while (e.texts.length > e.activeTextCursor) {
-        const n = e.texts.pop();
-        n?.remove();
+        const cached = e.texts.pop();
+        cached?.el.remove();
       }
     }
 
@@ -128,8 +153,11 @@ export class DimensionsGroupInternal {
       const e = this.entries[i];
       e.builder.reset();
 
-      e.path.setAttribute("class", `pluton-dim-stroke ${className}`);
-      e.filledPath.setAttribute("class", `pluton-dim-filled ${className}`);
+      if (className !== e.lastClass) {
+        e.path.setAttribute("class", `pluton-dim-stroke ${className}`);
+        e.filledPath.setAttribute("class", `pluton-dim-filled ${className}`);
+        e.lastClass = className;
+      }
 
       return e.builder;
     }
@@ -151,6 +179,9 @@ export class DimensionsGroupInternal {
       path,
       filledPath,
       builder,
+      lastD: "",
+      lastFd: "",
+      lastClass: className,
       texts: [],
       activeTextCursor: 0,
     };
@@ -160,18 +191,26 @@ export class DimensionsGroupInternal {
   }
 
   private applyTransform() {
-    this.g.setAttribute("transform", `translate(${this.translateX}, ${this.translateY})`);
+    const t = `translate(${this.translateX}, ${this.translateY})`;
+    if (t !== this.lastTransform) {
+      this.g.setAttribute("transform", t);
+      this.lastTransform = t;
+    }
   }
 
   /**
    * Create a new text element and add it to the dimension entry.
    * @param entry - dimension entry to add text to
-   * @returns newly created text element
+   * @returns newly created text cache
    */
-  private createText(entry: DimensionEntry) {
-    const t = document.createElementNS(SVG_NS, "text");
-    entry.root.appendChild(t);
-    entry.texts.push(t);
-    return t;
+  private createText(entry: DimensionEntry): TextCache {
+    const el = document.createElementNS(SVG_NS, "text");
+    el.setAttribute("x", "0");
+    el.setAttribute("y", "0");
+    el.setAttribute("dominant-baseline", "middle");
+    entry.root.appendChild(el);
+    const cached: TextCache = { el, lastTransform: "", lastAnchor: "", lastText: "" };
+    entry.texts.push(cached);
+    return cached;
   }
 }

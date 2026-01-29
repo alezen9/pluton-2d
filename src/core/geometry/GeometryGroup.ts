@@ -25,17 +25,26 @@ export type GeometryGroup = {
   clear: VoidFunction;
 };
 
+type PathEntry = {
+  builder: PathBuilder;
+  path: SVGPathElement;
+  lastD: string;
+  lastClass: string;
+};
+
 export class GeometryGroupInternal implements GeometryGroup {
   private g: SVGGElement;
-  private paths: { builder: PathBuilder; path: SVGPathElement }[] = [];
+  private paths: PathEntry[] = [];
 
   // tracks current write position during record cycle
   private activeIndex = 0;
   private translateX = 0;
   private translateY = 0;
+  private lastTransform = "";
 
   constructor(parent: SVGGElement) {
     this.g = document.createElementNS(SVG_NS, "g");
+    this.g.style.contain = "strict";
     parent.appendChild(this.g);
   }
 
@@ -49,12 +58,16 @@ export class GeometryGroupInternal implements GeometryGroup {
 
   /**
    * Commit recorded paths to the DOM.
-   * Updates path data and removes unused elements.
+   * Updates path data only when changed, removes unused elements.
    */
   commit() {
     for (let i = 0; i < this.activeIndex; i++) {
-      const { builder, path } = this.paths[i];
-      path.setAttribute("d", builder.toString());
+      const entry = this.paths[i];
+      const d = entry.builder.toString();
+      if (d !== entry.lastD) {
+        entry.path.setAttribute("d", d);
+        entry.lastD = d;
+      }
     }
 
     if (this.paths.length > this.activeIndex) {
@@ -73,14 +86,17 @@ export class GeometryGroupInternal implements GeometryGroup {
 
   path(options?: { className?: string }) {
     const i = this.activeIndex++;
+    const className = options?.className ?? "";
 
     if (i < this.paths.length) {
       const entry = this.paths[i];
       entry.builder.reset();
 
-      if (options?.className)
-        entry.path.setAttribute("class", options.className);
-      else entry.path.removeAttribute("class");
+      if (className !== entry.lastClass) {
+        if (className) entry.path.setAttribute("class", className);
+        else entry.path.removeAttribute("class");
+        entry.lastClass = className;
+      }
 
       return entry.builder;
     }
@@ -88,10 +104,10 @@ export class GeometryGroupInternal implements GeometryGroup {
     const builder = new PathBuilder();
     const path = document.createElementNS(SVG_NS, "path");
 
-    if (options?.className) path.setAttribute("class", options.className);
+    if (className) path.setAttribute("class", className);
 
     this.g.appendChild(path);
-    this.paths.push({ builder, path });
+    this.paths.push({ builder, path, lastD: "", lastClass: className });
     return builder;
   }
 
@@ -106,6 +122,10 @@ export class GeometryGroupInternal implements GeometryGroup {
   }
 
   private applyTransform() {
-    this.g.setAttribute("transform", `translate(${this.translateX}, ${this.translateY})`);
+    const t = `translate(${this.translateX}, ${this.translateY})`;
+    if (t !== this.lastTransform) {
+      this.g.setAttribute("transform", t);
+      this.lastTransform = t;
+    }
   }
 }
