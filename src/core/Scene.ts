@@ -112,6 +112,14 @@ export class Scene {
     this.background.updateForViewport(viewport);
   }
 
+  enableGrid(enabled: boolean) {
+    this.background.enableGrid(enabled);
+  }
+
+  enableAxes(enabled: boolean) {
+    this.background.enableAxes(enabled);
+  }
+
   enableFilter(enabled: boolean) {
     this.pencilFilterEnabled = enabled;
     this.applyFilter();

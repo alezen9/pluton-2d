@@ -43,12 +43,16 @@ const baseDummy = {
   enableZoom: true,
   enablePan: true,
   enableHatchFill: true,
+  enableGrid: true,
+  enableAxes: true,
 };
 [iBeam, rhsBeam, chsBeam, staticDynamic].forEach((plt) => {
   plt.enableFilter(baseDummy.enableFilter);
   plt.enableZoom(baseDummy.enableZoom);
   plt.enablePan(baseDummy.enablePan);
   plt.enableHatchFill(baseDummy.enableHatchFill);
+  plt.enableGrid(baseDummy.enableGrid);
+  plt.enableAxes(baseDummy.enableAxes);
 });
 
 // Tweakpane setup
@@ -77,6 +81,12 @@ iFolder.addBinding(iBeamDummy, "enablePan").on("change", (ev) => {
 });
 iFolder.addBinding(iBeamDummy, "enableHatchFill").on("change", (ev) => {
   iBeam.enableHatchFill(ev.value);
+});
+iFolder.addBinding(iBeamDummy, "enableGrid").on("change", (ev) => {
+  iBeam.enableGrid(ev.value);
+});
+iFolder.addBinding(iBeamDummy, "enableAxes").on("change", (ev) => {
+  iBeam.enableAxes(ev.value);
 });
 iFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   iBeam.resetCamera();
@@ -110,6 +120,12 @@ rhsFolder.addBinding(rhsBeamDummy, "enablePan").on("change", (ev) => {
 rhsFolder.addBinding(rhsBeamDummy, "enableHatchFill").on("change", (ev) => {
   rhsBeam.enableHatchFill(ev.value);
 });
+rhsFolder.addBinding(rhsBeamDummy, "enableGrid").on("change", (ev) => {
+  rhsBeam.enableGrid(ev.value);
+});
+rhsFolder.addBinding(rhsBeamDummy, "enableAxes").on("change", (ev) => {
+  rhsBeam.enableAxes(ev.value);
+});
 rhsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   rhsBeam.resetCamera();
 });
@@ -134,6 +150,12 @@ chsFolder.addBinding(chsBeamDummy, "enablePan").on("change", (ev) => {
 });
 chsFolder.addBinding(chsBeamDummy, "enableHatchFill").on("change", (ev) => {
   chsBeam.enableHatchFill(ev.value);
+});
+chsFolder.addBinding(chsBeamDummy, "enableGrid").on("change", (ev) => {
+  chsBeam.enableGrid(ev.value);
+});
+chsFolder.addBinding(chsBeamDummy, "enableAxes").on("change", (ev) => {
+  chsBeam.enableAxes(ev.value);
 });
 chsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   chsBeam.resetCamera();
@@ -161,6 +183,12 @@ staticFolder.addBinding(staticDummy, "enablePan").on("change", (ev) => {
 });
 staticFolder.addBinding(staticDummy, "enableHatchFill").on("change", (ev) => {
   staticDynamic.enableHatchFill(ev.value);
+});
+staticFolder.addBinding(staticDummy, "enableGrid").on("change", (ev) => {
+  staticDynamic.enableGrid(ev.value);
+});
+staticFolder.addBinding(staticDummy, "enableAxes").on("change", (ev) => {
+  staticDynamic.enableAxes(ev.value);
 });
 staticFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   staticDynamic.resetCamera();

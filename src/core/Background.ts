@@ -4,6 +4,7 @@ import type { Context } from './Context';
 export class Background {
   readonly root: SVGGElement;
   private patternRect: SVGRectElement;
+  private axesGroup: SVGGElement;
   private xAxis: SVGLineElement;
   private yAxis: SVGLineElement;
 
@@ -21,7 +22,8 @@ export class Background {
     this.root.appendChild(this.patternRect);
     this.updatePatternRect(extent);
 
-    const { xAxis, yAxis } = this.createAxes();
+    const { axes, xAxis, yAxis } = this.createAxes();
+    this.axesGroup = axes;
     this.xAxis = xAxis;
     this.yAxis = yAxis;
     this.updateAxes(extent);
@@ -31,6 +33,14 @@ export class Background {
     const extent = this.computeExtent(viewport);
     this.updatePatternRect(extent);
     this.updateAxes(extent);
+  }
+
+  enableGrid(enabled: boolean): void {
+    this.patternRect.style.display = enabled ? "" : "none";
+  }
+
+  enableAxes(enabled: boolean): void {
+    this.axesGroup.style.display = enabled ? "" : "none";
   }
 
   private computeExtent(viewport: { width: number; height: number }): number {
@@ -56,7 +66,11 @@ export class Background {
     this.yAxis.setAttribute('y2', String(extent));
   }
 
-  private createAxes(): { xAxis: SVGLineElement; yAxis: SVGLineElement } {
+  private createAxes(): {
+    axes: SVGGElement;
+    xAxis: SVGLineElement;
+    yAxis: SVGLineElement;
+  } {
     const axes = document.createElementNS(SVG_NS, 'g');
     axes.classList.add('pluton-axes');
 
@@ -68,6 +82,6 @@ export class Background {
 
     axes.append(xAxis, yAxis);
     this.root.appendChild(axes);
-    return { xAxis, yAxis };
+    return { axes, xAxis, yAxis };
   }
 }

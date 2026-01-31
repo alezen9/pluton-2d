@@ -32,7 +32,7 @@ export class Pluton2D<
   constructor(svg: SVGSVGElement, initialParams: P) {
     this.events = new EventBus();
 
-    svg.classList.add("pluton-root", "pluton-fill-hatch");
+    svg.classList.add("pluton-root");
 
     const defsEl = document.createElementNS(SVG_NS, "defs");
     svg.insertBefore(defsEl, svg.firstChild);
@@ -68,6 +68,7 @@ export class Pluton2D<
     this.enablePan(false);
     this.enableZoom(false);
     this.enableFilter(false);
+    this.enableHatchFill(false);
   }
 
   /**
@@ -103,6 +104,24 @@ export class Pluton2D<
   }
 
   /**
+   * Enable or disable the built-in graph-paper background
+   * @param enabled - whether the graph-paper is visible
+   * @defaultValue true
+   */
+  enableGrid(enabled: boolean) {
+    this.scene.enableGrid(enabled);
+  }
+
+  /**
+   * Enable or disable the built-in axes
+   * @param enabled - whether the axes are visible
+   * @defaultValue true
+   */
+  enableAxes(enabled: boolean) {
+    this.scene.enableAxes(enabled);
+  }
+
+  /**
    * Enable or disable camera panning
    * @param enabled - whether pan input is active
    * @defaultValue false
@@ -123,7 +142,7 @@ export class Pluton2D<
   /**
    * Enable or disable the built‑in hatch fill on geometry
    * @param enabled - whether hatch fill is active
-   * @defaultValue true
+   * @defaultValue false
    */
   enableHatchFill(enabled: boolean) {
     if (enabled) this.context.svg.classList.add("pluton-fill-hatch");
