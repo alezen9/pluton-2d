@@ -69,29 +69,20 @@ unsubscribe();
 ### Controls
 
 ```ts
-plt.enableFilter(true);
-plt.enablePan(true);
-plt.enableZoom(true);
-plt.enableHatchFill(true);
-plt.enableGrid(true);
-plt.enableAxes(true);
+plt.enableFilter(true); // default `false`
+plt.enablePan(true); // default `false`
+plt.enableZoom(true); // default `false`
+plt.enableHatchFill(true); // default `false`
+plt.enableGrid(true); // default `true`
+plt.enableAxes(true); // default `true`
 ```
-
-Defaults:
-
-- filter off
-- pan off
-- zoom off
-- hatch fill off
-- grid on
-- axes on
 
 ### Geometry
 
 ```ts
 const g = plt.geometry.group();
 
-g.setDrawUsage?.("static"); // optional: stop updates for this group
+g.setDrawUsage("static"); // optional: stop updates for this group
 
 const path = g.path({ className: "my-shape" });
 path.moveToAbs(0, 0).lineTo(40, 0).lineTo(0, 40).close();

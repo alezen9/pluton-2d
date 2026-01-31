@@ -1,6 +1,25 @@
 import { SVG_NS } from "./constants";
 
-type RecordableGroup = {
+export type BaseGroup = {
+  /**
+   * Translate the entire group
+   * @param x - horizontal translation
+   * @param y - vertical translation
+   */
+  translate: (x: number, y: number) => void;
+  /**
+   * Set draw usage for this group
+   * @param usage - controls whether commits run for this group
+   * @defaultValue "dynamic"
+   */
+  setDrawUsage: (usage: "static" | "dynamic") => void;
+  /**
+   * Clear all items in this group
+   */
+  clear: VoidFunction;
+};
+
+type RecordableGroup = BaseGroup & {
   beginRecord: VoidFunction;
   commit: VoidFunction;
 };

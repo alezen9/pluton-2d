@@ -4,7 +4,8 @@ import type { EventBus } from "./EventBus";
 import { Background } from "./Background";
 import { GeometryLayerInternal } from "./geometry/GeometryLayer";
 import { DimensionsLayerInternal } from "./dimensions/DimensionsLayer";
-import type { GeometryLayer, DimensionsLayer } from "./types";
+import type { GeometryLayer } from "./geometry/GeometryLayer";
+import type { DimensionsLayer } from "./dimensions/DimensionsLayer";
 import type { Viewport } from "./Context";
 
 export class Scene {

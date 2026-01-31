@@ -1,12 +1,23 @@
 import { PathBuilder } from "./PathBuilder";
 import { SVG_NS } from "../constants";
+import type { BaseGroup } from "../Layer";
+import type { Prettify } from "../types";
 
-export type GeometryGroup = {
-  translate: (x: number, y: number) => void;
-  setDrawUsage?: (usage: "static" | "dynamic") => void;
-  path: (options?: { className?: string }) => PathBuilder;
-  clear: VoidFunction;
+type PathOptions = {
+  className?: string;
 };
+
+export type GeometryGroup = Prettify<
+  BaseGroup & {
+    /**
+     * Create or reuse a path builder
+     * @param options - optional configuration
+     * @param options.className - custom class for the path element
+     * @returns path builder for chaining commands
+     */
+    path: (options?: PathOptions) => PathBuilder;
+  }
+>;
 
 type PathEntry = {
   builder: PathBuilder;
@@ -67,16 +78,11 @@ export class GeometryGroupInternal implements GeometryGroup {
     this.applyTransform();
   }
 
-  /**
-   * Set draw usage for this group
-   * @param usage - controls whether commits run for this group
-   * @defaultValue "dynamic"
-   */
   setDrawUsage(usage: "static" | "dynamic") {
     this.drawUsage = usage;
   }
 
-  path(options?: { className?: string }) {
+  path(options?: PathOptions) {
     const i = this.activeIndex++;
     const className = options?.className ?? "";
 

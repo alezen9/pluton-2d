@@ -56,11 +56,11 @@ const baseDummy = {
 });
 
 // Tweakpane setup
-const pane = new Pane({ title: "Beam Parameters" });
+const pane = new Pane({ title: "📐 Pluton2D" });
 
 // I-Beam folder
 const iBeamDummy = { ...baseDummy };
-const iFolder = pane.addFolder({ title: "I-Beam", expanded: true });
+const iFolder = pane.addFolder({ title: "I-Beam", expanded: false });
 iFolder.addBinding(iBeam.params, "width", { min: 50, max: 350, step: 1 });
 iFolder.addBinding(iBeam.params, "height", { min: 100, max: 450, step: 1 });
 iFolder.addBinding(iBeam.params, "flangeThickness", {
@@ -94,7 +94,7 @@ iFolder.addButton({ title: "Reset Camera" }).on("click", () => {
 
 // RHS folder
 const rhsBeamDummy = { ...baseDummy };
-const rhsFolder = pane.addFolder({ title: "RHS", expanded: true });
+const rhsFolder = pane.addFolder({ title: "RHS", expanded: false });
 rhsFolder.addBinding(rhsBeam.params, "width", { min: 50, max: 350, step: 1 });
 rhsFolder.addBinding(rhsBeam.params, "height", { min: 50, max: 350, step: 1 });
 rhsFolder.addBinding(rhsBeam.params, "thickness", { min: 3, max: 50, step: 1 });
@@ -132,7 +132,7 @@ rhsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
 
 // CHS folder
 const chsBeamDummy = { ...baseDummy };
-const chsFolder = pane.addFolder({ title: "CHS", expanded: true });
+const chsFolder = pane.addFolder({ title: "CHS", expanded: false });
 chsFolder.addBinding(chsBeam.params, "radius", {
   min: 50,
   max: 350,
@@ -165,7 +165,7 @@ chsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
 const staticDummy = { ...baseDummy };
 const staticFolder = pane.addFolder({
   title: "Static vs Dynamic",
-  expanded: true,
+  expanded: false,
 });
 staticFolder.addBinding(staticDynamic.params, "size", {
   min: 40,

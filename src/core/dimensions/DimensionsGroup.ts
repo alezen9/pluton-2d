@@ -1,5 +1,7 @@
 import { SVG_NS } from "../constants";
 import { DimensionsBuilder } from "./DimensionsBuilder";
+import type { BaseGroup } from "../Layer";
+import type { Prettify } from "../types";
 
 type DimensionOptions = {
   className?: string;
@@ -26,14 +28,19 @@ type DimensionEntry = {
   activeTextCursor: number;
 };
 
-export type DimensionsGroup = {
-  translate: (x: number, y: number) => void;
-  setDrawUsage?: (usage: "static" | "dynamic") => void;
-  dimension: (options?: DimensionOptions) => DimensionsBuilder;
-  clear: VoidFunction;
-};
+export type DimensionsGroup = Prettify<
+  BaseGroup & {
+    /**
+     * Create or reuse a dimension builder
+     * @param options - optional configuration
+     * @param options.className - custom class for the dimension elements
+     * @returns dimension builder for chaining commands
+     */
+    dimension: (options?: DimensionOptions) => DimensionsBuilder;
+  }
+>;
 
-export class DimensionsGroupInternal {
+export class DimensionsGroupInternal implements DimensionsGroup {
   private g: SVGGElement;
 
   private entries: DimensionEntry[] = [];
@@ -135,11 +142,6 @@ export class DimensionsGroupInternal {
     this.applyTransform();
   }
 
-  /**
-   * Set draw usage for this group
-   * @param usage - controls whether commits run for this group
-   * @defaultValue "dynamic"
-   */
   setDrawUsage(usage: "static" | "dynamic") {
     this.drawUsage = usage;
   }
@@ -208,7 +210,13 @@ export class DimensionsGroupInternal {
     el.setAttribute("y", "0");
     el.setAttribute("dominant-baseline", "middle");
     entry.root.appendChild(el);
-    const cached: TextCache = { el, lastTransform: "", lastAnchor: "", lastText: "", lastClass: "" };
+    const cached: TextCache = {
+      el,
+      lastTransform: "",
+      lastAnchor: "",
+      lastText: "",
+      lastClass: "",
+    };
     entry.texts.push(cached);
     return cached;
   }
