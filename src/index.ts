@@ -1,2 +1,2 @@
 import "./style.css";
-export { Pluton2D, type Pluton2DOptions } from "./Pluton2D";
+export { Pluton2D } from "./Pluton2D";
