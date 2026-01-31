@@ -7,33 +7,52 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <header>
-      <h1>Pluton 2D Beam Examples</h1>
-      <p>Interactive structural beam visualizations</p>
-    </header>
+    <div class="page">
+      <header class="hero">
+        <h1>Pluton 2D Examples</h1>
+        <p>Interactive technical drawings with layered geometry and dimensions.</p>
+      </header>
 
-    <main class="beam-grid">
-      <section class="beam-card">
-        <h2>I-Beam</h2>
-        <div id="i-beam-canvas"></div>
-      </section>
+      <main class="demo-grid">
+        <section class="demo-card">
+          <div class="card-head">
+            <h2>I-Beam</h2>
+            <span class="card-tag">Structural</span>
+          </div>
+          <p class="card-note">Classic I-section with adjustable web and flange.</p>
+          <div class="demo-frame" id="i-beam-canvas"></div>
+        </section>
 
-      <section class="beam-card">
-        <h2>RHS</h2>
-        <div id="rhs-canvas"></div>
-      </section>
+        <section class="demo-card">
+          <div class="card-head">
+            <h2>RHS</h2>
+            <span class="card-tag">Hollow</span>
+          </div>
+          <p class="card-note">Rectangular hollow section with radiused corners.</p>
+          <div class="demo-frame" id="rhs-canvas"></div>
+        </section>
 
-      <section class="beam-card">
-        <h2>CHS</h2>
-        <div id="chs-canvas"></div>
-      </section>
+        <section class="demo-card">
+          <div class="card-head">
+            <h2>CHS</h2>
+            <span class="card-tag">Circular</span>
+          </div>
+          <p class="card-note">Circular hollow section with thickness control.</p>
+          <div class="demo-frame" id="chs-canvas"></div>
+        </section>
 
-      <section class="beam-card">
-        <h2>Static vs Dynamic</h2>
-        <p class="demo-note">Left shape is static. Right shape updates with size.</p>
-        <div id="static-dynamic-canvas"></div>
-      </section>
-    </main>
+        <section class="demo-card">
+          <div class="card-head">
+            <h2>Static vs Dynamic</h2>
+            <span class="card-tag">Usage</span>
+          </div>
+          <p class="card-note">
+            Left shape is static. Right shape updates with size.
+          </p>
+          <div class="demo-frame" id="static-dynamic-canvas"></div>
+        </section>
+      </main>
+    </div>
 
     <script type="module" src="./main.ts"></script>
   </body>
