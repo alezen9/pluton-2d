@@ -1,10 +1,11 @@
-import { SVG_NS } from './constants';
-import type { Context } from './Context';
-import type { EventBus } from './EventBus';
-import { Background } from './Background';
-import { GeometryLayerInternal } from './geometry/GeometryLayer';
-import { DimensionsLayerInternal } from './dimensions/DimensionsLayer';
-import type { GeometryLayer, DimensionsLayer } from './types';
+import { SVG_NS } from "./constants";
+import type { Context } from "./Context";
+import type { EventBus } from "./EventBus";
+import { Background } from "./Background";
+import { GeometryLayerInternal } from "./geometry/GeometryLayer";
+import { DimensionsLayerInternal } from "./dimensions/DimensionsLayer";
+import type { GeometryLayer, DimensionsLayer } from "./types";
+import type { Viewport } from "./Context";
 
 export class Scene {
   private context: Context;
@@ -13,48 +14,51 @@ export class Scene {
   private worldLayer: SVGGElement;
   private geometryLayer: GeometryLayerInternal;
   private dimensionsLayer: DimensionsLayerInternal;
-  private pencilFilterEnabled: boolean;
+  private pencilFilterEnabled = false;
+  private background: Background;
 
   private lastViewportTransform = "";
   private lastBackgroundTransform = "";
   private lastWorldTransform = "";
 
-  constructor(context: Context, events: EventBus, pencilFilterEnabled = true) {
+  constructor(context: Context, events: EventBus) {
     this.context = context;
-    this.pencilFilterEnabled = pencilFilterEnabled;
 
     const svg = context.svg;
 
-    this.viewportLayer = document.createElementNS(SVG_NS, 'g');
-    this.viewportLayer.classList.add('pluton-viewport-layer');
-    this.viewportLayer.style.willChange = 'transform';
+    this.viewportLayer = document.createElementNS(SVG_NS, "g");
+    this.viewportLayer.classList.add("pluton-viewport-layer");
+    this.viewportLayer.style.willChange = "transform";
     svg.appendChild(this.viewportLayer);
 
-    const backgroundContainer = document.createElementNS(SVG_NS, 'g');
-    backgroundContainer.classList.add('pluton-background-container');
-    backgroundContainer.setAttribute('mask', `url(#${context.defs.graphPaperMaskId})`);
+    const backgroundContainer = document.createElementNS(SVG_NS, "g");
+    backgroundContainer.classList.add("pluton-background-container");
+    backgroundContainer.setAttribute(
+      "mask",
+      `url(#${context.defs.graphPaperMaskId})`,
+    );
     svg.appendChild(backgroundContainer);
 
-    this.backgroundLayer = document.createElementNS(SVG_NS, 'g');
-    this.backgroundLayer.classList.add('pluton-background-layer');
-    this.backgroundLayer.style.willChange = 'transform';
+    this.backgroundLayer = document.createElementNS(SVG_NS, "g");
+    this.backgroundLayer.classList.add("pluton-background-layer");
+    this.backgroundLayer.style.willChange = "transform";
     backgroundContainer.appendChild(this.backgroundLayer);
 
-    new Background(this.backgroundLayer, context);
+    this.background = new Background(this.backgroundLayer, context);
 
-    const contentContainer = document.createElementNS(SVG_NS, 'g');
-    contentContainer.classList.add('pluton-content-container');
+    const contentContainer = document.createElementNS(SVG_NS, "g");
+    contentContainer.classList.add("pluton-content-container");
     svg.appendChild(contentContainer);
 
-    this.worldLayer = document.createElementNS(SVG_NS, 'g');
-    this.worldLayer.classList.add('pluton-world-layer');
-    this.worldLayer.style.willChange = 'transform';
+    this.worldLayer = document.createElementNS(SVG_NS, "g");
+    this.worldLayer.classList.add("pluton-world-layer");
+    this.worldLayer.style.willChange = "transform";
     contentContainer.appendChild(this.worldLayer);
 
     this.geometryLayer = new GeometryLayerInternal(this.worldLayer, events);
     this.dimensionsLayer = new DimensionsLayerInternal(this.worldLayer, events);
 
-    this.applyPencilFilter();
+    this.applyFilter();
     this.updateTransforms();
   }
 
@@ -67,6 +71,8 @@ export class Scene {
   }
 
   dispose() {
+    this.geometryLayer.dispose();
+    this.dimensionsLayer.dispose();
     this.viewportLayer.remove();
     this.backgroundLayer.parentElement?.remove();
     this.worldLayer.parentElement?.remove();
@@ -102,14 +108,18 @@ export class Scene {
     }
   }
 
-  enablePencilFilter(enabled: boolean) {
-    this.pencilFilterEnabled = enabled;
-    this.applyPencilFilter();
+  onViewportChanged(viewport: Viewport) {
+    this.background.updateForViewport(viewport);
   }
 
-  private applyPencilFilter() {
+  enableFilter(enabled: boolean) {
+    this.pencilFilterEnabled = enabled;
+    this.applyFilter();
+  }
+
+  private applyFilter() {
     const filterId = this.context.defs.pencilFilterId;
-    const filterValue = this.pencilFilterEnabled ? `url(#${filterId})` : 'none';
+    const filterValue = this.pencilFilterEnabled ? `url(#${filterId})` : "none";
 
     this.geometryLayer.root.style.filter = filterValue;
     this.dimensionsLayer.root.style.filter = filterValue;

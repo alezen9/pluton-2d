@@ -26,8 +26,6 @@ export class DefsRegistry {
     this.lastWidth = viewport.width;
     this.lastHeight = viewport.height;
 
-    console.log("here");
-
     this.patterns.sync();
     this.gradients.syncForViewport(viewport);
     this.filters.sync();

@@ -1,8 +1,4 @@
-export type BeamParams = {
-  scale: number;
-  enablePencilFilter: boolean;
-  enableCameraControls: boolean;
-};
+export type BeamParams = {};
 
 export type IBeamParams = BeamParams & {
   width: number;
@@ -23,4 +19,8 @@ export type RHSParams = BeamParams & {
 export type CHSParams = BeamParams & {
   radius: number;
   thickness: number;
+};
+
+export type StaticDynamicParams = {
+  size: number;
 };

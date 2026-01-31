@@ -27,24 +27,32 @@ export class ContextInternal implements Context {
   private cameraRef: Camera | null;
   private cachedViewport: Viewport | null = null;
   private resizeObserver: ResizeObserver;
+  private onResize?: () => void;
 
   constructor(
     svg: SVGSVGElement,
     defs: DefsRegistry,
-    cameraRef: Camera | null
+    cameraRef: Camera | null,
+    onResize?: () => void
   ) {
     this.svg = svg;
     this.defs = defs;
     this.cameraRef = cameraRef;
+    this.onResize = onResize;
 
     this.resizeObserver = new ResizeObserver(() => {
-      this.cachedViewport = null;
+      this.invalidateViewport();
+      this.onResize?.();
     });
     this.resizeObserver.observe(svg);
   }
 
   dispose(): void {
     this.resizeObserver.disconnect();
+  }
+
+  invalidateViewport(): void {
+    this.cachedViewport = null;
   }
 
   viewport = (): Viewport => {

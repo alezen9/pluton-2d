@@ -49,12 +49,31 @@ header p {
   color: #555;
 }
 
+.beam-card .demo-note {
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  color: #777;
+  font-size: 0.9rem;
+}
+
 .beam-card > div {
   width: 100%;
   aspect-ratio: 1;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   overflow: hidden;
+}
+
+.pluton-geometry path.demo-static {
+  fill: none;
+  stroke: #c0392b;
+  stroke-width: 2;
+}
+
+.pluton-geometry path.demo-dynamic {
+  fill: none;
+  stroke: #16a085;
+  stroke-width: 2;
 }
 
 /* Tweakpane positioned top-right */

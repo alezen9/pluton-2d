@@ -7,17 +7,7 @@ import { Scene } from "./core/Scene";
 import { Engine } from "./core/Engine";
 
 /**
- * Configuration options for Pluton2D instance.
- */
-export interface Pluton2DOptions {
-  /** enable hand-drawn pencil filter effect (default: true) */
-  enablePencilFilter?: boolean;
-  /** enable pan/zoom camera controls (default: true) */
-  enableCameraControls?: boolean;
-}
-
-/**
- * Main Pluton2D instance for creating technical drawings.
+ * Main Pluton2D instance for creating technical drawings
  * @template P - parameter type for reactive drawing
  */
 export class Pluton2D<
@@ -30,24 +20,16 @@ export class Pluton2D<
   private camera: Camera;
 
   /**
-   * Reactive parameters that trigger redraw when modified.
-   * Mutate properties to update the drawing.
+   * Reactive parameters that trigger redraw when modified or reassigned
    */
   params: P;
 
   /**
-   * Create a new Pluton2D instance.
+   * Create a new Pluton2D instance
    * @param svg - SVG element to render into
    * @param initialParams - initial reactive parameters
-   * @param options - configuration options
    */
-  constructor(
-    svg: SVGSVGElement,
-    initialParams: P,
-    options: Pluton2DOptions = {},
-  ) {
-    const { enablePencilFilter = true, enableCameraControls = true } = options;
-
+  constructor(svg: SVGSVGElement, initialParams: P) {
     this.events = new EventBus();
 
     const defsEl = document.createElementNS(SVG_NS, "defs");
@@ -55,72 +37,96 @@ export class Pluton2D<
 
     const defs = new DefsRegistry(defsEl);
 
+    let handleResize: (() => void) | null = null;
+
     this.camera = new Camera(svg, this.events);
-    this.context = new ContextInternal(svg, defs, this.camera);
+    this.context = new ContextInternal(svg, defs, this.camera, () => {
+      handleResize?.();
+    });
 
     defs.syncForViewport(this.context.viewport());
 
-    this.scene = new Scene(this.context, this.events, enablePencilFilter);
+    this.scene = new Scene(this.context, this.events);
     this.engine = new Engine<P>(this.events, initialParams);
     this.params = this.engine.getParams();
 
-    this.events.on("camera:changed", () => {
+    handleResize = () => {
+      this.context.invalidateViewport();
+      const viewport = this.context.viewport();
+      defs.syncForViewport(viewport);
+      this.scene.onViewportChanged(viewport);
       this.scene.updateTransforms();
       this.engine.scheduleRender();
+    };
+
+    this.events.on("camera:changed", () => {
+      this.scene.updateTransforms();
     });
 
-    this.enableCameraControls(enableCameraControls);
+    this.enablePan(false);
+    this.enableZoom(false);
+    this.enableFilter(false);
   }
 
   /**
-   * Access the geometry layer for drawing shapes.
+   * Access the geometry layer for drawing shapes
    */
   get geometry() {
     return this.scene.geometry;
   }
 
   /**
-   * Access the dimensions layer for annotations.
+   * Access the dimensions layer for annotations
    */
   get dimensions() {
     return this.scene.dimensions;
   }
 
   /**
-   * Register a reactive drawing callback.
-   * Called whenever params change.
+   * Register a reactive drawing callback
    * @param callback - drawing function receiving current params
+   * @returns unsubscribe function to remove the callback
    */
   draw(callback: (params: P) => void) {
-    this.engine.draw(callback);
+    return this.engine.draw(callback);
   }
 
   /**
-   * Enable or disable camera pan and zoom controls.
-   * @param enabled - true to enable, false to disable
+   * Enable or disable the hand-drawn pencil filter effect
+   * @param enabled - whether the filter is active
+   * @defaultValue false
    */
-  enableCameraControls(enabled: boolean) {
-    if (enabled) this.camera.enable();
-    else this.camera.disable();
+  enableFilter(enabled: boolean) {
+    this.scene.enableFilter(enabled);
   }
 
   /**
-   * Enable or disable the hand-drawn pencil filter effect.
-   * @param enabled - true to enable, false to disable
+   * Enable or disable camera panning
+   * @param enabled - whether pan input is active
+   * @defaultValue false
    */
-  enablePencilFilter(enabled: boolean) {
-    this.scene.enablePencilFilter(enabled);
+  enablePan(enabled: boolean) {
+    this.camera.enablePan(enabled);
   }
 
   /**
-   * Reset camera to initial position and zoom.
+   * Enable or disable camera zooming
+   * @param enabled - whether zoom input is active
+   * @defaultValue false
+   */
+  enableZoom(enabled: boolean) {
+    this.camera.enableZoom(enabled);
+  }
+
+  /**
+   * Reset camera to initial position and zoom
    */
   resetCamera() {
     this.camera.reset();
   }
 
   /**
-   * Clean up resources and remove event listeners.
+   * Clean up resources and remove event listeners
    */
   dispose() {
     this.camera.dispose();

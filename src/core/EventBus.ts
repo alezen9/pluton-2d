@@ -1,10 +1,9 @@
 import type { CameraState } from './Context';
 
 export type EventMap = {
-  'render:scheduled': void;
   'camera:changed': CameraState;
-  'layer:record-start': void;
-  'layer:record-end': void;
+  'engine:commit-start': void;
+  'engine:commit-end': void;
 };
 
 export class EventBus {

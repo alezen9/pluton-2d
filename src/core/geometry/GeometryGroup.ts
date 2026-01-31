@@ -1,27 +1,10 @@
 import { PathBuilder } from "./PathBuilder";
 import { SVG_NS } from "../constants";
 
-/**
- * Geometry group for drawing shapes.
- */
 export type GeometryGroup = {
-  /**
-   * Translate the entire group.
-   * @param x - horizontal translation
-   * @param y - vertical translation
-   */
   translate: (x: number, y: number) => void;
-
-  /**
-   * Create or reuse a path builder for drawing a shape.
-   * @param options - optional configuration object with className
-   * @returns path builder for chaining drawing commands
-   */
+  setDrawUsage?: (usage: "static" | "dynamic") => void;
   path: (options?: { className?: string }) => PathBuilder;
-
-  /**
-   * Clear all paths in this group.
-   */
   clear: VoidFunction;
 };
 
@@ -41,6 +24,7 @@ export class GeometryGroupInternal implements GeometryGroup {
   private translateX = 0;
   private translateY = 0;
   private lastTransform = "";
+  private drawUsage: "static" | "dynamic" = "dynamic";
 
   constructor(parent: SVGGElement) {
     this.g = document.createElementNS(SVG_NS, "g");
@@ -49,18 +33,17 @@ export class GeometryGroupInternal implements GeometryGroup {
   }
 
   /**
-   * Begin recording phase - reset index to reuse existing paths.
-   * Part of the record/commit lifecycle for efficient DOM updates.
+   * Begin recording phase
    */
   beginRecord() {
     this.activeIndex = 0;
   }
 
   /**
-   * Commit recorded paths to the DOM.
-   * Updates path data only when changed, removes unused elements.
+   * Commit recorded paths to the DOM
    */
   commit() {
+    if (this.drawUsage === "static") return;
     for (let i = 0; i < this.activeIndex; i++) {
       const entry = this.paths[i];
       const d = entry.builder.toString();
@@ -82,6 +65,15 @@ export class GeometryGroupInternal implements GeometryGroup {
     this.translateX = x;
     this.translateY = y;
     this.applyTransform();
+  }
+
+  /**
+   * Set draw usage for this group
+   * @param usage - controls whether commits run for this group
+   * @defaultValue "dynamic"
+   */
+  setDrawUsage(usage: "static" | "dynamic") {
+    this.drawUsage = usage;
   }
 
   path(options?: { className?: string }) {

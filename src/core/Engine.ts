@@ -1,4 +1,4 @@
-import type { EventBus } from './EventBus';
+import type { EventBus } from "./EventBus";
 
 export class Engine<P extends Record<string, unknown>> {
   private drawCallbacks: ((params: P) => void)[] = [];
@@ -31,6 +31,10 @@ export class Engine<P extends Record<string, unknown>> {
       this.autoRenderEnabled = true;
       this.scheduleRender();
     }
+    return () => {
+      const idx = this.drawCallbacks.indexOf(callback);
+      if (idx >= 0) this.drawCallbacks.splice(idx, 1);
+    };
   }
 
   dispose(): void {
@@ -46,12 +50,12 @@ export class Engine<P extends Record<string, unknown>> {
       const elapsed = now - this.lastFrameTime;
 
       if (elapsed >= this.frameBudget) {
-        // Account for drift by aligning to frame grid
+        // account for drift by aligning to frame grid
         this.lastFrameTime = now - (elapsed % this.frameBudget);
         this.isRenderScheduled = false;
         this.commit();
       } else {
-        // Re-schedule, not enough time has passed
+        // re-schedule, not enough time has passed
         this.isRenderScheduled = false;
         this.scheduleRender();
       }
@@ -59,12 +63,12 @@ export class Engine<P extends Record<string, unknown>> {
   }
 
   private commit() {
-    this.events.emit('layer:record-start', undefined);
+    this.events.emit("engine:commit-start", undefined);
 
     for (const cb of this.drawCallbacks) {
       cb(this.paramsState);
     }
 
-    this.events.emit('layer:record-end', undefined);
+    this.events.emit("engine:commit-end", undefined);
   }
 }

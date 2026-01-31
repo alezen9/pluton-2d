@@ -16,8 +16,7 @@ export class DimensionsBuilder {
   private currentY = 0;
 
   /**
-   * Reset builder to initial state.
-   * Clears all commands, text records, and position.
+   * Reset builder state
    */
   reset() {
     this.commands.length = 0;
@@ -28,7 +27,7 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Get SVG path data for dimension lines.
+   * Get SVG path data for dimension lines
    * @returns SVG path data string
    */
   toPathData() {
@@ -36,7 +35,7 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Get SVG path data for filled shapes (arrows).
+   * Get SVG path data for filled shapes
    * @returns SVG path data string
    */
   toFilledPathData() {
@@ -44,8 +43,7 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Get all text records.
-   * Returns a reference to the internal array.
+   * Get all text records
    * @returns array of text records with positions and alignment
    */
   getTexts() {
@@ -57,7 +55,7 @@ export class DimensionsBuilder {
   // ------------------------------------
 
   /**
-   * Move to a position relative to current position.
+   * Move to a position relative to current position
    * @param dx - horizontal offset
    * @param dy - vertical offset
    * @returns this builder for chaining
@@ -70,7 +68,7 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Move to an absolute position.
+   * Move to an absolute position
    * @param x - absolute x coordinate
    * @param y - absolute y coordinate
    * @returns this builder for chaining
@@ -83,7 +81,7 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Draw a line to a position relative to current position.
+   * Draw a line to a position relative to current position
    * @param dx - horizontal offset
    * @param dy - vertical offset
    * @returns this builder for chaining
@@ -96,7 +94,7 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Draw a line to an absolute position.
+   * Draw a line to an absolute position
    * @param x - absolute x coordinate
    * @param y - absolute y coordinate
    * @returns this builder for chaining
@@ -109,8 +107,7 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Draw an arc centered at current position.
-   * Direction is determined by angle order: startAngle < endAngle draws CCW.
+   * Draw an arc centered at current position
    * @param r - arc radius
    * @param startAngle - start angle in radians (0 = right, π/2 = up)
    * @param endAngle - end angle in radians
@@ -154,7 +151,7 @@ export class DimensionsBuilder {
   // ------------------------------------
 
   /**
-   * Draw an open arrow at current position.
+   * Draw an open arrow at current position
    * @param angleRad - direction the arrow points in radians (0 = right, π/2 = up)
    * @returns this builder for chaining
    */
@@ -180,7 +177,7 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Draw a filled arrow at current position.
+   * Draw a filled arrow at current position
    * @param angleRad - direction the arrow points in radians (0 = right, π/2 = up)
    * @returns this builder for chaining
    */
@@ -206,8 +203,7 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Draw a tick mark at current position.
-   * Architectural standard: parallel vertical and -45° slash lines.
+   * Draw a tick mark at current position
    * @param angleRad - orientation angle in radians (dimension line direction)
    * @returns this builder for chaining
    */
@@ -284,10 +280,11 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Draw a center mark (crosshair) at current position.
-   * Standard technical drawing style with small gap at center.
-   * @param size - total size of the crosshair (default: 10)
-   * @param gap - gap at center intersection (default: 2)
+   * Draw a center mark (crosshair) at current position
+   * @param size - total size of the crosshair
+   * @defaultValue 10
+   * @param gap - gap at the center intersection
+   * @defaultValue 2
    * @returns this builder for chaining
    */
   centerMark(size = 10, gap = 2) {
@@ -308,8 +305,7 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Rotate a point around a center point by a given angle.
-   * Uses 2D rotation matrix transformation.
+   * Rotate a point around a center point by a given angle
    * @param x - point x coordinate
    * @param y - point y coordinate
    * @param centerX - rotation center x
@@ -337,38 +333,55 @@ export class DimensionsBuilder {
   };
 
   /**
-   * Place text at position relative to current position.
+   * Place text at position relative to current position
    * @param dx - horizontal offset from current position
    * @param dy - vertical offset from current position
    * @param text - text content to display
    * @param align - text alignment (maps to SVG text-anchor: start, middle, end)
+   * @defaultValue "middle"
+   * @param className - optional class name for the text element
    * @returns this builder for chaining
    */
-  textAt(dx: number, dy: number, text: string, align: TextAlign = "middle") {
+  textAt(
+    dx: number,
+    dy: number,
+    text: string,
+    align: TextAlign = "middle",
+    className?: string,
+  ) {
     this.textRecords.push({
       x: this.currentX + dx,
       y: this.currentY + dy,
       text,
       align,
+      className,
     });
     return this;
   }
 
   /**
-   * Place text at absolute position.
+   * Place text at absolute position
    * @param x - absolute x coordinate
    * @param y - absolute y coordinate
    * @param text - text content to display
    * @param align - text alignment (maps to SVG text-anchor: start, middle, end)
+   * @defaultValue "middle"
+   * @param className - optional class name for the text element
    * @returns this builder for chaining
    */
-  textAtAbs(x: number, y: number, text: string, align: TextAlign = "middle") {
-    this.textRecords.push({ x, y, text, align });
+  textAtAbs(
+    x: number,
+    y: number,
+    text: string,
+    align: TextAlign = "middle",
+    className?: string,
+  ) {
+    this.textRecords.push({ x, y, text, align, className });
     return this;
   }
 
   /**
-   * Close the current path.
+   * Close the current path
    * @returns this builder for chaining
    */
   close() {

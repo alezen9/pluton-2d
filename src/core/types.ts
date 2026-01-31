@@ -15,6 +15,7 @@ export type GeometryLayer = {
 
 export type GeometryGroup = {
   translate: (x: number, y: number) => void;
+  setDrawUsage?: (usage: "static" | "dynamic") => void;
   path: (options?: PathOptions) => PathBuilder;
   clear: VoidFunction;
 };
@@ -25,6 +26,7 @@ export type DimensionsLayer = {
 
 export type DimensionsGroup = {
   translate: (x: number, y: number) => void;
+  setDrawUsage?: (usage: "static" | "dynamic") => void;
   dimension: (options?: DimensionOptions) => DimensionsBuilder;
   clear: VoidFunction;
 };

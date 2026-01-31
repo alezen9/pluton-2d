@@ -10,6 +10,7 @@ type TextCache = {
   lastTransform: string;
   lastAnchor: string;
   lastText: string;
+  lastClass: string;
 };
 
 type DimensionEntry = {
@@ -25,27 +26,10 @@ type DimensionEntry = {
   activeTextCursor: number;
 };
 
-/**
- * Dimensions group for drawing annotations and measurements.
- */
 export type DimensionsGroup = {
-  /**
-   * Translate the entire group.
-   * @param x - horizontal translation
-   * @param y - vertical translation
-   */
   translate: (x: number, y: number) => void;
-
-  /**
-   * Create or reuse a dimension builder for drawing annotations.
-   * @param options - optional configuration object with className
-   * @returns dimension builder for chaining drawing commands
-   */
+  setDrawUsage?: (usage: "static" | "dynamic") => void;
   dimension: (options?: DimensionOptions) => DimensionsBuilder;
-
-  /**
-   * Clear all dimensions in this group.
-   */
   clear: VoidFunction;
 };
 
@@ -59,6 +43,7 @@ export class DimensionsGroupInternal {
   private translateX = 0;
   private translateY = 0;
   private lastTransform = "";
+  private drawUsage: "static" | "dynamic" = "dynamic";
 
   constructor(parent: SVGGElement) {
     this.g = document.createElementNS(SVG_NS, "g");
@@ -67,8 +52,7 @@ export class DimensionsGroupInternal {
   }
 
   /**
-   * Begin recording phase - reset index to reuse existing dimensions.
-   * Part of the record/commit lifecycle for efficient DOM updates.
+   * Begin recording phase
    */
   beginRecord() {
     this.activeIndex = 0;
@@ -76,10 +60,10 @@ export class DimensionsGroupInternal {
   }
 
   /**
-   * Commit recorded dimensions to the DOM.
-   * Updates only changed path data and text content, removes unused elements.
+   * Commit recorded dimensions to the DOM
    */
   commit() {
+    if (this.drawUsage === "static") return;
     for (let i = 0; i < this.activeIndex; i++) {
       const e = this.entries[i];
 
@@ -104,6 +88,12 @@ export class DimensionsGroupInternal {
         if (t.align !== cached.lastAnchor) {
           cached.el.setAttribute("text-anchor", t.align);
           cached.lastAnchor = t.align;
+        }
+        const className = t.className ?? "";
+        if (className !== cached.lastClass) {
+          if (className) cached.el.setAttribute("class", className);
+          else cached.el.removeAttribute("class");
+          cached.lastClass = className;
         }
         if (transform !== cached.lastTransform) {
           cached.el.setAttribute("transform", transform);
@@ -143,6 +133,15 @@ export class DimensionsGroupInternal {
     this.translateX = x;
     this.translateY = y;
     this.applyTransform();
+  }
+
+  /**
+   * Set draw usage for this group
+   * @param usage - controls whether commits run for this group
+   * @defaultValue "dynamic"
+   */
+  setDrawUsage(usage: "static" | "dynamic") {
+    this.drawUsage = usage;
   }
 
   dimension(options?: DimensionOptions) {
@@ -199,7 +198,7 @@ export class DimensionsGroupInternal {
   }
 
   /**
-   * Create a new text element and add it to the dimension entry.
+   * Create a new text element for a dimension entry
    * @param entry - dimension entry to add text to
    * @returns newly created text cache
    */
@@ -209,7 +208,7 @@ export class DimensionsGroupInternal {
     el.setAttribute("y", "0");
     el.setAttribute("dominant-baseline", "middle");
     entry.root.appendChild(el);
-    const cached: TextCache = { el, lastTransform: "", lastAnchor: "", lastText: "" };
+    const cached: TextCache = { el, lastTransform: "", lastAnchor: "", lastText: "", lastClass: "" };
     entry.texts.push(cached);
     return cached;
   }

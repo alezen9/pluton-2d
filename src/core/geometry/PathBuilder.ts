@@ -2,7 +2,7 @@ export class PathBuilder {
   private commands: string[] = [];
 
   /**
-   * Move to an absolute position (sets starting point).
+   * Move to an absolute position
    * @param x - absolute x coordinate
    * @param y - absolute y coordinate
    * @returns this builder for chaining
@@ -13,7 +13,7 @@ export class PathBuilder {
   }
 
   /**
-   * Draw a line relative to current position.
+   * Draw a line relative to current position
    * @param dx - horizontal offset
    * @param dy - vertical offset
    * @returns this builder for chaining
@@ -24,12 +24,12 @@ export class PathBuilder {
   }
 
   /**
-   * Draw an arc to a position relative to current position.
-   * Falls back to straight line if radius is zero.
+   * Draw an arc relative to current position
    * @param dx - horizontal offset to end point
    * @param dy - vertical offset to end point
    * @param r - arc radius
-   * @param clockwise - arc direction (default: false = counterclockwise)
+   * @param clockwise - whether the arc sweeps clockwise
+   * @defaultValue false
    * @returns this builder for chaining
    */
   arcTo(dx: number, dy: number, r: number, clockwise = false) {
@@ -45,7 +45,7 @@ export class PathBuilder {
   }
 
   /**
-   * Close the current path.
+   * Close the current path
    * @returns this builder for chaining
    */
   close() {
@@ -54,14 +54,14 @@ export class PathBuilder {
   }
 
   /**
-   * Reset the builder, clearing all commands.
+   * Reset the builder
    */
   reset() {
     this.commands.length = 0;
   }
 
   /**
-   * Get the SVG path data string.
+   * Get the SVG path data string
    * @returns SVG path data
    */
   toString() {

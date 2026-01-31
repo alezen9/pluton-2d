@@ -2,6 +2,14 @@ import { Pane } from "tweakpane";
 import { createIBeam } from "./beams/i-beam";
 import { createRHSBeam } from "./beams/rhs-beam";
 import { createCHSBeam } from "./beams/chs-beam";
+import { createStaticDynamicDemo } from "./static-dynamic";
+
+const isMacSafariOrIOS =
+  /iP(hone|ad|od)/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) ||
+  (/Macintosh/.test(navigator.userAgent) &&
+    /Safari/.test(navigator.userAgent) &&
+    !/Chrome|CriOS|Edg|Firefox|FxiOS|OPR|OPiOS/.test(navigator.userAgent));
 
 // Initialize beams with containers
 const { bp: iBeam } = createIBeam(document.getElementById("i-beam-canvas")!, {
@@ -10,9 +18,6 @@ const { bp: iBeam } = createIBeam(document.getElementById("i-beam-canvas")!, {
   flangeThickness: 40,
   webThickness: 20,
   filletRadius: 12,
-  scale: 1,
-  enablePencilFilter: true,
-  enableCameraControls: true,
 });
 
 const { bp: rhsBeam } = createRHSBeam(document.getElementById("rhs-canvas")!, {
@@ -21,23 +26,34 @@ const { bp: rhsBeam } = createRHSBeam(document.getElementById("rhs-canvas")!, {
   thickness: 15,
   outerRadius: 10,
   innerRadius: 10,
-  scale: 1,
-  enablePencilFilter: true,
-  enableCameraControls: true,
 });
 
 const { bp: chsBeam } = createCHSBeam(document.getElementById("chs-canvas")!, {
   radius: 110,
   thickness: 12,
-  scale: 1,
-  enablePencilFilter: true,
-  enableCameraControls: true,
+});
+
+const { bp: staticDynamic } = createStaticDynamicDemo(
+  document.getElementById("static-dynamic-canvas")!,
+  { size: 120 },
+);
+
+const baseDummy = {
+  enableFilter: !isMacSafariOrIOS,
+  enableZoom: true,
+  enablePan: true,
+};
+[iBeam, rhsBeam, chsBeam, staticDynamic].forEach((plt) => {
+  plt.enableFilter(baseDummy.enableFilter);
+  plt.enableZoom(baseDummy.enableZoom);
+  plt.enablePan(baseDummy.enablePan);
 });
 
 // Tweakpane setup
 const pane = new Pane({ title: "Beam Parameters" });
 
 // I-Beam folder
+const iBeamDummy = { ...baseDummy };
 const iFolder = pane.addFolder({ title: "I-Beam", expanded: true });
 iFolder.addBinding(iBeam.params, "width", { min: 50, max: 350, step: 1 });
 iFolder.addBinding(iBeam.params, "height", { min: 100, max: 450, step: 1 });
@@ -48,17 +64,21 @@ iFolder.addBinding(iBeam.params, "flangeThickness", {
 });
 iFolder.addBinding(iBeam.params, "webThickness", { min: 5, max: 50, step: 1 });
 iFolder.addBinding(iBeam.params, "filletRadius", { min: 0, max: 30, step: 1 });
-iFolder.addBinding(iBeam.params, "enablePencilFilter").on("change", (ev) => {
-  iBeam.enablePencilFilter(ev.value);
+iFolder.addBinding(iBeamDummy, "enableFilter").on("change", (ev) => {
+  iBeam.enableFilter(ev.value);
 });
-iFolder.addBinding(iBeam.params, "enableCameraControls").on("change", (ev) => {
-  iBeam.enableCameraControls(ev.value);
+iFolder.addBinding(iBeamDummy, "enableZoom").on("change", (ev) => {
+  iBeam.enableZoom(ev.value);
+});
+iFolder.addBinding(iBeamDummy, "enablePan").on("change", (ev) => {
+  iBeam.enablePan(ev.value);
 });
 iFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   iBeam.resetCamera();
 });
 
 // RHS folder
+const rhsBeamDummy = { ...baseDummy };
 const rhsFolder = pane.addFolder({ title: "RHS", expanded: true });
 rhsFolder.addBinding(rhsBeam.params, "width", { min: 50, max: 350, step: 1 });
 rhsFolder.addBinding(rhsBeam.params, "height", { min: 50, max: 350, step: 1 });
@@ -73,21 +93,21 @@ rhsFolder.addBinding(rhsBeam.params, "innerRadius", {
   max: 30,
   step: 1,
 });
-rhsFolder
-  .addBinding(rhsBeam.params, "enablePencilFilter")
-  .on("change", (ev) => {
-    rhsBeam.enablePencilFilter(ev.value);
-  });
-rhsFolder
-  .addBinding(rhsBeam.params, "enableCameraControls")
-  .on("change", (ev) => {
-    rhsBeam.enableCameraControls(ev.value);
-  });
+rhsFolder.addBinding(rhsBeamDummy, "enableFilter").on("change", (ev) => {
+  rhsBeam.enableFilter(ev.value);
+});
+rhsFolder.addBinding(rhsBeamDummy, "enableZoom").on("change", (ev) => {
+  rhsBeam.enableZoom(ev.value);
+});
+rhsFolder.addBinding(rhsBeamDummy, "enablePan").on("change", (ev) => {
+  rhsBeam.enablePan(ev.value);
+});
 rhsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   rhsBeam.resetCamera();
 });
 
 // CHS folder
+const chsBeamDummy = { ...baseDummy };
 const chsFolder = pane.addFolder({ title: "CHS", expanded: true });
 chsFolder.addBinding(chsBeam.params, "radius", {
   min: 50,
@@ -95,16 +115,39 @@ chsFolder.addBinding(chsBeam.params, "radius", {
   step: 1,
 });
 chsFolder.addBinding(chsBeam.params, "thickness", { min: 3, max: 50, step: 1 });
-chsFolder
-  .addBinding(chsBeam.params, "enablePencilFilter")
-  .on("change", (ev) => {
-    chsBeam.enablePencilFilter(ev.value);
-  });
-chsFolder
-  .addBinding(chsBeam.params, "enableCameraControls")
-  .on("change", (ev) => {
-    chsBeam.enableCameraControls(ev.value);
-  });
+chsFolder.addBinding(chsBeamDummy, "enableFilter").on("change", (ev) => {
+  chsBeam.enableFilter(ev.value);
+});
+chsFolder.addBinding(chsBeamDummy, "enableZoom").on("change", (ev) => {
+  chsBeam.enableZoom(ev.value);
+});
+chsFolder.addBinding(chsBeamDummy, "enablePan").on("change", (ev) => {
+  chsBeam.enablePan(ev.value);
+});
 chsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   chsBeam.resetCamera();
+});
+
+// Static vs Dynamic folder
+const staticDummy = { ...baseDummy };
+const staticFolder = pane.addFolder({
+  title: "Static vs Dynamic",
+  expanded: true,
+});
+staticFolder.addBinding(staticDynamic.params, "size", {
+  min: 40,
+  max: 200,
+  step: 1,
+});
+staticFolder.addBinding(staticDummy, "enableFilter").on("change", (ev) => {
+  staticDynamic.enableFilter(ev.value);
+});
+staticFolder.addBinding(staticDummy, "enableZoom").on("change", (ev) => {
+  staticDynamic.enableZoom(ev.value);
+});
+staticFolder.addBinding(staticDummy, "enablePan").on("change", (ev) => {
+  staticDynamic.enablePan(ev.value);
+});
+staticFolder.addButton({ title: "Reset Camera" }).on("click", () => {
+  staticDynamic.resetCamera();
 });

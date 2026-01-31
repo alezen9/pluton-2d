@@ -21,7 +21,16 @@ export class Camera {
   private lastX = 0;
   private lastY = 0;
   private cachedRect: DOMRect | null = null;
-  private listeners: Array<{
+  private panEnabled = false;
+  private zoomEnabled = false;
+  private isTicking = false;
+  private rafId?: number;
+  private panListeners: Array<{
+    target: EventTarget;
+    type: string;
+    handler: EventListener;
+  }> = [];
+  private zoomListeners: Array<{
     target: EventTarget;
     type: string;
     handler: EventListener;
@@ -30,36 +39,26 @@ export class Camera {
   constructor(svg: SVGSVGElement, events: EventBus) {
     this.svg = svg;
     this.events = events;
-
-    events.on("layer:record-end", () => {
-      this.interpolateToTarget();
-    });
   }
 
-  enable() {
-    this.addListeners();
-  }
-
-  disable() {
-    this.removeListeners();
-  }
-
-  dispose(): void {
-    this.removeListeners();
+  dispose() {
+    this.enablePan(false);
+    this.enableZoom(false);
+    this.stopTick();
   }
 
   state(): CameraState {
     return { panX: this.panX, panY: this.panY, scale: this.scale };
   }
 
-  reset(): void {
+  reset() {
     if (this.isResetting) return;
 
     this.isResetting = true;
     this.targetPanX = 0;
     this.targetPanY = 0;
     this.targetScale = 1;
-    this.events.emit("camera:changed", this.state());
+    this.startTick();
   }
 
   private smoothStep(current: number, target: number): number {
@@ -100,9 +99,9 @@ export class Camera {
     const changed =
       oldX !== this.panX || oldY !== this.panY || oldScale !== this.scale;
 
-    if (changed) {
-      this.events.emit("camera:changed", this.state());
-    }
+    if (changed) this.events.emit("camera:changed", this.state());
+
+    if (allWithinEpsilon) this.stopTick();
   }
 
   private updateCachedRect(): void {
@@ -114,7 +113,40 @@ export class Camera {
     return this.cachedRect!;
   }
 
-  private addListeners() {
+  private startTick() {
+    if (this.isTicking) return;
+    this.isTicking = true;
+    const tick = () => {
+      this.interpolateToTarget();
+      if (this.isTicking) this.rafId = requestAnimationFrame(tick);
+    };
+    this.rafId = requestAnimationFrame(tick);
+  }
+
+  private stopTick() {
+    this.isTicking = false;
+    if (this.rafId !== undefined) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = undefined;
+    }
+  }
+
+  enablePan(enabled: boolean) {
+    if (enabled === this.panEnabled) return;
+    this.panEnabled = enabled;
+    if (enabled) this.addPanListeners();
+    else this.removePanListeners();
+  }
+
+  enableZoom(enabled: boolean) {
+    if (enabled === this.zoomEnabled) return;
+    this.zoomEnabled = enabled;
+    if (enabled) this.addZoomListeners();
+    else this.removeZoomListeners();
+  }
+
+  private addPanListeners() {
+    if (this.panListeners.length > 0) return;
     const onMouseDown = (e: MouseEvent) => {
       if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
         e.preventDefault();
@@ -140,7 +172,7 @@ export class Camera {
 
       this.lastX = e.clientX;
       this.lastY = e.clientY;
-      this.events.emit("camera:changed", this.state());
+      this.startTick();
     };
 
     const onMouseUp = (e: MouseEvent) => {
@@ -150,6 +182,27 @@ export class Camera {
       }
     };
 
+    this.svg.addEventListener("mousedown", onMouseDown as EventListener);
+    window.addEventListener("mousemove", onMouseMove as EventListener);
+    window.addEventListener("mouseup", onMouseUp as EventListener);
+
+    this.panListeners = [
+      {
+        target: this.svg,
+        type: "mousedown",
+        handler: onMouseDown as EventListener,
+      },
+      {
+        target: window,
+        type: "mousemove",
+        handler: onMouseMove as EventListener,
+      },
+      { target: window, type: "mouseup", handler: onMouseUp as EventListener },
+    ];
+  }
+
+  private addZoomListeners() {
+    if (this.zoomListeners.length > 0) return;
     const onWheel = (e: WheelEvent) => {
       if (this.isResetting) return;
       e.preventDefault();
@@ -169,36 +222,31 @@ export class Camera {
       this.targetPanY = originY + (this.targetPanY - originY) * scaleRatio;
       this.targetScale = newScale;
 
-      this.events.emit("camera:changed", this.state());
+      this.startTick();
     };
 
-    this.svg.addEventListener("mousedown", onMouseDown as EventListener);
-    window.addEventListener("mousemove", onMouseMove as EventListener);
-    window.addEventListener("mouseup", onMouseUp as EventListener);
     this.svg.addEventListener("wheel", onWheel as EventListener, {
       passive: false,
     });
 
-    this.listeners = [
-      {
-        target: this.svg,
-        type: "mousedown",
-        handler: onMouseDown as EventListener,
-      },
-      {
-        target: window,
-        type: "mousemove",
-        handler: onMouseMove as EventListener,
-      },
-      { target: window, type: "mouseup", handler: onMouseUp as EventListener },
+    this.zoomListeners = [
       { target: this.svg, type: "wheel", handler: onWheel as EventListener },
     ];
   }
 
-  private removeListeners() {
-    for (const { target, type, handler } of this.listeners) {
+  private removePanListeners() {
+    for (const { target, type, handler } of this.panListeners) {
       target.removeEventListener(type, handler);
     }
-    this.listeners = [];
+    this.panListeners = [];
+    this.isPanning = false;
+    this.cachedRect = null;
+  }
+
+  private removeZoomListeners() {
+    for (const { target, type, handler } of this.zoomListeners) {
+      target.removeEventListener(type, handler);
+    }
+    this.zoomListeners = [];
   }
 }
