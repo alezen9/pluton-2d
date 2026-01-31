@@ -42,11 +42,13 @@ const baseDummy = {
   enableFilter: !isMacSafariOrIOS,
   enableZoom: true,
   enablePan: true,
+  enableHatchFill: true,
 };
 [iBeam, rhsBeam, chsBeam, staticDynamic].forEach((plt) => {
   plt.enableFilter(baseDummy.enableFilter);
   plt.enableZoom(baseDummy.enableZoom);
   plt.enablePan(baseDummy.enablePan);
+  plt.enableHatchFill(baseDummy.enableHatchFill);
 });
 
 // Tweakpane setup
@@ -72,6 +74,9 @@ iFolder.addBinding(iBeamDummy, "enableZoom").on("change", (ev) => {
 });
 iFolder.addBinding(iBeamDummy, "enablePan").on("change", (ev) => {
   iBeam.enablePan(ev.value);
+});
+iFolder.addBinding(iBeamDummy, "enableHatchFill").on("change", (ev) => {
+  iBeam.enableHatchFill(ev.value);
 });
 iFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   iBeam.resetCamera();
@@ -102,6 +107,9 @@ rhsFolder.addBinding(rhsBeamDummy, "enableZoom").on("change", (ev) => {
 rhsFolder.addBinding(rhsBeamDummy, "enablePan").on("change", (ev) => {
   rhsBeam.enablePan(ev.value);
 });
+rhsFolder.addBinding(rhsBeamDummy, "enableHatchFill").on("change", (ev) => {
+  rhsBeam.enableHatchFill(ev.value);
+});
 rhsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   rhsBeam.resetCamera();
 });
@@ -123,6 +131,9 @@ chsFolder.addBinding(chsBeamDummy, "enableZoom").on("change", (ev) => {
 });
 chsFolder.addBinding(chsBeamDummy, "enablePan").on("change", (ev) => {
   chsBeam.enablePan(ev.value);
+});
+chsFolder.addBinding(chsBeamDummy, "enableHatchFill").on("change", (ev) => {
+  chsBeam.enableHatchFill(ev.value);
 });
 chsFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   chsBeam.resetCamera();
@@ -147,6 +158,9 @@ staticFolder.addBinding(staticDummy, "enableZoom").on("change", (ev) => {
 });
 staticFolder.addBinding(staticDummy, "enablePan").on("change", (ev) => {
   staticDynamic.enablePan(ev.value);
+});
+staticFolder.addBinding(staticDummy, "enableHatchFill").on("change", (ev) => {
+  staticDynamic.enableHatchFill(ev.value);
 });
 staticFolder.addButton({ title: "Reset Camera" }).on("click", () => {
   staticDynamic.resetCamera();

@@ -1,6 +1,6 @@
-:root {
-  --pluton-grid-minor: rgba(0, 0, 0, 0.03);
-  --pluton-grid-major: rgba(0, 0, 0, 0.15);
+.pluton-root {
+  --pluton-grid-minor-stroke: rgba(0, 0, 0, 0.03);
+  --pluton-grid-major-stroke: rgba(0, 0, 0, 0.15);
   --pluton-grid-stroke-width: 0.5;
   --pluton-axis-color: rgba(0, 0, 0, 0.25);
   --pluton-axis-stroke-width: 1;
@@ -14,59 +14,63 @@
   --pluton-dim-font-size: 12px;
 }
 
-.pluton-viewport-layer,
-.pluton-background-layer,
-.pluton-world-layer {
+.pluton-root .pluton-viewport-layer,
+.pluton-root .pluton-background-layer,
+.pluton-root .pluton-world-layer {
   will-change: transform;
 }
 
-.pluton-pattern-hatch {
+.pluton-root .pluton-pattern-hatch {
   stroke: var(--pluton-hatch-color);
 }
 
-.pluton-pattern-graph-paper-minor {
+.pluton-root .pluton-pattern-graph-paper-minor {
   fill: none;
-  stroke: var(--pluton-grid-minor);
+  stroke: var(--pluton-grid-minor-stroke);
   stroke-width: var(--pluton-grid-stroke-width);
   shape-rendering: crispEdges;
 }
 
-.pluton-pattern-graph-paper-major {
+.pluton-root .pluton-pattern-graph-paper-major {
   fill: none;
-  stroke: var(--pluton-grid-major);
+  stroke: var(--pluton-grid-major-stroke);
   stroke-width: var(--pluton-grid-stroke-width);
   shape-rendering: crispEdges;
 }
 
-.pluton-axes .pluton-axis {
+.pluton-root .pluton-axes .pluton-axis {
   stroke: var(--pluton-axis-color);
   stroke-width: var(--pluton-axis-stroke-width);
   stroke-dasharray: var(--pluton-axis-dash);
   shape-rendering: crispEdges;
 }
 
-.pluton-geometry path {
-  fill: url("#pluton-pattern-fill-hatch-45");
-  fill-rule: evenodd;
+.pluton-root .pluton-geometry path {
+  fill: none;
   stroke: var(--pluton-geometry-stroke);
   stroke-width: var(--pluton-geometry-stroke-width);
   shape-rendering: crispEdges;
 }
 
-.pluton-dimensions .pluton-dim-stroke {
+.pluton-root.pluton-fill-hatch .pluton-geometry path {
+  fill: url("#pluton-pattern-fill-hatch-45");
+  fill-rule: evenodd;
+}
+
+.pluton-root .pluton-dimensions .pluton-dim-stroke {
   fill: none;
   stroke: var(--pluton-dim-color);
   stroke-width: var(--pluton-dim-stroke-width);
   shape-rendering: crispEdges;
 }
 
-.pluton-dimensions .pluton-dim-filled {
+.pluton-root .pluton-dimensions .pluton-dim-filled {
   fill: var(--pluton-dim-color);
   stroke: none;
   shape-rendering: crispEdges;
 }
 
-.pluton-dimensions text {
+.pluton-root .pluton-dimensions text {
   fill: var(--pluton-dim-text-color);
   font-size: var(--pluton-dim-font-size);
   letter-spacing: 0.02em;

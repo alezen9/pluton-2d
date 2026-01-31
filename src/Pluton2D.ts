@@ -32,6 +32,8 @@ export class Pluton2D<
   constructor(svg: SVGSVGElement, initialParams: P) {
     this.events = new EventBus();
 
+    svg.classList.add("pluton-root", "pluton-fill-hatch");
+
     const defsEl = document.createElementNS(SVG_NS, "defs");
     svg.insertBefore(defsEl, svg.firstChild);
 
@@ -116,6 +118,16 @@ export class Pluton2D<
    */
   enableZoom(enabled: boolean) {
     this.camera.enableZoom(enabled);
+  }
+
+  /**
+   * Enable or disable the built‑in hatch fill on geometry
+   * @param enabled - whether hatch fill is active
+   * @defaultValue true
+   */
+  enableHatchFill(enabled: boolean) {
+    if (enabled) this.context.svg.classList.add("pluton-fill-hatch");
+    else this.context.svg.classList.remove("pluton-fill-hatch");
   }
 
   /**
