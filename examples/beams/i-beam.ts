@@ -20,7 +20,7 @@ export function createIBeam(container: HTMLElement, params: IBeamParams) {
 
     const path = geom.path();
     path
-      .moveTo(0, 0)
+      .moveToAbs(0, 0)
       .lineTo(fw / 2, 0)
       .lineTo(0, ft)
       .lineTo(-fw / 2 + wt / 2 + r, 0)

@@ -2,16 +2,12 @@ import { Pluton2D } from "../../src/index";
 import type { CHSParams } from "../types";
 
 export function createCHSBeam(container: HTMLElement, params: CHSParams) {
-  const { enablePencilFilter, enableCameraControls } = params;
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.style.width = "100%";
   svg.style.height = "100%";
   container.appendChild(svg);
 
-  const bp = new Pluton2D(svg, params, {
-    enablePencilFilter,
-    enableCameraControls,
-  });
+  const bp = new Pluton2D(svg, params);
   const geom = bp.geometry.group();
   const dims = bp.dimensions.group();
 
@@ -22,14 +18,14 @@ export function createCHSBeam(container: HTMLElement, params: CHSParams) {
     const path = geom.path();
 
     path
-      .moveTo(-r, 0)
+      .moveToAbs(-r, 0)
       .arcTo(r, r, r, false)
       .arcTo(r, -r, r, false)
       .arcTo(-r, -r, r, false)
       .arcTo(-r, r, r, false);
 
     path
-      .moveTo(-ir, 0)
+      .moveToAbs(-ir, 0)
       .arcTo(ir, ir, ir, false)
       .arcTo(ir, -ir, ir, false)
       .arcTo(-ir, -ir, ir, false)

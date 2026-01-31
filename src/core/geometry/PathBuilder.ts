@@ -7,7 +7,7 @@ export class PathBuilder {
    * @param y - absolute y coordinate
    * @returns this builder for chaining
    */
-  moveTo(x: number, y: number) {
+  moveToAbs(x: number, y: number) {
     this.commands.push(`M ${x} ${y}`);
     return this;
   }

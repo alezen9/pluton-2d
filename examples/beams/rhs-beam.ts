@@ -2,17 +2,12 @@ import { Pluton2D } from "../../src/index";
 import type { RHSParams } from "../types";
 
 export function createRHSBeam(container: HTMLElement, params: RHSParams) {
-  const { enablePencilFilter, enableCameraControls } = params;
-
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.style.width = "100%";
   svg.style.height = "100%";
   container.appendChild(svg);
 
-  const bp = new Pluton2D(svg, params, {
-    enablePencilFilter,
-    enableCameraControls,
-  });
+  const bp = new Pluton2D(svg, params);
   const geom = bp.geometry.group();
   const dims = bp.dimensions.group();
 
@@ -34,7 +29,7 @@ export function createRHSBeam(container: HTMLElement, params: RHSParams) {
     const path = geom.path({ className: "rhs" });
 
     path
-      .moveTo(-w / 2 + ro, -h / 2)
+      .moveToAbs(-w / 2 + ro, -h / 2)
       .lineTo(w - 2 * ro, 0)
       .arcTo(ro, ro, ro, true)
       .lineTo(0, h - 2 * ro)
@@ -46,7 +41,7 @@ export function createRHSBeam(container: HTMLElement, params: RHSParams) {
       .close();
 
     path
-      .moveTo(-iw / 2 + ri, -ih / 2)
+      .moveToAbs(-iw / 2 + ri, -ih / 2)
       .lineTo(iw - 2 * ri, 0)
       .arcTo(ri, ri, ri, true)
       .lineTo(0, ih - 2 * ri)

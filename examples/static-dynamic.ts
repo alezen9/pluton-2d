@@ -26,7 +26,7 @@ export function createStaticDynamicDemo(
     if (!staticLocked) {
       const path = staticGroup.path({ className: "demo-static" });
       path
-        .moveTo(-offset - half, -half)
+        .moveToAbs(-offset - half, -half)
         .lineTo(p.size, 0)
         .lineTo(0, p.size)
         .lineTo(-p.size, 0)
@@ -40,7 +40,7 @@ export function createStaticDynamicDemo(
 
     const dynamicPath = dynamicGroup.path({ className: "demo-dynamic" });
     dynamicPath
-      .moveTo(offset - half, -half)
+      .moveToAbs(offset - half, -half)
       .lineTo(p.size, 0)
       .lineTo(0, p.size)
       .lineTo(-p.size, 0)
