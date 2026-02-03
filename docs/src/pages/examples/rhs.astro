@@ -1,0 +1,34 @@
+---
+import ExamplesLayout from "../../layouts/ExamplesLayout.astro";
+import RHSDemo from "../../components/demos/RHSDemo.svelte";
+
+const code = `scene.draw((p) => {
+  const path = geom.path();
+
+  // Outer rectangle with rounded corners
+  path
+    .moveToAbs(-p.width / 2 + p.outerRadius, -p.height / 2)
+    .lineTo(p.width - 2 * p.outerRadius, 0)
+    .arcTo(p.outerRadius, p.outerRadius, p.outerRadius, false)
+    .lineTo(0, p.height - 2 * p.outerRadius)
+    .arcTo(-p.outerRadius, p.outerRadius, p.outerRadius, false)
+    .lineTo(-p.width + 2 * p.outerRadius, 0)
+    .arcTo(-p.outerRadius, -p.outerRadius, p.outerRadius, false)
+    .lineTo(0, -p.height + 2 * p.outerRadius)
+    .arcTo(p.outerRadius, -p.outerRadius, p.outerRadius, false)
+    .close();
+
+  // Inner cutout — same pattern with inner dimensions
+  // …
+});`;
+---
+
+<ExamplesLayout title="RHS" current="/examples/rhs">
+  <div class="example-header">
+    <h1>RHS</h1>
+    <span class="demo-card-tag">Profiles</span>
+  </div>
+  <p class="example-desc">Rectangular hollow section with independent outer and inner corner radii.</p>
+
+  <RHSDemo {code} client:visible />
+</ExamplesLayout>

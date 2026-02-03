@@ -1,0 +1,9 @@
+---
+import { Code } from "astro/components";
+
+const { code, lang = "ts" } = Astro.props;
+---
+
+<div class="code-block" data-lang={lang}>
+  <Code {code} {lang} theme="one-dark-pro" />
+</div>

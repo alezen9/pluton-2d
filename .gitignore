@@ -12,7 +12,9 @@ dist
 dist-ssr
 temp
 *.local
-examples/dist/
+docs/node_modules/
+docs/dist/
+docs/.astro/
 
 # Editor directories and files
 .vscode/

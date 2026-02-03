@@ -1,0 +1,33 @@
+---
+import ExamplesLayout from "../../layouts/ExamplesLayout.astro";
+import StaticDynamicDemo from "../../components/demos/StaticDynamicDemo.svelte";
+
+const code = `const staticGroup = scene.geometry.group();
+staticGroup.setDrawUsage("static");
+
+const dynamicGroup = scene.geometry.group();
+
+scene.draw((p) => {
+  // Static — committed once, never updates again
+  staticGroup.path({ className: "demo-static" })
+    .moveToAbs(-90 - p.size / 2, -p.size / 2)
+    .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
+    .close();
+
+  // Dynamic — redraws every frame
+  dynamicGroup.path({ className: "demo-dynamic" })
+    .moveToAbs(90 - p.size / 2, -p.size / 2)
+    .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
+    .close();
+});`;
+---
+
+<ExamplesLayout title="Static vs Dynamic" current="/examples/static-dynamic">
+  <div class="example-header">
+    <h1>Static vs Dynamic</h1>
+    <span class="demo-card-tag">Behavior</span>
+  </div>
+  <p class="example-desc">Orange shape is static — it freezes after the first render. Teal shape updates live.</p>
+
+  <StaticDynamicDemo {code} client:visible />
+</ExamplesLayout>

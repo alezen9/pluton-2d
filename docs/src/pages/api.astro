@@ -1,0 +1,257 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+
+const constructorCode = `const scene = new Pluton2D(svg, { width: 240, height: 120 });
+
+// With options
+const scene = new Pluton2D(svg, { width: 240, height: 120 }, {
+  filterIntensity: 1.5, // pencil filter strength (default: 1.25)
+});`;
+
+const drawCode = `const unsubscribe = scene.draw((params) => {
+  // build geometry and dimensions here
+});
+
+// later, if needed:
+unsubscribe();
+
+// or tear down everything:
+scene.dispose();`;
+
+const pathBuilderCode = `const path = geom.path({ className: "optional-class" });
+
+path.moveTo(dx, dy)          // relative move
+path.moveToAbs(x, y)         // absolute move
+path.lineTo(dx, dy)          // relative line
+path.lineToAbs(x, y)         // absolute line
+path.arcTo(dx, dy, r, clockwise?, largeArc?)    // relative arc
+path.arcToAbs(x, y, r, clockwise?, largeArc?)   // absolute arc
+path.close()                 // close path
+path.reset()                 // clear all commands`;
+
+const dimBuilderPositionCode = `const dim = dims.dimension({ className: "optional-class" });
+
+dim.moveTo(dx, dy)           // relative move
+dim.moveToAbs(x, y)          // absolute move
+dim.lineTo(dx, dy)           // relative line
+dim.lineToAbs(x, y)          // absolute line`;
+
+const dimBuilderPrimitivesCode = `dim.arc(r, startAngle, endAngle)     // arc centered at current position
+dim.arrow(angleRad, size?)          // open arrow (default size: 8)
+dim.arrowFilled(angleRad, size?)    // filled arrow (default size: 8)
+dim.tick(angleRad, size?)           // architectural tick (default size: 15)
+dim.centerMark(size?)               // crosshair with center dot (default size: 10)
+dim.close()                         // close path`;
+
+const dimBuilderTextCode = `dim.textAt(dx, dy, text, align?, className?)
+dim.textAtAbs(x, y, text, align?, className?)
+
+// align: "start" | "middle" | "end"  (default: "middle")
+// className: optional CSS class for the <text> element`;
+---
+
+<Layout title="API" currentPage="/api">
+  <div class="page-narrow">
+    <h1>API Reference</h1>
+
+    <!-- ── Pluton2D ── -->
+    <h2>Pluton2D</h2>
+
+    <h3>Constructor</h3>
+    <CodeBlock lang="ts" code={constructorCode} />
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Param</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>svg</code></td>
+          <td class="desc">SVGSVGElement to render into. Needs CSS width/height or a viewBox.</td>
+        </tr>
+        <tr>
+          <td><code>initialParams</code></td>
+          <td class="desc">Flat object. Keys become reactive params. Nested objects throw.</td>
+        </tr>
+        <tr>
+          <td><code>options</code></td>
+          <td class="desc">Optional. <code>filterIntensity</code> controls pencil filter strength (default 1.25).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Properties</h3>
+    <table class="api-table">
+      <thead>
+        <tr><th>Property</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>params</code></td>
+          <td class="desc">Reactive parameter object. Mutate properties to trigger redraws.</td>
+        </tr>
+        <tr>
+          <td><code>geometry</code></td>
+          <td class="desc">The geometry layer. Call <code>.group()</code> to create groups.</td>
+        </tr>
+        <tr>
+          <td><code>dimensions</code></td>
+          <td class="desc">The dimensions layer. Call <code>.group()</code> to create groups.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Methods</h3>
+    <CodeBlock lang="ts" code={drawCode} />
+    <table class="api-table">
+      <thead>
+        <tr><th>Method</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>enableFilter(bool)</code></td>
+          <td class="desc">Pencil-like SVG filter. Default: false. Can be expensive on Safari during zoom.</td>
+        </tr>
+        <tr>
+          <td><code>enableGrid(bool)</code></td>
+          <td class="desc">Graph-paper background. Default: true.</td>
+        </tr>
+        <tr>
+          <td><code>enableAxes(bool)</code></td>
+          <td class="desc">Center axes (dashed). Default: true.</td>
+        </tr>
+        <tr>
+          <td><code>enablePan(bool)</code></td>
+          <td class="desc">Middle-mouse or shift+left-click pan. Default: false.</td>
+        </tr>
+        <tr>
+          <td><code>enableZoom(bool)</code></td>
+          <td class="desc">Mouse-wheel zoom, 1×–20× scale. Default: false.</td>
+        </tr>
+        <tr>
+          <td><code>enableHatchFill(bool)</code></td>
+          <td class="desc">Hatch pattern fill on all geometry paths. Default: false.</td>
+        </tr>
+        <tr>
+          <td><code>resetCamera()</code></td>
+          <td class="desc">Smoothly animate camera back to origin.</td>
+        </tr>
+        <tr>
+          <td><code>dispose()</code></td>
+          <td class="desc">Clean up event listeners, DOM elements, and defs.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="section-divider" />
+
+    <!-- ── Geometry ── -->
+    <h2>Geometry</h2>
+
+    <h3>geometry.group() → GeometryGroup</h3>
+    <p>Create a geometry group. Call once, outside draw callbacks.</p>
+
+    <h3>GeometryGroup</h3>
+    <table class="api-table">
+      <thead>
+        <tr><th>Method</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>path(options?)</code></td>
+          <td class="desc">Request or reuse a PathBuilder. Call inside draw callbacks. <code>options.className</code> sets a CSS class on the path element.</td>
+        </tr>
+        <tr>
+          <td><code>translate(x, y)</code></td>
+          <td class="desc">Offset the entire group. Direct DOM write — no redraw needed.</td>
+        </tr>
+        <tr>
+          <td><code>setDrawUsage(mode)</code></td>
+          <td class="desc"><code>"static"</code> — commit once then stop. <code>"dynamic"</code> (default) — commit every frame.</td>
+        </tr>
+        <tr>
+          <td><code>clear()</code></td>
+          <td class="desc">Remove all paths, reset group state.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>PathBuilder</h3>
+    <p>All methods return <code>this</code> for chaining.</p>
+    <CodeBlock lang="ts" code={pathBuilderCode} />
+    <table class="api-table">
+      <thead>
+        <tr><th>Param</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>clockwise</code></td>
+          <td class="desc">Arc sweep direction. Default: <code>false</code>. Visually correct after the Y-flip.</td>
+        </tr>
+        <tr>
+          <td><code>largeArc</code></td>
+          <td class="desc">Whether the arc spans &gt;180°. Default: <code>false</code>.</td>
+        </tr>
+        <tr>
+          <td><code>r ≤ 0</code></td>
+          <td class="desc">Falls back to a straight line (sharp corner).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <hr class="section-divider" />
+
+    <!-- ── Dimensions ── -->
+    <h2>Dimensions</h2>
+
+    <h3>dimensions.group() → DimensionsGroup</h3>
+    <p>Create a dimensions group. Call once, outside draw callbacks.</p>
+
+    <h3>DimensionsGroup</h3>
+    <p>
+      Same interface as GeometryGroup: <code>dimension(options?)</code>,
+      <code>translate(x, y)</code>, <code>setDrawUsage(mode)</code>,
+      <code>clear()</code>.
+    </p>
+
+    <h3>DimensionsBuilder — Positioning</h3>
+    <CodeBlock lang="ts" code={dimBuilderPositionCode} />
+
+    <h3>DimensionsBuilder — Primitives</h3>
+    <p>All angles are in radians. <code>0</code> = right, <code>π/2</code> = up.</p>
+    <CodeBlock lang="ts" code={dimBuilderPrimitivesCode} />
+    <table class="api-table">
+      <thead>
+        <tr><th>Primitive</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>arc</code></td>
+          <td class="desc">Draws from <code>startAngle</code> to <code>endAngle</code> around current position. Direction inferred from angle order.</td>
+        </tr>
+        <tr>
+          <td><code>arrow</code></td>
+          <td class="desc">Open V-arrow. Tip at current position, wings extend behind.</td>
+        </tr>
+        <tr>
+          <td><code>arrowFilled</code></td>
+          <td class="desc">Filled triangle arrow. Rendered on a separate path layer.</td>
+        </tr>
+        <tr>
+          <td><code>tick</code></td>
+          <td class="desc">Architectural tick: two crossed lines rotated by <code>angleRad</code>.</td>
+        </tr>
+        <tr>
+          <td><code>centerMark</code></td>
+          <td class="desc">Crosshair + filled center dot. Standard for center-point callouts.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>DimensionsBuilder — Text</h3>
+    <CodeBlock lang="ts" code={dimBuilderTextCode} />
+  </div>
+</Layout>

@@ -1,0 +1,70 @@
+---
+import Layout from "./Layout.astro";
+
+const { title = "Examples", current = "" } = Astro.props;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const categories = [
+  {
+    label: "Drawing",
+    items: [
+      { path: "/examples/basic-shapes", label: "Basic Shapes" },
+      { path: "/examples/arcs", label: "Arcs" },
+    ],
+  },
+  {
+    label: "Profiles",
+    items: [
+      { path: "/examples/i-beam", label: "I-Beam" },
+      { path: "/examples/rhs", label: "RHS" },
+      { path: "/examples/chs", label: "CHS" },
+    ],
+  },
+  {
+    label: "Effects",
+    items: [
+      { path: "/examples/hatch-fill", label: "Hatch Fill" },
+      { path: "/examples/pencil-filter", label: "Pencil Filter" },
+    ],
+  },
+  {
+    label: "Behavior",
+    items: [{ path: "/examples/static-dynamic", label: "Static vs Dynamic" }],
+  },
+];
+---
+
+<Layout {title} currentPage="/examples">
+  <div class="examples-layout">
+    <aside class="examples-sidebar" transition:persist>
+      {categories.map((cat) => (
+        <div class="sidebar-category">
+          <div class="sidebar-category-label">{cat.label}</div>
+          <ul class="sidebar-links">
+            {cat.items.map((item) => (
+              <li>
+                <a href={`${base}${item.path}`} class={item.path === current ? "active" : ""}>
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </aside>
+    <div class="examples-main">
+      <slot />
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Update active link after view transitions (sidebar is persisted, doesn't re-render)
+  document.addEventListener("astro:after-swap", () => {
+    const path = window.location.pathname;
+    document.querySelectorAll(".examples-sidebar a").forEach((a) => {
+      a.classList.toggle("active", a.getAttribute("href") === path);
+    });
+  });
+</script>

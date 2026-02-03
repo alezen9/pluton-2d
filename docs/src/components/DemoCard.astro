@@ -1,0 +1,22 @@
+---
+import CodeBlock from "./CodeBlock.astro";
+
+const { title, tag, description, code, lang = "ts" } = Astro.props;
+---
+
+<div class="demo-card">
+  <div class="demo-card-head">
+    <h3>{title}</h3>
+    {tag && <span class="demo-card-tag">{tag}</span>}
+  </div>
+  <p class="demo-card-desc">{description}</p>
+
+  <slot />
+
+  {code && (
+    <details class="code-reveal">
+      <summary>View code</summary>
+      <CodeBlock {code} {lang} />
+    </details>
+  )}
+</div>

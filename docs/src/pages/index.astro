@@ -1,0 +1,92 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+import DemoCard from "../components/DemoCard.astro";
+import IBeamDemo from "../components/demos/IBeamDemo.svelte";
+
+const quickStart = `import "pluton-2d/style.css";
+import { Pluton2D } from "pluton-2d";
+
+const svg = document.querySelector("svg")!;
+const scene = new Pluton2D(svg, { size: 100 });
+
+const geom = scene.geometry.group();
+
+scene.draw((p) => {
+  const path = geom.path();
+  path
+    .moveToAbs(0, -p.size / 2)
+    .lineTo(p.size / 2, p.size)
+    .lineTo(-p.size, 0)
+    .close();
+});
+
+// Reactive — triggers redraw automatically
+scene.params.size = 150;`;
+
+const ibeamCode = `const geom = scene.geometry.group();
+const dims = scene.dimensions.group();
+
+scene.draw((p) => {
+  const path = geom.path();
+  path
+    .moveToAbs(0, 0)
+    .lineTo(p.width / 2, 0)
+    .lineTo(0, p.flangeThickness)
+    .lineTo(-p.width / 2 + p.webThickness / 2 + p.filletRadius, 0)
+    .arcTo(-p.filletRadius, p.filletRadius, p.filletRadius, true)
+    .lineTo(0, p.height - 2 * p.flangeThickness - 2 * p.filletRadius)
+    .arcTo(p.filletRadius, p.filletRadius, p.filletRadius, true)
+    // … mirror symmetry for top half
+    .close();
+
+  geom.translate(0, -p.height / 2);
+
+  const dim = dims.dimension();
+  dim
+    .moveToAbs(-p.width / 2, -p.height / 2 - 20)
+    .tick(0)
+    .lineTo(p.width, 0)
+    .tick(0)
+    .textAt(-p.width / 2, -16, \`\${p.width}\`);
+});`;
+---
+
+<Layout title="Pluton 2D" currentPage="/">
+  <div class="page">
+    <div class="hero">
+      <h1>Crisp vector drawings.<br />Zero churn.</h1>
+      <p>
+        SVG-based technical drawing library with reactive parameters, built-in
+        dimension annotations, and minimal DOM updates.
+      </p>
+      <div class="hero-actions">
+        <a href="/guide" class="btn btn-primary">Get Started</a>
+        <a href="/examples" class="btn btn-secondary">View Examples</a>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 1.5rem;">Quick start</h2>
+    <CodeBlock code={`npm install pluton-2d`} lang="bash" />
+    <CodeBlock code={quickStart} lang="ts" />
+
+    <div class="callout">
+      <p>
+        <strong>Params are reactive.</strong> Mutate any property on
+        <code>scene.params</code> and redraws happen automatically — no manual
+        scheduling needed.
+      </p>
+    </div>
+
+    <h2>See it in action</h2>
+
+    <DemoCard
+      title="I-Beam"
+      tag="Structural"
+      description="I-section with adjustable geometry and live dimension annotations."
+      code={ibeamCode}
+    >
+      <IBeamDemo client:visible />
+    </DemoCard>
+  </div>
+</Layout>

@@ -1,0 +1,39 @@
+---
+import ExamplesLayout from "../../layouts/ExamplesLayout.astro";
+import BasicShapesDemo from "../../components/demos/BasicShapesDemo.svelte";
+
+const code = `scene.draw((p) => {
+  const s = p.size, half = s / 2, gap = s * 1.2;
+
+  // Triangle — absolute positioning
+  geom.path()
+    .moveToAbs(-gap, half)
+    .lineToAbs(-gap + half, -half)
+    .lineToAbs(-gap - half, -half)
+    .close();
+
+  // Rectangle — relative lines
+  geom.path()
+    .moveToAbs(-half, -half)
+    .lineTo(s, 0).lineTo(0, s).lineTo(-s, 0)
+    .close();
+
+  // Diamond — absolute lines
+  geom.path()
+    .moveToAbs(gap, half)
+    .lineToAbs(gap + half, 0)
+    .lineToAbs(gap, -half)
+    .lineToAbs(gap - half, 0)
+    .close();
+});`;
+---
+
+<ExamplesLayout title="Basic Shapes" current="/examples/basic-shapes">
+  <div class="example-header">
+    <h1>Basic Shapes</h1>
+    <span class="demo-card-tag">Drawing</span>
+  </div>
+  <p class="example-desc">Triangle, rectangle, and diamond using moveTo, lineTo, and lineToAbs.</p>
+
+  <BasicShapesDemo {code} client:visible />
+</ExamplesLayout>

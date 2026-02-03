@@ -1,0 +1,37 @@
+---
+import ExamplesLayout from "../../layouts/ExamplesLayout.astro";
+import CHSDemo from "../../components/demos/CHSDemo.svelte";
+
+const code = `scene.draw((p) => {
+  const ir = p.radius - p.thickness;
+
+  // Outer circle — 4 quarter arcs
+  geom.path()
+    .moveToAbs(-p.radius, 0)
+    .arcTo(p.radius, p.radius, p.radius, true)
+    .arcTo(p.radius, -p.radius, p.radius, true)
+    .arcTo(-p.radius, -p.radius, p.radius, true)
+    .arcTo(-p.radius, p.radius, p.radius, true);
+
+  // Inner circle — same pattern
+  geom.path().moveToAbs(-ir, 0)
+    .arcTo(ir, ir, ir, true) /* … */;
+
+  // Dimensions: centerMark + radius line + arc
+  const dim = dims.dimension();
+  dim.moveToAbs(0, 0).centerMark(20);
+  dim.moveToAbs(0, 0).lineToAbs(x, y).arrowFilled(Math.PI / 4);
+  dim.moveToAbs(0, 0).arc(40, 0, Math.PI / 4)
+    .textAtAbs(28, 12, "45°");
+});`;
+---
+
+<ExamplesLayout title="CHS" current="/examples/chs">
+  <div class="example-header">
+    <h1>CHS</h1>
+    <span class="demo-card-tag">Profiles</span>
+  </div>
+  <p class="example-desc">Circular hollow section with centerMark, radius dimension, and arc annotation.</p>
+
+  <CHSDemo {code} client:visible />
+</ExamplesLayout>
