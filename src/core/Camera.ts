@@ -4,6 +4,7 @@ import type { CameraState } from "./Context";
 export class Camera {
   private svg: SVGSVGElement;
   private events: EventBus;
+  private requestFrame: () => void;
 
   private panX = 0;
   private panY = 0;
@@ -23,8 +24,6 @@ export class Camera {
   private cachedRect: DOMRect | null = null;
   private panEnabled = false;
   private zoomEnabled = false;
-  private isTicking = false;
-  private rafId?: number;
   private panListeners: Array<{
     target: EventTarget;
     type: string;
@@ -36,15 +35,15 @@ export class Camera {
     handler: EventListener;
   }> = [];
 
-  constructor(svg: SVGSVGElement, events: EventBus) {
+  constructor(svg: SVGSVGElement, events: EventBus, requestFrame: () => void) {
     this.svg = svg;
     this.events = events;
+    this.requestFrame = requestFrame;
   }
 
   dispose() {
     this.enablePan(false);
     this.enableZoom(false);
-    this.stopTick();
   }
 
   state(): CameraState {
@@ -58,14 +57,14 @@ export class Camera {
     this.targetPanX = 0;
     this.targetPanY = 0;
     this.targetScale = 1;
-    this.startTick();
+    this.requestFrame();
   }
 
-  private smoothStep(current: number, target: number): number {
-    return current + (target - current) * this.dampingFactor;
-  }
-
-  private interpolateToTarget(): void {
+  /**
+   * Interpolate current values toward targets.
+   * Called every frame by Engine's loop. Returns true if still animating.
+   */
+  tick(): boolean {
     const epsilon = 0.01;
     const oldX = this.panX;
     const oldY = this.panY;
@@ -101,7 +100,11 @@ export class Camera {
 
     if (changed) this.events.emit("camera:changed", this.state());
 
-    if (allWithinEpsilon) this.stopTick();
+    return !allWithinEpsilon;
+  }
+
+  private smoothStep(current: number, target: number): number {
+    return current + (target - current) * this.dampingFactor;
   }
 
   private updateCachedRect(): void {
@@ -111,24 +114,6 @@ export class Camera {
   private getRect(): DOMRect {
     if (!this.cachedRect) this.updateCachedRect();
     return this.cachedRect!;
-  }
-
-  private startTick() {
-    if (this.isTicking) return;
-    this.isTicking = true;
-    const tick = () => {
-      this.interpolateToTarget();
-      if (this.isTicking) this.rafId = requestAnimationFrame(tick);
-    };
-    this.rafId = requestAnimationFrame(tick);
-  }
-
-  private stopTick() {
-    this.isTicking = false;
-    if (this.rafId !== undefined) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = undefined;
-    }
   }
 
   enablePan(enabled: boolean) {
@@ -172,7 +157,7 @@ export class Camera {
 
       this.lastX = e.clientX;
       this.lastY = e.clientY;
-      this.startTick();
+      this.requestFrame();
     };
 
     const onMouseUp = (e: MouseEvent) => {
@@ -222,7 +207,7 @@ export class Camera {
       this.targetPanY = originY + (this.targetPanY - originY) * scaleRatio;
       this.targetScale = newScale;
 
-      this.startTick();
+      this.requestFrame();
     };
 
     this.svg.addEventListener("wheel", onWheel as EventListener, {

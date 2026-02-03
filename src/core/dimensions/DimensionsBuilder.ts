@@ -155,8 +155,7 @@ export class DimensionsBuilder {
    * @param angleRad - direction the arrow points in radians (0 = right, π/2 = up)
    * @returns this builder for chaining
    */
-  arrow(angleRad: number) {
-    const size = 8;
+  arrow(angleRad: number, size = 8) {
     const wingAngleRad = Math.PI / 4;
     const tipX = this.currentX;
     const tipY = this.currentY;
@@ -181,8 +180,7 @@ export class DimensionsBuilder {
    * @param angleRad - direction the arrow points in radians (0 = right, π/2 = up)
    * @returns this builder for chaining
    */
-  arrowFilled(angleRad: number) {
-    const size = 8;
+  arrowFilled(angleRad: number, size = 8) {
     const wingAngleRad = Math.PI / 4;
     const tipX = this.currentX;
     const tipY = this.currentY;
@@ -207,8 +205,7 @@ export class DimensionsBuilder {
    * @param angleRad - orientation angle in radians (dimension line direction)
    * @returns this builder for chaining
    */
-  tick(angleRad: number) {
-    const size = 15;
+  tick(angleRad: number, size = 15) {
 
     const centerX = this.currentX;
     const centerY = this.currentY;
@@ -280,25 +277,25 @@ export class DimensionsBuilder {
   }
 
   /**
-   * Draw a center mark (crosshair) at current position
+   * Draw a center mark (crosshair with center dot) at current position
    * @param size - total size of the crosshair
    * @defaultValue 10
-   * @param gap - gap at the center intersection
-   * @defaultValue 2
    * @returns this builder for chaining
    */
-  centerMark(size = 10, gap = 2) {
+  centerMark(size = 10) {
     const half = size / 2;
-    const halfGap = gap / 2;
     const x = this.currentX;
     const y = this.currentY;
 
     this.commands.push(
-      `M ${x - half} ${y} L ${x - halfGap} ${y}`,
-      `M ${x + halfGap} ${y} L ${x + half} ${y}`,
-      `M ${x} ${y - half} L ${x} ${y - halfGap}`,
-      `M ${x} ${y + halfGap} L ${x} ${y + half}`,
+      `M ${x - half} ${y} L ${x + half} ${y}`,
+      `M ${x} ${y - half} L ${x} ${y + half}`,
       `M ${x} ${y}`,
+    );
+
+    const dotR = size / 10;
+    this.filledCommands.push(
+      `M ${x - dotR} ${y} a ${dotR} ${dotR} 0 1 0 ${dotR * 2} 0 a ${dotR} ${dotR} 0 1 0 ${-(dotR * 2)} 0`,
     );
 
     return this;

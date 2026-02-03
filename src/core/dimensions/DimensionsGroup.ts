@@ -31,7 +31,7 @@ type DimensionEntry = {
 export type DimensionsGroup = Prettify<
   BaseGroup & {
     /**
-     * Create or reuse a dimension builder
+     * Create or reuse a dimension builder.  To be called within a draw call
      * @param options - optional configuration
      * @param options.className - custom class for the dimension elements
      * @returns dimension builder for chaining commands
@@ -51,10 +51,10 @@ export class DimensionsGroupInternal implements DimensionsGroup {
   private translateY = 0;
   private lastTransform = "";
   private drawUsage: "static" | "dynamic" = "dynamic";
+  private hasCommitted = false;
 
   constructor(parent: SVGGElement) {
     this.g = document.createElementNS(SVG_NS, "g");
-    this.g.style.contain = "strict";
     parent.appendChild(this.g);
   }
 
@@ -70,19 +70,19 @@ export class DimensionsGroupInternal implements DimensionsGroup {
    * Commit recorded dimensions to the DOM
    */
   commit() {
-    if (this.drawUsage === "static") return;
+    if (this.drawUsage === "static" && this.hasCommitted) return;
     for (let i = 0; i < this.activeIndex; i++) {
       const e = this.entries[i];
 
       const d = e.builder.toPathData() ?? "";
       if (d !== e.lastD) {
-        if (d) e.path.setAttribute("d", d);
+        e.path.setAttribute("d", d);
         e.lastD = d;
       }
 
       const fd = e.builder.toFilledPathData() ?? "";
       if (fd !== e.lastFd) {
-        if (fd) e.filledPath.setAttribute("d", fd);
+        e.filledPath.setAttribute("d", fd);
         e.lastFd = fd;
       }
 
@@ -124,12 +124,15 @@ export class DimensionsGroupInternal implements DimensionsGroup {
         this.entries.pop();
       }
     }
+
+    if (this.drawUsage === "static") this.hasCommitted = true;
   }
 
   clear() {
     this.entries.length = 0;
     this.activeIndex = 0;
     this.g.replaceChildren();
+    this.hasCommitted = false;
 
     this.translateX = 0;
     this.translateY = 0;
@@ -144,6 +147,7 @@ export class DimensionsGroupInternal implements DimensionsGroup {
 
   setDrawUsage(usage: "static" | "dynamic") {
     this.drawUsage = usage;
+    if (usage === "dynamic") this.hasCommitted = false;
   }
 
   dimension(options?: DimensionOptions) {

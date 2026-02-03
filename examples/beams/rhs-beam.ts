@@ -23,38 +23,32 @@ export function createRHSBeam(container: HTMLElement, params: RHSParams) {
     const iw = w - 2 * t;
     const ih = h - 2 * t;
 
-    // const ro = Math.max(0, Math.min(or, Math.min(w, h) / 2));
-    // const ri = Math.max(0, Math.min(ir, Math.min(iw, ih) / 2));
-
     const path = geom.path({ className: "rhs" });
 
     path
       .moveToAbs(-w / 2 + ro, -h / 2)
       .lineTo(w - 2 * ro, 0)
-      .arcTo(ro, ro, ro, true)
+      .arcTo(ro, ro, ro, false)
       .lineTo(0, h - 2 * ro)
-      .arcTo(-ro, ro, ro, true)
+      .arcTo(-ro, ro, ro, false)
       .lineTo(-w + 2 * ro, 0)
-      .arcTo(-ro, -ro, ro, true)
+      .arcTo(-ro, -ro, ro, false)
       .lineTo(0, -h + 2 * ro)
-      .arcTo(ro, -ro, ro, true)
+      .arcTo(ro, -ro, ro, false)
       .close();
 
     path
       .moveToAbs(-iw / 2 + ri, -ih / 2)
       .lineTo(iw - 2 * ri, 0)
-      .arcTo(ri, ri, ri, true)
+      .arcTo(ri, ri, ri, false)
       .lineTo(0, ih - 2 * ri)
-      .arcTo(-ri, ri, ri, true)
+      .arcTo(-ri, ri, ri, false)
       .lineTo(-iw + 2 * ri, 0)
-      .arcTo(-ri, -ri, ri, true)
+      .arcTo(-ri, -ri, ri, false)
       .lineTo(0, -ih + 2 * ri)
-      .arcTo(ri, -ri, ri, true)
+      .arcTo(ri, -ri, ri, false)
       .close();
-  });
 
-  bp.draw((p) => {
-    const { width: w, height: h, thickness: t } = p;
     const dim = dims.dimension();
 
     // width

@@ -31,6 +31,7 @@ export class FilterDefs {
     turbulence.setAttribute("type", "fractalNoise");
     turbulence.setAttribute("baseFrequency", String(frequency));
     turbulence.setAttribute("numOctaves", String(octaves));
+    turbulence.setAttribute("seed", "1");
     turbulence.setAttribute("result", "turbulence");
 
     const displacementMap = document.createElementNS(

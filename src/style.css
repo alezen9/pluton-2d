@@ -12,9 +12,9 @@
   --pluton-dim-stroke-width: 1;
   --pluton-dim-text-color: rgba(0, 0, 0, 0.6);
   --pluton-dim-font-size: 12px;
+  --pluton-dim-font-family: system-ui, sans-serif;
 }
 
-.pluton-root .pluton-viewport-layer,
 .pluton-root .pluton-background-layer,
 .pluton-root .pluton-world-layer {
   will-change: transform;
@@ -53,7 +53,7 @@
 }
 
 .pluton-root.pluton-fill-hatch .pluton-geometry path {
-  fill: url("#pluton-pattern-fill-hatch-45");
+  fill: url(#pluton-pattern-fill-hatch-45);
   fill-rule: evenodd;
 }
 
@@ -73,6 +73,7 @@
 .pluton-root .pluton-dimensions text {
   fill: var(--pluton-dim-text-color);
   font-size: var(--pluton-dim-font-size);
+  font-family: var(--pluton-dim-font-family);
   letter-spacing: 0.02em;
   text-rendering: geometricPrecision;
 }

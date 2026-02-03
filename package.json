@@ -13,6 +13,7 @@
     },
     "./style.css": "./dist/index.css"
   },
+  "sideEffects": false,
   "files": [
     "dist"
   ],
@@ -22,8 +23,7 @@
     "2d",
     "blueprint",
     "diagram",
-    "engineering",
-    "canvas"
+    "engineering"
   ],
   "author": "Aleksandar Gjoreski",
   "license": "MIT",

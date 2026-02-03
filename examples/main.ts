@@ -1,3 +1,4 @@
+import "../src/style.css";
 import { Pane } from "tweakpane";
 import { createIBeam } from "./beams/i-beam";
 import { createRHSBeam } from "./beams/rhs-beam";

@@ -10,7 +10,6 @@ import type { Viewport } from "./Context";
 
 export class Scene {
   private context: Context;
-  private viewportLayer: SVGGElement;
   private backgroundLayer: SVGGElement;
   private worldLayer: SVGGElement;
   private geometryLayer: GeometryLayerInternal;
@@ -18,19 +17,12 @@ export class Scene {
   private pencilFilterEnabled = false;
   private background: Background;
 
-  private lastViewportTransform = "";
-  private lastBackgroundTransform = "";
-  private lastWorldTransform = "";
+  private lastCameraTransform = "";
 
   constructor(context: Context, events: EventBus) {
     this.context = context;
 
     const svg = context.svg;
-
-    this.viewportLayer = document.createElementNS(SVG_NS, "g");
-    this.viewportLayer.classList.add("pluton-viewport-layer");
-    this.viewportLayer.style.willChange = "transform";
-    svg.appendChild(this.viewportLayer);
 
     const backgroundContainer = document.createElementNS(SVG_NS, "g");
     backgroundContainer.classList.add("pluton-background-container");
@@ -42,7 +34,6 @@ export class Scene {
 
     this.backgroundLayer = document.createElementNS(SVG_NS, "g");
     this.backgroundLayer.classList.add("pluton-background-layer");
-    this.backgroundLayer.style.willChange = "transform";
     backgroundContainer.appendChild(this.backgroundLayer);
 
     this.background = new Background(this.backgroundLayer, context);
@@ -53,7 +44,6 @@ export class Scene {
 
     this.worldLayer = document.createElementNS(SVG_NS, "g");
     this.worldLayer.classList.add("pluton-world-layer");
-    this.worldLayer.style.willChange = "transform";
     contentContainer.appendChild(this.worldLayer);
 
     this.geometryLayer = new GeometryLayerInternal(this.worldLayer, events);
@@ -74,7 +64,6 @@ export class Scene {
   dispose() {
     this.geometryLayer.dispose();
     this.dimensionsLayer.dispose();
-    this.viewportLayer.remove();
     this.backgroundLayer.parentElement?.remove();
     this.worldLayer.parentElement?.remove();
   }
@@ -86,25 +75,16 @@ export class Scene {
     const cx = viewport.x + viewport.width * 0.5;
     const cy = viewport.y + viewport.height * 0.5;
 
-    const viewportT = `translate(${cx}px, ${cy}px) scale(1, -1)`;
-    if (viewportT !== this.lastViewportTransform) {
-      this.viewportLayer.style.transform = viewportT;
-      this.lastViewportTransform = viewportT;
-    }
-
     if (camera) {
       const tx = cx + camera.panX;
       const ty = cy + camera.panY;
       const s = camera.scale;
       const cameraT = `translate(${tx}px, ${ty}px) scale(${s}, ${-s})`;
 
-      if (cameraT !== this.lastBackgroundTransform) {
+      if (cameraT !== this.lastCameraTransform) {
         this.backgroundLayer.style.transform = cameraT;
-        this.lastBackgroundTransform = cameraT;
-      }
-      if (cameraT !== this.lastWorldTransform) {
         this.worldLayer.style.transform = cameraT;
-        this.lastWorldTransform = cameraT;
+        this.lastCameraTransform = cameraT;
       }
     }
   }

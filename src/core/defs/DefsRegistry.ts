@@ -14,6 +14,9 @@ export class DefsRegistry {
     this.patterns = new PatternDefs(defsEl);
     this.gradients = new GradientDefs(defsEl);
     this.filters = new FilterDefs(defsEl, pencilIntensity);
+
+    this.patterns.sync();
+    this.filters.sync();
   }
 
   syncForViewport(viewport: Viewport): void {
@@ -26,9 +29,7 @@ export class DefsRegistry {
     this.lastWidth = viewport.width;
     this.lastHeight = viewport.height;
 
-    this.patterns.sync();
     this.gradients.syncForViewport(viewport);
-    this.filters.sync();
   }
 
   get hatchFill45Id() {

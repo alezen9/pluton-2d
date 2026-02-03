@@ -24,29 +24,23 @@ export function createIBeam(container: HTMLElement, params: IBeamParams) {
       .lineTo(fw / 2, 0)
       .lineTo(0, ft)
       .lineTo(-fw / 2 + wt / 2 + r, 0)
-      .arcTo(-r, r, r, false)
+      .arcTo(-r, r, r, true)
       .lineTo(0, h - 2 * ft - 2 * r)
-      .arcTo(r, r, r, false)
+      .arcTo(r, r, r, true)
       .lineTo(fw / 2 - wt / 2 - r, 0)
       .lineTo(0, ft)
       .lineTo(-fw, 0)
       .lineTo(0, -ft)
       .lineTo(fw / 2 - wt / 2 - r, 0)
-      .arcTo(r, -r, r, false)
+      .arcTo(r, -r, r, true)
       .lineTo(0, -h + 2 * ft + 2 * r)
-      .arcTo(-r, -r, r, false)
+      .arcTo(-r, -r, r, true)
       .lineTo(-fw / 2 + wt / 2 + r, 0)
       .lineTo(0, -ft)
-      .lineTo(fw / 2, 0);
+      .lineTo(fw / 2, 0)
+      .close();
 
     geom.translate(0, -h / 2);
-  });
-
-  bp.draw((p) => {
-    const fw = p.width;
-    const ft = p.flangeThickness;
-    const wt = p.webThickness;
-    const h = p.height;
 
     const dim = dims.dimension();
 

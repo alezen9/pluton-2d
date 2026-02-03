@@ -10,7 +10,7 @@ type PathOptions = {
 export type GeometryGroup = Prettify<
   BaseGroup & {
     /**
-     * Create or reuse a path builder
+     * Create or reuse a path builder. To be called within a draw call
      * @param options - optional configuration
      * @param options.className - custom class for the path element
      * @returns path builder for chaining commands
@@ -36,10 +36,10 @@ export class GeometryGroupInternal implements GeometryGroup {
   private translateY = 0;
   private lastTransform = "";
   private drawUsage: "static" | "dynamic" = "dynamic";
+  private hasCommitted = false;
 
   constructor(parent: SVGGElement) {
     this.g = document.createElementNS(SVG_NS, "g");
-    this.g.style.contain = "strict";
     parent.appendChild(this.g);
   }
 
@@ -54,7 +54,7 @@ export class GeometryGroupInternal implements GeometryGroup {
    * Commit recorded paths to the DOM
    */
   commit() {
-    if (this.drawUsage === "static") return;
+    if (this.drawUsage === "static" && this.hasCommitted) return;
     for (let i = 0; i < this.activeIndex; i++) {
       const entry = this.paths[i];
       const d = entry.builder.toString();
@@ -70,6 +70,8 @@ export class GeometryGroupInternal implements GeometryGroup {
         this.paths.pop();
       }
     }
+
+    if (this.drawUsage === "static") this.hasCommitted = true;
   }
 
   translate(x: number, y: number) {
@@ -80,6 +82,7 @@ export class GeometryGroupInternal implements GeometryGroup {
 
   setDrawUsage(usage: "static" | "dynamic") {
     this.drawUsage = usage;
+    if (usage === "dynamic") this.hasCommitted = false;
   }
 
   path(options?: PathOptions) {
@@ -113,6 +116,7 @@ export class GeometryGroupInternal implements GeometryGroup {
     this.paths.length = 0;
     this.activeIndex = 0;
     this.g.replaceChildren();
+    this.hasCommitted = false;
 
     this.translateX = 0;
     this.translateY = 0;

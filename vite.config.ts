@@ -17,10 +17,19 @@ export default defineConfig(({ command }) => {
         },
         sourcemap: true,
         copyPublicDir: false,
+        cssCodeSplit: true,
         minify: "esbuild",
         rollupOptions: {
+          input: {
+            index: "src/index.ts",
+            style: "src/style.css",
+          },
           output: {
             compact: true,
+            assetFileNames: (assetInfo) => {
+              if (assetInfo.names.includes("style.css")) return "index.css";
+              return "assets/[name][extname]";
+            },
           },
         },
       },

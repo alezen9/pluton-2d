@@ -15,28 +15,20 @@ export function createStaticDynamicDemo(
 
   const bp = new Pluton2D(svg, params);
   const staticGroup = bp.geometry.group();
+  staticGroup.setDrawUsage("static");
   const dynamicGroup = bp.geometry.group();
-
-  let staticLocked = false;
 
   bp.draw((p) => {
     const half = p.size / 2;
     const offset = 90;
 
-    if (!staticLocked) {
-      const path = staticGroup.path({ className: "demo-static" });
-      path
-        .moveToAbs(-offset - half, -half)
-        .lineTo(p.size, 0)
-        .lineTo(0, p.size)
-        .lineTo(-p.size, 0)
-        .close();
-
-      staticLocked = true;
-      requestAnimationFrame(() => {
-        staticGroup.setDrawUsage?.("static");
-      });
-    }
+    const path = staticGroup.path({ className: "demo-static" });
+    path
+      .moveToAbs(-offset - half, -half)
+      .lineTo(p.size, 0)
+      .lineTo(0, p.size)
+      .lineTo(-p.size, 0)
+      .close();
 
     const dynamicPath = dynamicGroup.path({ className: "demo-dynamic" });
     dynamicPath

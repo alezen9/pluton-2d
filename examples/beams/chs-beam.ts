@@ -19,21 +19,17 @@ export function createCHSBeam(container: HTMLElement, params: CHSParams) {
 
     path
       .moveToAbs(-r, 0)
-      .arcTo(r, r, r, false)
-      .arcTo(r, -r, r, false)
-      .arcTo(-r, -r, r, false)
-      .arcTo(-r, r, r, false);
+      .arcTo(r, r, r, true)
+      .arcTo(r, -r, r, true)
+      .arcTo(-r, -r, r, true)
+      .arcTo(-r, r, r, true);
 
     path
       .moveToAbs(-ir, 0)
-      .arcTo(ir, ir, ir, false)
-      .arcTo(ir, -ir, ir, false)
-      .arcTo(-ir, -ir, ir, false)
-      .arcTo(-ir, ir, ir, false);
-  });
-
-  bp.draw((p) => {
-    const { radius: r, thickness: t } = p;
+      .arcTo(ir, ir, ir, true)
+      .arcTo(ir, -ir, ir, true)
+      .arcTo(-ir, -ir, ir, true)
+      .arcTo(-ir, ir, ir, true);
 
     const dim = dims.dimension();
 
