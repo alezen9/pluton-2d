@@ -2,6 +2,9 @@
   "name": "pluton-2d",
   "version": "0.1.2",
   "description": "Abstraction over HTML SVG for easy blueprint drawing.",
+  "repository": {
+    "url": "https://github.com/alezen9/pluton-2d"
+  },
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
