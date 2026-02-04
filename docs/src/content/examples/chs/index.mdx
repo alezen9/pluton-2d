@@ -1,0 +1,40 @@
+---
+title: CHS
+category: Profiles
+description: Circular hollow section with centerMark, radius dimension, and arc annotation.
+---
+
+import Demo from "./Demo.svelte";
+
+<Demo client:visible />
+
+## How it works
+
+Two concentric circles on one path. The dimensions layer adds a center mark, a radius arrow, and a wall-thickness callout with ticks.
+
+```ts
+scene.draw((p) => {
+  const ir = p.radius - p.thickness;
+
+  // Outer circle — 4 quarter arcs
+  geom.path()
+    .moveToAbs(-p.radius, 0)
+    .arcTo(p.radius, p.radius, p.radius, true)
+    .arcTo(p.radius, -p.radius, p.radius, true)
+    .arcTo(-p.radius, -p.radius, p.radius, true)
+    .arcTo(-p.radius, p.radius, p.radius, true);
+
+  // Inner circle — same pattern
+  geom.path()
+    .moveToAbs(-ir, 0)
+    .arcTo(ir, ir, ir, true)
+    .arcTo(ir, -ir, ir, true)
+    .arcTo(-ir, -ir, ir, true)
+    .arcTo(-ir, ir, ir, true);
+
+  // Center mark + radius dimension
+  const dim = dims.dimension();
+  dim.moveToAbs(0, 0).centerMark(20);
+  dim.moveToAbs(0, 0).lineToAbs(x, y).arrowFilled(Math.PI / 4);
+});
+```

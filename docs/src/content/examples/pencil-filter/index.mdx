@@ -1,0 +1,33 @@
+---
+title: Pencil Filter
+category: Effects
+description: SVG displacement filter that gives geometry a hand-drawn pencil feel.
+---
+
+import Demo from "./Demo.svelte";
+
+<Demo client:visible />
+
+## How it works
+
+The pencil filter is an SVG `<filter>` element applied to the geometry layer. It displaces pixels using a turbulence texture — the result is subtle, hand-drawn-looking strokes. Toggle with `enableFilter(true)`.
+
+```ts
+scene.draw((p) => {
+  const star = geom.path();
+  const points = 5;
+  const outerR = p.size;
+  const innerR = p.size * 0.4;
+
+  for (let i = 0; i < points * 2; i++) {
+    const angle = (i * Math.PI) / points - Math.PI / 2;
+    const r = i % 2 === 0 ? outerR : innerR;
+    const x = r * Math.cos(angle);
+    const y = r * Math.sin(angle);
+    i === 0 ? star.moveToAbs(x, y) : star.lineToAbs(x, y);
+  }
+  star.close();
+});
+
+scene.enableFilter(true);
+```

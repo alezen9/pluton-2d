@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import svelte from "@astrojs/svelte";
+import mdx from "@astrojs/mdx";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -9,7 +10,7 @@ export default defineConfig({
   site: "https://alezen9.github.io",
   base: "/pluton-2d",
   devToolbar: { enabled: false },
-  integrations: [svelte()],
+  integrations: [svelte(), mdx()],
   vite: {
     resolve: {
       alias: {

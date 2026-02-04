@@ -1,0 +1,170 @@
+---
+layout: ../layouts/MarkdownLayout.astro
+title: Guide
+currentPage: /guide
+---
+
+## Getting started
+
+Install the package:
+
+```bash
+npm install pluton-2d
+```
+
+Import the stylesheet and create a scene. The SVG element needs CSS width/height or a viewBox to be visible:
+
+```ts
+import "pluton-2d/style.css";
+import { Pluton2D } from "pluton-2d";
+
+const svg = document.querySelector("svg")!;
+const scene = new Pluton2D(svg, { width: 200, height: 100 });
+
+scene.enablePan(true);
+scene.enableZoom(true);
+
+const geom = scene.geometry.group();
+
+scene.draw((p) => {
+  const path = geom.path();
+  path
+    .moveToAbs(-p.width / 2, -p.height / 2)
+    .lineTo(p.width, 0)
+    .lineTo(0, p.height)
+    .lineTo(-p.width, 0)
+    .close();
+});
+```
+
+Groups are created once, outside the draw callback. Builders requested inside are recycled — the engine only writes changed attributes.
+
+### Reactive params
+
+Params are wrapped in a Proxy. Any mutation triggers a redraw automatically — redraws are capped at 60 FPS.
+
+```ts
+// Mutate a single param — triggers redraw
+scene.params.width = 300;
+
+// Mutate several at once
+Object.assign(scene.params, { width: 250, height: 150 });
+
+// Don't reassign the whole object — the Proxy is on the original
+// scene.params = { ... };  ← won't trigger redraws
+```
+
+> **Params must be flat.** Nested objects will throw at construction time. Only top-level property mutations trigger redraws.
+
+When you're done with a scene, call `scene.dispose()` to clean up event listeners and DOM elements.
+
+---
+
+## Coordinate system
+
+Pluton uses **center origin with Y-axis pointing up** — math convention, not screen coordinates.
+
+- Origin is at the center of the viewport
+- Positive X → right
+- Positive Y → **up**
+- `lineTo(10, 20)` moves right 10 units, up 20 units
+
+The world layer applies `scale(1, -1)` to flip Y. Arc sweep flags are inverted at the SVG level — pass `clockwise = true` and the arc renders clockwise.
+
+---
+
+## Static vs dynamic groups
+
+For geometry that never changes, mark the group as static. The engine commits it once and skips all subsequent DOM updates for that group.
+
+```ts
+const bg = scene.geometry.group();
+bg.setDrawUsage("static"); // commit runs once, then stops
+
+const fg = scene.geometry.group(); // dynamic by default
+
+scene.draw((p) => {
+  // Static — still call path() every frame, engine skips the DOM write
+  const bgPath = bg.path();
+  bgPath.moveToAbs(-100, -100).lineTo(200, 0).lineTo(0, 200).close();
+
+  // Dynamic — DOM updates every frame
+  const fgPath = fg.path();
+  fgPath.moveToAbs(0, 0).lineTo(p.width, 0).lineTo(0, p.height).close();
+});
+```
+
+- `commit()` runs once, sets an internal flag
+- Subsequent frames skip `commit()` for that group
+- `clear()` or `setDrawUsage("dynamic")` resets it
+
+**Static:** background elements, fixed annotations, reference shapes.
+**Dynamic (default):** anything that reacts to params or user input.
+
+---
+
+## Styling
+
+All visual styling is driven by CSS custom properties on `.pluton-root`. Override any of them per-instance:
+
+```css
+.pluton-root {
+  --pluton-grid-minor-stroke: rgba(0, 0, 0, 0.025);
+  --pluton-grid-major-stroke: rgba(0, 0, 0, 0.12);
+  --pluton-grid-stroke-width: 0.5;
+
+  --pluton-axis-color: rgba(0, 0, 0, 0.2);
+  --pluton-axis-stroke-width: 1;
+  --pluton-axis-dash: 5 5;
+
+  --pluton-geometry-stroke: rgba(0, 0, 0, 0.7);
+  --pluton-geometry-stroke-width: 1;
+
+  --pluton-hatch-color: rgba(0, 39, 50, 0.14);
+
+  --pluton-dim-color: black;
+  --pluton-dim-stroke-width: 1;
+  --pluton-dim-text-color: rgba(0, 0, 0, 0.6);
+  --pluton-dim-font-size: 12px;
+  --pluton-dim-font-family: system-ui, sans-serif;
+}
+```
+
+### Custom classes
+
+Pass `className` to `path()` or `dimension()` for fine-grained control:
+
+```ts
+// Pass a class name when requesting a builder
+const path = geom.path({ className: "my-path" });
+
+// Style it in CSS
+// .pluton-root .pluton-geometry path.my-path { stroke: #e11d48; }
+```
+
+### Hatch fill
+
+Hatch fill is opt-in. Enable globally or per-path:
+
+```ts
+// Enable hatch fill on all geometry paths
+scene.enableHatchFill(true);
+
+// Or target a single path
+const path = geom.path({ className: "pluton-fill-hatch" });
+```
+
+---
+
+## Camera controls
+
+Pan and zoom are opt-in and can be reset at any time:
+
+```ts
+scene.enablePan(true);   // middle-mouse drag, or shift + left-click drag
+scene.enableZoom(true);  // mouse wheel — scale range 1×–20×
+
+scene.resetCamera();     // smooth animation back to origin
+```
+
+Camera movement is smoothed with exponential interpolation. `resetCamera()` animates back to the origin rather than jumping.

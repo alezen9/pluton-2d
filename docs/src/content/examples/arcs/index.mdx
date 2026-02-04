@@ -1,0 +1,38 @@
+---
+title: Arcs
+category: Drawing
+description: Concentric rings using relative arcTo and absolute arcToAbs.
+---
+
+import Demo from "./Demo.svelte";
+
+<Demo client:visible />
+
+## How it works
+
+A donut shape built from two rings on a single path. The outer ring uses relative `arcTo`, the inner uses absolute `arcToAbs`. Winding direction creates the cutout via SVG's fill-rule.
+
+```ts
+scene.draw((p) => {
+  const donut = geom.path();
+
+  // Outer ring — relative arcs, clockwise
+  donut
+    .moveToAbs(-p.radius, 0)
+    .arcTo(p.radius, p.radius, p.radius, true)
+    .arcTo(p.radius, -p.radius, p.radius, true)
+    .arcTo(-p.radius, -p.radius, p.radius, true)
+    .arcTo(-p.radius, p.radius, p.radius, true)
+    .close();
+
+  // Inner ring — absolute arcs, counter-clockwise (cutout)
+  const ir = p.innerRadius;
+  donut
+    .moveToAbs(0, ir)
+    .arcToAbs(-ir, 0, ir, false)
+    .arcToAbs(0, -ir, ir, false)
+    .arcToAbs(ir, 0, ir, false)
+    .arcToAbs(0, ir, ir, false)
+    .close();
+});
+```

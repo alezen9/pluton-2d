@@ -1,0 +1,12 @@
+---
+import Layout from "./Layout.astro";
+
+const { frontmatter } = Astro.props;
+const { title = "Pluton 2D", currentPage = "/" } = frontmatter;
+---
+
+<Layout {title} {currentPage}>
+  <div class="page-narrow">
+    <slot />
+  </div>
+</Layout>

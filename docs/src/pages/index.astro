@@ -1,8 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import CodeBlock from "../components/CodeBlock.astro";
-import DemoCard from "../components/DemoCard.astro";
-import IBeamDemo from "../components/demos/IBeamDemo.svelte";
+import { Code } from "astro/components";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const installCode = `npm install pluton-2d`;
 
 const quickStart = `import "pluton-2d/style.css";
 import { Pluton2D } from "pluton-2d";
@@ -23,33 +25,6 @@ scene.draw((p) => {
 
 // Reactive — triggers redraw automatically
 scene.params.size = 150;`;
-
-const ibeamCode = `const geom = scene.geometry.group();
-const dims = scene.dimensions.group();
-
-scene.draw((p) => {
-  const path = geom.path();
-  path
-    .moveToAbs(0, 0)
-    .lineTo(p.width / 2, 0)
-    .lineTo(0, p.flangeThickness)
-    .lineTo(-p.width / 2 + p.webThickness / 2 + p.filletRadius, 0)
-    .arcTo(-p.filletRadius, p.filletRadius, p.filletRadius, true)
-    .lineTo(0, p.height - 2 * p.flangeThickness - 2 * p.filletRadius)
-    .arcTo(p.filletRadius, p.filletRadius, p.filletRadius, true)
-    // … mirror symmetry for top half
-    .close();
-
-  geom.translate(0, -p.height / 2);
-
-  const dim = dims.dimension();
-  dim
-    .moveToAbs(-p.width / 2, -p.height / 2 - 20)
-    .tick(0)
-    .lineTo(p.width, 0)
-    .tick(0)
-    .textAt(-p.width / 2, -16, \`\${p.width}\`);
-});`;
 ---
 
 <Layout title="Pluton 2D" currentPage="/">
@@ -61,14 +36,16 @@ scene.draw((p) => {
         dimension annotations, and minimal DOM updates.
       </p>
       <div class="hero-actions">
-        <a href="/guide" class="btn btn-primary">Get Started</a>
-        <a href="/examples" class="btn btn-secondary">View Examples</a>
+        <a href={`${base}/guide`} class="btn btn-primary">Get Started</a>
+        <a href={`${base}/examples`} class="btn btn-secondary"
+          >View Examples</a
+        >
       </div>
     </div>
 
     <h2 style="margin-top: 1.5rem;">Quick start</h2>
-    <CodeBlock code={`npm install pluton-2d`} lang="bash" />
-    <CodeBlock code={quickStart} lang="ts" />
+    <Code code={installCode} lang="bash" theme="one-dark-pro" />
+    <Code code={quickStart} lang="ts" theme="one-dark-pro" />
 
     <div class="callout">
       <p>
@@ -77,16 +54,5 @@ scene.draw((p) => {
         scheduling needed.
       </p>
     </div>
-
-    <h2>See it in action</h2>
-
-    <DemoCard
-      title="I-Beam"
-      tag="Structural"
-      description="I-section with adjustable geometry and live dimension annotations."
-      code={ibeamCode}
-    >
-      <IBeamDemo client:visible />
-    </DemoCard>
   </div>
 </Layout>

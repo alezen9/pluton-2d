@@ -1,0 +1,34 @@
+---
+title: Static vs Dynamic
+category: Behavior
+description: Orange shape is static — it freezes after the first render. Teal shape updates live.
+---
+
+import Demo from "./Demo.svelte";
+
+<Demo client:visible />
+
+## How it works
+
+Mark a group as `"static"` and the engine commits it once, then skips all DOM writes for that group on subsequent frames. Useful for background elements or reference geometry that never changes.
+
+```ts
+const staticGroup = scene.geometry.group();
+staticGroup.setDrawUsage("static");
+
+const dynamicGroup = scene.geometry.group();
+
+scene.draw((p) => {
+  // Static — committed once, frozen after first frame
+  staticGroup.path({ className: "demo-static" })
+    .moveToAbs(-90 - p.size / 2, -p.size / 2)
+    .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
+    .close();
+
+  // Dynamic — redraws every frame
+  dynamicGroup.path({ className: "demo-dynamic" })
+    .moveToAbs(90 - p.size / 2, -p.size / 2)
+    .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
+    .close();
+});
+```

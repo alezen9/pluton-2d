@@ -1,38 +1,26 @@
 ---
 import Layout from "./Layout.astro";
+import { getCollection } from "astro:content";
 
 const { title = "Examples", current = "" } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const examples = await getCollection("examples");
 
-const categories = [
-  {
-    label: "Drawing",
-    items: [
-      { path: "/examples/basic-shapes", label: "Basic Shapes" },
-      { path: "/examples/arcs", label: "Arcs" },
-    ],
-  },
-  {
-    label: "Profiles",
-    items: [
-      { path: "/examples/i-beam", label: "I-Beam" },
-      { path: "/examples/rhs", label: "RHS" },
-      { path: "/examples/chs", label: "CHS" },
-    ],
-  },
-  {
-    label: "Effects",
-    items: [
-      { path: "/examples/hatch-fill", label: "Hatch Fill" },
-      { path: "/examples/pencil-filter", label: "Pencil Filter" },
-    ],
-  },
-  {
-    label: "Behavior",
-    items: [{ path: "/examples/static-dynamic", label: "Static vs Dynamic" }],
-  },
-];
+const CATEGORY_ORDER = ["Drawing", "Profiles", "Effects", "Behavior"];
+
+const byCategory = {};
+for (const ex of examples) {
+  (byCategory[ex.data.category] ??= []).push({
+    path: `/examples/${ex.id}`,
+    label: ex.data.title,
+  });
+}
+
+const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
+  label: c,
+  items: byCategory[c],
+}));
 ---
 
 <Layout {title} currentPage="/examples">

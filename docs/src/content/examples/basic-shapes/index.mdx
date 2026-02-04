@@ -1,0 +1,42 @@
+---
+title: Basic Shapes
+category: Drawing
+description: Triangle, rectangle, and diamond using moveTo, lineTo, and lineToAbs.
+---
+
+import Demo from "./Demo.svelte";
+
+<Demo client:visible />
+
+## How it works
+
+Three shapes built from the same primitives — `moveTo`, `lineTo`, and their absolute variants. Everything is relative to center origin with Y pointing up.
+
+```ts
+const geom = scene.geometry.group();
+
+scene.draw((p) => {
+  const s = p.size, half = s / 2, gap = s * 1.2;
+
+  // Triangle — absolute positioning
+  geom.path()
+    .moveToAbs(-gap, half)
+    .lineToAbs(-gap + half, -half)
+    .lineToAbs(-gap - half, -half)
+    .close();
+
+  // Rectangle — relative lines
+  geom.path()
+    .moveToAbs(-half, -half)
+    .lineTo(s, 0).lineTo(0, s).lineTo(-s, 0)
+    .close();
+
+  // Diamond — absolute lines
+  geom.path()
+    .moveToAbs(gap, half)
+    .lineToAbs(gap + half, 0)
+    .lineToAbs(gap, -half)
+    .lineToAbs(gap - half, 0)
+    .close();
+});
+```

@@ -1,0 +1,35 @@
+---
+title: RHS
+category: Profiles
+description: Rectangular hollow section with independent outer and inner corner radii.
+---
+
+import Demo from "./Demo.svelte";
+
+<Demo client:visible />
+
+## How it works
+
+Outer and inner rectangles share the same path. Each corner uses `arcTo` for the radius. Outer and inner radii are independent — set inner to 0 for sharp inside corners.
+
+```ts
+scene.draw((p) => {
+  const path = geom.path();
+
+  // Outer rectangle with rounded corners
+  path
+    .moveToAbs(-p.width / 2 + p.outerRadius, -p.height / 2)
+    .lineTo(p.width - 2 * p.outerRadius, 0)
+    .arcTo(p.outerRadius, p.outerRadius, p.outerRadius, false)
+    .lineTo(0, p.height - 2 * p.outerRadius)
+    .arcTo(-p.outerRadius, p.outerRadius, p.outerRadius, false)
+    .lineTo(-p.width + 2 * p.outerRadius, 0)
+    .arcTo(-p.outerRadius, -p.outerRadius, p.outerRadius, false)
+    .lineTo(0, -p.height + 2 * p.outerRadius)
+    .arcTo(p.outerRadius, -p.outerRadius, p.outerRadius, false)
+    .close();
+
+  // Inner cutout — same pattern, inner dimensions
+  // …
+});
+```

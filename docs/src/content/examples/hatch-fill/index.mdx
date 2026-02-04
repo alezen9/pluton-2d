@@ -1,0 +1,35 @@
+---
+title: Hatch Fill
+category: Effects
+description: Toggle the built-in hatch pattern fill on and off at runtime.
+---
+
+import Demo from "./Demo.svelte";
+
+<Demo client:visible />
+
+## How it works
+
+Hatch fill is opt-in. Enable it globally with `enableHatchFill(true)` and every closed geometry path gets the pattern automatically. Toggle it off at any time — zero config per shape.
+
+```ts
+const geom = scene.geometry.group();
+
+scene.draw((p) => {
+  const s = p.size, half = s / 2, gap = s * 1.4;
+
+  geom.path()
+    .moveToAbs(-gap / 2 - half, -half)
+    .lineTo(s, 0).lineTo(0, s).lineTo(-s, 0)
+    .close();
+
+  geom.path()
+    .moveToAbs(gap / 2, half)
+    .lineToAbs(gap / 2 + half, -half)
+    .lineToAbs(gap / 2 - half, -half)
+    .close();
+});
+
+// Toggle at runtime
+scene.enableHatchFill(enabled);
+```

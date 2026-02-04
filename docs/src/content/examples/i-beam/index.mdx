@@ -1,0 +1,41 @@
+---
+title: I-Beam
+category: Profiles
+description: Classic I-section with fillet radii and live dimension annotations.
+---
+
+import Demo from "./Demo.svelte";
+
+<Demo client:visible />
+
+## How it works
+
+The I-section is drawn as a single closed path with mirrored symmetry. Fillet radii are added with `arcTo` at each web-to-flange junction. Dimensions use ticks, text, and a radius callout.
+
+```ts
+const geom = scene.geometry.group();
+const dims = scene.dimensions.group();
+
+scene.draw((p) => {
+  const path = geom.path();
+  path
+    .moveToAbs(0, 0)
+    .lineTo(p.width / 2, 0)
+    .lineTo(0, p.flangeThickness)
+    .lineTo(-p.width / 2 + p.webThickness / 2 + p.filletRadius, 0)
+    .arcTo(-p.filletRadius, p.filletRadius, p.filletRadius, true)
+    .lineTo(0, p.height - 2 * p.flangeThickness - 2 * p.filletRadius)
+    .arcTo(p.filletRadius, p.filletRadius, p.filletRadius, true)
+    // … mirror symmetry for top half
+    .close();
+
+  geom.translate(0, -p.height / 2);
+
+  // Flange width dimension
+  const dim = dims.dimension();
+  dim
+    .moveToAbs(-p.width / 2, -p.height / 2 - 20)
+    .tick(0).lineTo(p.width, 0).tick(0)
+    .textAt(-p.width / 2, -16, `${p.width}mm`);
+});
+```

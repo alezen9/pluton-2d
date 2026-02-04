@@ -2,6 +2,7 @@
 import ClientRouter from "astro/components/ClientRouter.astro";
 import Nav from "../components/Nav.astro";
 import "../styles/global.css";
+import "../styles/markdown.css";
 import "pluton-2d/style.css";
 
 const { title = "Pluton 2D", currentPage = "/" } = Astro.props;
@@ -15,8 +16,6 @@ const { title = "Pluton 2D", currentPage = "/" } = Astro.props;
     <title>{title} — Pluton 2D</title>
     <link rel="icon" href="/favicon.svg" />
     <ClientRouter />
-    <!-- Prism.js for syntax highlighting -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" />
     <!-- Flash prevention: set theme before first paint -->
     <script is:raw>
       (function () {
@@ -30,15 +29,5 @@ const { title = "Pluton 2D", currentPage = "/" } = Astro.props;
     <main>
       <slot />
     </main>
-    <script is:inline src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
-    <script is:inline src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-typescript.min.js"></script>
-    <script is:inline>
-      // Re-highlight on view transitions
-      document.addEventListener('astro:page-load', function() {
-        if (typeof Prism !== 'undefined') {
-          Prism.highlightAll();
-        }
-      });
-    </script>
   </body>
 </html>
