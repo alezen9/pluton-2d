@@ -24,6 +24,7 @@ export class Pluton2D<
   private engine: Engine<P>;
   private camera: Camera;
   private defsEl: SVGDefsElement;
+  private defs: DefsRegistry;
 
   /**
    * Reactive parameters that trigger redraw when modified or reassigned
@@ -43,7 +44,8 @@ export class Pluton2D<
     this.defsEl = document.createElementNS(SVG_NS, "defs");
     svg.insertBefore(this.defsEl, svg.firstChild);
 
-    const defs = new DefsRegistry(this.defsEl, options?.filterIntensity);
+    this.defs = new DefsRegistry(this.defsEl, options?.filterIntensity);
+    const defs = this.defs;
 
     this.engine = new Engine<P>(this.events, initialParams);
     this.params = this.engine.getParams();
@@ -145,13 +147,13 @@ export class Pluton2D<
   }
 
   /**
-   * Enable or disable the built‑in hatch fill on geometry
-   * @param enabled - whether hatch fill is active
-   * @defaultValue false
+   * Enable or disable hatch fills on geometry (both default and custom)
+   * @param enabled - whether hatch fills are visible
+   * @defaultValue true
    */
   enableHatchFill(enabled: boolean) {
-    if (enabled) this.context.svg.classList.add("pluton-fill-hatch");
-    else this.context.svg.classList.remove("pluton-fill-hatch");
+    if (enabled) this.context.svg.classList.remove("pluton-no-fill");
+    else this.context.svg.classList.add("pluton-no-fill");
   }
 
   /**
@@ -159,6 +161,19 @@ export class Pluton2D<
    */
   resetCamera() {
     this.camera.reset();
+  }
+
+  /**
+   * Add a colored hatch fill pattern to the SVG defs
+   * @param color - CSS color value (hex, rgb, etc.)
+   * @param opacity - Stroke opacity (0-1), default 0.3
+   * @returns Pattern reference (url(#id)) to use as fill value in path options
+   * @example
+   * const blueFill = scene.addHatchFill('#2563eb');
+   * geom.path({ fill: blueFill }).moveTo(...).close();
+   */
+  addHatchFill(color: string, opacity?: number): string {
+    return this.defs.createHatchFill(color, opacity);
   }
 
   /**

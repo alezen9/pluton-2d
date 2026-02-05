@@ -4,14 +4,12 @@ category: Behavior
 description: Orange shape is static — it freezes after the first render. Teal shape updates live.
 ---
 
-import Demo from "./Demo.svelte";
+import ExampleTabs from "@components/ExampleTabs.astro";
+import StaticDynamic from "./StaticDynamic.svelte";
 
-<Demo client:visible />
-
-## How it works
-
-Mark a group as `"static"` and the engine commits it once, then skips all DOM writes for that group on subsequent frames. Useful for background elements or reference geometry that never changes.
-
+<ExampleTabs>
+  <StaticDynamic client:visible slot="scene" />
+  <Fragment slot="code">
 ```ts
 const staticGroup = scene.geometry.group();
 staticGroup.setDrawUsage("static");
@@ -32,3 +30,5 @@ scene.draw((p) => {
     .close();
 });
 ```
+  </Fragment>
+</ExampleTabs>

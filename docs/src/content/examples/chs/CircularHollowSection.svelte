@@ -1,23 +1,24 @@
-<script>
-  import { onMount, onDestroy } from "svelte";
+<script lang="ts">
   import { Pluton2D } from "pluton-2d";
-  import ExampleShell from "../../../components/ExampleShell.svelte";
+  import ExampleLayout from "@components/ExampleLayout.svelte";
 
-  let svgEl;
-  let scene;
+  type Params = { radius: number; thickness: number };
+
   let radius = $state(110);
   let thickness = $state(12);
+  let scene: Pluton2D<Params> | null = null;
 
-  onMount(() => {
-    scene = new Pluton2D(svgEl, { radius, thickness });
+  const onSetup = (s: Pluton2D<Params>) => {
+    scene = s;
     const geom = scene.geometry.group();
     const dims = scene.dimensions.group();
+    const tealFill = scene.addHatchFill("#0f766e");
 
     scene.draw((p) => {
       const { radius: r, thickness: t } = p;
       const ir = r - t;
 
-      const path = geom.path();
+      const path = geom.path({ className: "demo-teal", fill: tealFill });
 
       path
         .moveToAbs(-r, 0)
@@ -53,25 +54,29 @@
         .tick(Math.PI / 2)
         .textAt(-10, t / 2, `${t}mm`, "end");
     });
-  });
+  };
 
   $effect(() => {
     if (!scene) return;
     Object.assign(scene.params, { radius, thickness });
   });
-
-  onDestroy(() => { scene?.dispose(); });
 </script>
 
-<ExampleShell {scene} bind:svgEl>
-  <div class="demo-control">
-    <label>Radius</label>
-    <input type="range" bind:value={radius} min={50} max={200} step={1} />
-    <span class="value">{radius}</span>
-  </div>
-  <div class="demo-control">
-    <label>Wall</label>
-    <input type="range" bind:value={thickness} min={3} max={50} step={1} />
-    <span class="value">{thickness}</span>
-  </div>
-</ExampleShell>
+<ExampleLayout initialParams={{ radius, thickness }} {onSetup}>
+  {#snippet params()}
+    <div class="demo-control">
+      <label>
+        Radius
+        <input type="range" bind:value={radius} min={50} max={200} step={1} />
+      </label>
+      <span class="value">{radius}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Wall
+        <input type="range" bind:value={thickness} min={3} max={50} step={1} />
+      </label>
+      <span class="value">{thickness}</span>
+    </div>
+  {/snippet}
+</ExampleLayout>

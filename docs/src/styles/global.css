@@ -10,7 +10,7 @@
   --accent: #0f766e;
   --accent-light: rgba(15, 118, 110, 0.15);
   --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.3);
-  --radius: 12px;
+  --radius: 8px;
   --canvas-bg: #f6f5f2;
   --nav-bg: rgba(14, 28, 26, 0.88);
   --dot-color: rgba(255, 255, 255, 0.07);
@@ -424,40 +424,136 @@ code {
   text-align: right;
 }
 
-/* ── Toggle buttons ── */
-.demo-toggles {
+/* ── Example tabs ── */
+.example-tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding-top: 0.5rem;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
-.toggle-btn {
-  font-size: 0.75rem;
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
   font-weight: 500;
   font-family: inherit;
-  padding: 0.3rem 0.65rem;
-  border-radius: 6px;
-  border: 1px solid var(--panel-border);
-  background: rgba(255, 255, 255, 0.04);
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 
-:root[data-theme="light"] .toggle-btn {
-  background: rgba(0, 0, 0, 0.03);
+.tab-btn:hover:not(.active) {
+  background: var(--panel-border);
+  color: var(--text-main);
 }
 
-.toggle-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.toggle-btn.active {
+.tab-btn.active {
   background: var(--accent-light);
+  color: var(--accent);
+}
+
+/* ── Toggle switches ── */
+.switch-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.35rem 0.75rem;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.switch-row span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.switch {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 36px;
+  height: 20px;
+  background: var(--panel-border);
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.switch:checked {
+  background: var(--accent);
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
+}
+
+.switch:checked::after {
+  transform: translateX(16px);
+}
+
+.switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── Action button ── */
+.btn-reset {
+  margin-top: 0.75rem;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--panel-border);
+  color: var(--text-muted);
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.btn-reset:hover {
   border-color: var(--accent);
   color: var(--accent);
+  background: var(--accent-light);
+}
+
+/* ── Code tab ── */
+.code-tab pre {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  margin-bottom: 0;
+  color: var(--text-muted);
+}
+
+.tab-panel {
+  display: contents;
+}
+
+.tab-panel.hidden {
+  display: none;
+}
+
+.hidden {
+  display: none;
 }
 
 /* ── Legend (static / dynamic) ── */
@@ -497,11 +593,36 @@ code {
   color: #0f766e;
 }
 
+/* ── Shape colors ── */
+.pluton-root .pluton-geometry path.demo-blue {
+  stroke: #2563eb;
+}
+.pluton-root .pluton-geometry path.demo-teal {
+  stroke: #0f766e;
+}
+.pluton-root .pluton-geometry path.demo-orange {
+  stroke: #ea580c;
+}
+.pluton-root .pluton-geometry path.demo-purple {
+  stroke: #7c3aed;
+}
+.pluton-root .pluton-geometry path.demo-rose {
+  stroke: #e11d48;
+}
+.pluton-root .pluton-geometry path.demo-amber {
+  stroke: #d97706;
+}
+.pluton-root .pluton-geometry path.demo-static {
+  stroke: #f97316;
+}
+.pluton-root .pluton-geometry path.demo-dynamic {
+  stroke: #0f766e;
+}
+
 /* ── Callout ── */
 .callout {
-  background: var(--panel-bg);
+  background: var(--accent-light);
   border: 1px solid var(--panel-border);
-  border-left: 3px solid var(--accent);
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;
@@ -525,15 +646,6 @@ code {
 .pluton-geometry path.demo-dynamic {
   stroke: #0f766e;
   stroke-width: 2;
-}
-
-/* Hatch fill colors for static/dynamic */
-.pluton-hatch-fill path.demo-static {
-  stroke: #f97316;
-}
-
-.pluton-hatch-fill path.demo-dynamic {
-  stroke: #0f766e;
 }
 
 /* ── Examples sidebar layout ── */
@@ -630,7 +742,22 @@ code {
 .example-content {
   flex: 1;
   display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.scene-layout {
+  flex: 1;
+  display: flex;
   gap: 1.5rem;
+  min-height: 360px;
+}
+
+.code-tab {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
 .example-canvas-area {
@@ -646,21 +773,23 @@ code {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
   overflow-y: auto;
 }
 
 /* ── Demo frame in examples ── */
 .example-canvas-area .demo-frame {
   aspect-ratio: unset;
+  flex: 1;
+  min-height: 0;
 }
 
 /* ── Controls panel ── */
 .controls-panel {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  border-radius: 10px;
-  padding: 1rem;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.65rem;
 }
 
 .controls-panel-title {
@@ -669,28 +798,23 @@ code {
   letter-spacing: 0.08em;
   font-weight: 600;
   color: var(--text-muted);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.35rem;
 }
 
 .controls-panel .demo-controls {
   border-top: none;
   padding-top: 0;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.3rem;
 }
 
 .controls-panel .demo-control {
   min-width: unset;
 }
 
-.controls-panel .demo-toggles {
-  padding-top: 0;
-  flex-wrap: wrap;
-}
-
 /* Tablet: stack canvas and controls */
 @media (max-width: 1024px) {
-  .example-content {
+  .scene-layout {
     flex-direction: column;
     overflow-y: auto;
   }

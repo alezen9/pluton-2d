@@ -5,7 +5,13 @@ import type { Prettify } from "../types";
 
 type PathOptions = {
   className?: string;
+  /** CSS fill value (e.g., from createHatchFill) */
+  fill?: string;
+  /** Fill rule for paths with holes (default: "evenodd") */
+  fillRule?: "nonzero" | "evenodd";
 };
+
+const DEFAULT_FILL_RULE = "evenodd";
 
 export type GeometryGroup = Prettify<
   BaseGroup & {
@@ -24,6 +30,8 @@ type PathEntry = {
   path: SVGPathElement;
   lastD: string;
   lastClass: string;
+  lastFill: string;
+  lastFillRule: string;
 };
 
 export class GeometryGroupInternal implements GeometryGroup {
@@ -88,6 +96,8 @@ export class GeometryGroupInternal implements GeometryGroup {
   path(options?: PathOptions) {
     const i = this.activeIndex++;
     const className = options?.className ?? "";
+    const fill = options?.fill ?? "";
+    const fillRule = options?.fillRule ?? DEFAULT_FILL_RULE;
 
     if (i < this.paths.length) {
       const entry = this.paths[i];
@@ -99,6 +109,18 @@ export class GeometryGroupInternal implements GeometryGroup {
         entry.lastClass = className;
       }
 
+      if (fill !== entry.lastFill) {
+        if (fill) entry.path.style.setProperty("--hatch-fill-value", fill);
+        else entry.path.style.removeProperty("--hatch-fill-value");
+        entry.lastFill = fill;
+      }
+
+      if (fillRule !== entry.lastFillRule) {
+        if (fillRule) entry.path.setAttribute("fill-rule", fillRule);
+        else entry.path.removeAttribute("fill-rule");
+        entry.lastFillRule = fillRule;
+      }
+
       return entry.builder;
     }
 
@@ -106,9 +128,11 @@ export class GeometryGroupInternal implements GeometryGroup {
     const path = document.createElementNS(SVG_NS, "path");
 
     if (className) path.setAttribute("class", className);
+    if (fill) path.style.setProperty("--hatch-fill-value", fill);
+    if (fillRule) path.setAttribute("fill-rule", fillRule);
 
     this.g.appendChild(path);
-    this.paths.push({ builder, path, lastD: "", lastClass: className });
+    this.paths.push({ builder, path, lastD: "", lastClass: className, lastFill: fill, lastFillRule: fillRule });
     return builder;
   }
 

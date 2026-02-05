@@ -1,6 +1,6 @@
 ---
-import { getCollection } from "astro:content";
-import ExamplesLayout from "../../layouts/ExamplesLayout.astro";
+import { getCollection, render } from "astro:content";
+import Page from "@views/examples/page.astro";
 
 export async function getStaticPaths() {
   const examples = await getCollection("examples");
@@ -11,14 +11,9 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 ---
 
-<ExamplesLayout title={entry.data.title} current={`/examples/${entry.id}`}>
-  <div class="example-header">
-    <h1>{entry.data.title}</h1>
-    <span class="demo-card-tag">{entry.data.category}</span>
-  </div>
-  <p class="example-desc">{entry.data.description}</p>
+<Page {...entry.data}>
   <Content />
-</ExamplesLayout>
+</Page>

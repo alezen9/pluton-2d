@@ -4,6 +4,12 @@ title: Guide
 currentPage: /guide
 ---
 
+# Guide
+
+Everything you need to get from install to interactive scene.
+
+---
+
 ## Getting started
 
 Install the package:
@@ -98,8 +104,8 @@ scene.draw((p) => {
 - Subsequent frames skip `commit()` for that group
 - `clear()` or `setDrawUsage("dynamic")` resets it
 
-**Static:** background elements, fixed annotations, reference shapes.
-**Dynamic (default):** anything that reacts to params or user input.
+> **Static:** background elements, fixed annotations, reference shapes.
+> **Dynamic (default):** anything that reacts to params or user input.
 
 ---
 
@@ -167,4 +173,4 @@ scene.enableZoom(true);  // mouse wheel — scale range 1×–20×
 scene.resetCamera();     // smooth animation back to origin
 ```
 
-Camera movement is smoothed with exponential interpolation. `resetCamera()` animates back to the origin rather than jumping.
+> **Interpolation:** Camera movement is smoothed with exponential easing. `resetCamera()` animates back to the origin rather than jumping.

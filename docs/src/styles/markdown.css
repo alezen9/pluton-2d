@@ -36,11 +36,19 @@ pre::after {
   opacity: 0.8;
 }
 
+/* Expand abbreviations to full language names */
+pre[data-language="ts"]::after {
+  content: "typescript";
+}
+
+pre[data-language="js"]::after {
+  content: "javascript";
+}
+
 /* ── Blockquote → callout (for .md / .mdx pages) ── */
 blockquote {
-  background: var(--panel-bg);
+  background: var(--accent-light);
   border: 1px solid var(--panel-border);
-  border-left: 3px solid var(--accent);
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;

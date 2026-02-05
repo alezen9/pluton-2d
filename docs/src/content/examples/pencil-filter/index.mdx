@@ -4,14 +4,12 @@ category: Effects
 description: SVG displacement filter that gives geometry a hand-drawn pencil feel.
 ---
 
-import Demo from "./Demo.svelte";
+import ExampleTabs from "@components/ExampleTabs.astro";
+import PencilFilter from "./PencilFilter.svelte";
 
-<Demo client:visible />
-
-## How it works
-
-The pencil filter is an SVG `<filter>` element applied to the geometry layer. It displaces pixels using a turbulence texture — the result is subtle, hand-drawn-looking strokes. Toggle with `enableFilter(true)`.
-
+<ExampleTabs>
+  <PencilFilter client:visible slot="scene" />
+  <Fragment slot="code">
 ```ts
 scene.draw((p) => {
   const star = geom.path();
@@ -31,3 +29,5 @@ scene.draw((p) => {
 
 scene.enableFilter(true);
 ```
+  </Fragment>
+</ExampleTabs>

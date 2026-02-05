@@ -16,6 +16,8 @@ export default defineConfig({
       alias: {
         "pluton-2d/style.css": path.resolve(__dirname, "../src/style.css"),
         "pluton-2d": path.resolve(__dirname, "../src/index.ts"),
+        "@components": path.resolve(__dirname, "src/components"),
+        "@views": path.resolve(__dirname, "src/views"),
       },
     },
   },

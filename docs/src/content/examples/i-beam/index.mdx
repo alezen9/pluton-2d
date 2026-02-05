@@ -4,14 +4,12 @@ category: Profiles
 description: Classic I-section with fillet radii and live dimension annotations.
 ---
 
-import Demo from "./Demo.svelte";
+import ExampleTabs from "@components/ExampleTabs.astro";
+import IBeam from "./IBeam.svelte";
 
-<Demo client:visible />
-
-## How it works
-
-The I-section is drawn as a single closed path with mirrored symmetry. Fillet radii are added with `arcTo` at each web-to-flange junction. Dimensions use ticks, text, and a radius callout.
-
+<ExampleTabs>
+  <IBeam client:visible slot="scene" />
+  <Fragment slot="code">
 ```ts
 const geom = scene.geometry.group();
 const dims = scene.dimensions.group();
@@ -31,7 +29,7 @@ scene.draw((p) => {
 
   geom.translate(0, -p.height / 2);
 
-  // Flange width dimension
+  // Width dimension
   const dim = dims.dimension();
   dim
     .moveToAbs(-p.width / 2, -p.height / 2 - 20)
@@ -39,3 +37,5 @@ scene.draw((p) => {
     .textAt(-p.width / 2, -16, `${p.width}mm`);
 });
 ```
+  </Fragment>
+</ExampleTabs>

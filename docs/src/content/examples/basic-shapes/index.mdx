@@ -4,14 +4,12 @@ category: Drawing
 description: Triangle, rectangle, and diamond using moveTo, lineTo, and lineToAbs.
 ---
 
-import Demo from "./Demo.svelte";
+import ExampleTabs from "@components/ExampleTabs.astro";
+import BasicShapes from "./BasicShapes.svelte";
 
-<Demo client:visible />
-
-## How it works
-
-Three shapes built from the same primitives — `moveTo`, `lineTo`, and their absolute variants. Everything is relative to center origin with Y pointing up.
-
+<ExampleTabs>
+  <BasicShapes client:visible slot="scene" />
+  <Fragment slot="code">
 ```ts
 const geom = scene.geometry.group();
 
@@ -40,3 +38,5 @@ scene.draw((p) => {
     .close();
 });
 ```
+  </Fragment>
+</ExampleTabs>

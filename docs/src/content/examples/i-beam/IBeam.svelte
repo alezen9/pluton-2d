@@ -1,20 +1,21 @@
-<script>
-  import { onMount, onDestroy } from "svelte";
+<script lang="ts">
   import { Pluton2D } from "pluton-2d";
-  import ExampleShell from "../../../components/ExampleShell.svelte";
+  import ExampleLayout from "@components/ExampleLayout.svelte";
 
-  let svgEl;
-  let scene;
+  type Params = { width: number; height: number; flangeThickness: number; webThickness: number; filletRadius: number };
+
   let width = $state(200);
   let height = $state(300);
   let flangeThickness = $state(40);
   let webThickness = $state(20);
   let filletRadius = $state(12);
+  let scene: Pluton2D<Params> | null = null;
 
-  onMount(() => {
-    scene = new Pluton2D(svgEl, { width, height, flangeThickness, webThickness, filletRadius });
+  const onSetup = (s: Pluton2D<Params>) => {
+    scene = s;
     const geom = scene.geometry.group();
     const dims = scene.dimensions.group();
+    const amberFill = scene.addHatchFill("#d97706");
 
     scene.draw((p) => {
       const fw = p.width;
@@ -23,7 +24,7 @@
       const h = p.height;
       const r = p.filletRadius;
 
-      const path = geom.path();
+      const path = geom.path({ className: "demo-amber", fill: amberFill });
       path
         .moveToAbs(0, 0)
         .lineTo(fw / 2, 0)
@@ -79,40 +80,50 @@
           .textAt(-5, 5, `R${r}mm`, "start");
       }
     });
-  });
+  };
 
   $effect(() => {
     if (!scene) return;
     Object.assign(scene.params, { width, height, flangeThickness, webThickness, filletRadius });
   });
-
-  onDestroy(() => { scene?.dispose(); });
 </script>
 
-<ExampleShell {scene} bind:svgEl>
-  <div class="demo-control">
-    <label>Width</label>
-    <input type="range" bind:value={width} min={50} max={350} step={1} />
-    <span class="value">{width}</span>
-  </div>
-  <div class="demo-control">
-    <label>Height</label>
-    <input type="range" bind:value={height} min={100} max={450} step={1} />
-    <span class="value">{height}</span>
-  </div>
-  <div class="demo-control">
-    <label>Flange</label>
-    <input type="range" bind:value={flangeThickness} min={10} max={80} step={1} />
-    <span class="value">{flangeThickness}</span>
-  </div>
-  <div class="demo-control">
-    <label>Web</label>
-    <input type="range" bind:value={webThickness} min={5} max={50} step={1} />
-    <span class="value">{webThickness}</span>
-  </div>
-  <div class="demo-control">
-    <label>Fillet</label>
-    <input type="range" bind:value={filletRadius} min={0} max={30} step={1} />
-    <span class="value">{filletRadius}</span>
-  </div>
-</ExampleShell>
+<ExampleLayout initialParams={{ width, height, flangeThickness, webThickness, filletRadius }} {onSetup}>
+  {#snippet params()}
+    <div class="demo-control">
+      <label>
+        Width
+        <input type="range" bind:value={width} min={50} max={350} step={1} />
+      </label>
+      <span class="value">{width}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Height
+        <input type="range" bind:value={height} min={100} max={450} step={1} />
+      </label>
+      <span class="value">{height}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Flange
+        <input type="range" bind:value={flangeThickness} min={10} max={80} step={1} />
+      </label>
+      <span class="value">{flangeThickness}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Web
+        <input type="range" bind:value={webThickness} min={5} max={50} step={1} />
+      </label>
+      <span class="value">{webThickness}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Fillet
+        <input type="range" bind:value={filletRadius} min={0} max={30} step={1} />
+      </label>
+      <span class="value">{filletRadius}</span>
+    </div>
+  {/snippet}
+</ExampleLayout>

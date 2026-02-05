@@ -1,0 +1,14 @@
+---
+import Layout from "./layout.astro";
+
+const { title, category, description } = Astro.props;
+---
+
+<Layout {title}>
+  <div class="example-header">
+    <h1>{title}</h1>
+    <span class="demo-card-tag">{category}</span>
+  </div>
+  <p class="example-desc">{description}</p>
+  <slot />
+</Layout>

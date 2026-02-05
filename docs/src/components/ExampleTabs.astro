@@ -1,0 +1,43 @@
+---
+---
+<div class="example-content">
+  <div class="example-tabs">
+    <button class="tab-btn active" data-tab="scene">Scene</button>
+    <button class="tab-btn" data-tab="code">Code</button>
+  </div>
+
+  <div class="tab-panel" data-panel="scene">
+    <slot name="scene" />
+  </div>
+
+  <div class="tab-panel hidden" data-panel="code">
+    <div class="code-tab">
+      <slot name="code" />
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.example-tabs').forEach(tabsContainer => {
+    const buttons = tabsContainer.querySelectorAll('.tab-btn');
+    const parent = tabsContainer.parentElement;
+    const panels = parent?.querySelectorAll('.tab-panel');
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        panels?.forEach(panel => {
+          if (panel.getAttribute('data-panel') === tab) {
+            panel.classList.remove('hidden');
+          } else {
+            panel.classList.add('hidden');
+          }
+        });
+      });
+    });
+  });
+</script>

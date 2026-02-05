@@ -51,4 +51,14 @@ export class DefsRegistry {
   get pencilFilterId() {
     return this.filters.pencilFilterId;
   }
+
+  /**
+   * Create a colored hatch fill pattern
+   * @param color - CSS color value (hex, rgb, etc.)
+   * @param opacity - Stroke opacity (0-1), default 0.3
+   * @returns CSS fill value: url(#pattern-id)
+   */
+  createHatchFill(color: string, opacity?: number): string {
+    return this.patterns.createColoredHatch(color, opacity);
+  }
 }

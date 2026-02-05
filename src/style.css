@@ -24,6 +24,8 @@
   stroke: var(--pluton-hatch-color);
 }
 
+
+
 .pluton-root .pluton-pattern-graph-paper-minor {
   fill: none;
   stroke: var(--pluton-grid-minor-stroke);
@@ -46,15 +48,19 @@
 }
 
 .pluton-root .pluton-geometry path {
-  fill: none;
+  fill: var(--hatch-fill-override, var(--hatch-fill-value, none));
   stroke: var(--pluton-geometry-stroke);
   stroke-width: var(--pluton-geometry-stroke-width);
   shape-rendering: crispEdges;
 }
 
 .pluton-root.pluton-fill-hatch .pluton-geometry path {
-  fill: url(#pluton-pattern-fill-hatch-45);
+  fill: var(--hatch-fill-override, var(--hatch-fill-value, url(#pluton-pattern-fill-hatch-45)));
   fill-rule: evenodd;
+}
+
+.pluton-root.pluton-no-fill .pluton-geometry path {
+  --hatch-fill-override: none;
 }
 
 .pluton-root .pluton-dimensions .pluton-dim-stroke {

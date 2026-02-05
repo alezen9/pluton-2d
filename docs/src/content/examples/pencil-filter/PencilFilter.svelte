@@ -1,19 +1,20 @@
-<script>
-  import { onMount, onDestroy } from "svelte";
+<script lang="ts">
   import { Pluton2D } from "pluton-2d";
-  import ExampleShell from "../../../components/ExampleShell.svelte";
+  import ExampleLayout from "@components/ExampleLayout.svelte";
 
-  let svgEl;
-  let scene;
+  type Params = { size: number };
+
   let size = $state(120);
+  let scene: Pluton2D<Params> | null = null;
 
-  onMount(() => {
-    scene = new Pluton2D(svgEl, { size });
+  const onSetup = (s: Pluton2D<Params>) => {
+    scene = s;
     scene.enableFilter(true);
     const geom = scene.geometry.group();
+    const roseFill = scene.addHatchFill("#e11d48");
 
     scene.draw((p) => {
-      const star = geom.path();
+      const star = geom.path({ className: "demo-rose", fill: roseFill });
       const points = 5;
       const outerR = p.size;
       const innerR = p.size * 0.4;
@@ -28,20 +29,22 @@
       }
       star.close();
     });
-  });
+  };
 
   $effect(() => {
     if (!scene) return;
     scene.params.size = size;
   });
-
-  onDestroy(() => { scene?.dispose(); });
 </script>
 
-<ExampleShell {scene} bind:svgEl initialFilterOn={true}>
-  <div class="demo-control">
-    <label>Size</label>
-    <input type="range" bind:value={size} min={40} max={160} step={1} />
-    <span class="value">{size}</span>
-  </div>
-</ExampleShell>
+<ExampleLayout initialParams={{ size }} {onSetup} initialFilterOn={true}>
+  {#snippet params()}
+    <div class="demo-control">
+      <label>
+        Size
+        <input type="range" bind:value={size} min={40} max={160} step={1} />
+      </label>
+      <span class="value">{size}</span>
+    </div>
+  {/snippet}
+</ExampleLayout>

@@ -4,32 +4,46 @@ category: Profiles
 description: Rectangular hollow section with independent outer and inner corner radii.
 ---
 
-import Demo from "./Demo.svelte";
+import ExampleTabs from "@components/ExampleTabs.astro";
+import RectangularHollowSection from "./RectangularHollowSection.svelte";
 
-<Demo client:visible />
-
-## How it works
-
-Outer and inner rectangles share the same path. Each corner uses `arcTo` for the radius. Outer and inner radii are independent — set inner to 0 for sharp inside corners.
-
+<ExampleTabs>
+  <RectangularHollowSection client:visible slot="scene" />
+  <Fragment slot="code">
 ```ts
 scene.draw((p) => {
+  const { width: w, height: h, thickness: t, outerRadius: ro, innerRadius: ri } = p;
+  const iw = w - 2 * t;
+  const ih = h - 2 * t;
+
   const path = geom.path();
 
   // Outer rectangle with rounded corners
   path
-    .moveToAbs(-p.width / 2 + p.outerRadius, -p.height / 2)
-    .lineTo(p.width - 2 * p.outerRadius, 0)
-    .arcTo(p.outerRadius, p.outerRadius, p.outerRadius, false)
-    .lineTo(0, p.height - 2 * p.outerRadius)
-    .arcTo(-p.outerRadius, p.outerRadius, p.outerRadius, false)
-    .lineTo(-p.width + 2 * p.outerRadius, 0)
-    .arcTo(-p.outerRadius, -p.outerRadius, p.outerRadius, false)
-    .lineTo(0, -p.height + 2 * p.outerRadius)
-    .arcTo(p.outerRadius, -p.outerRadius, p.outerRadius, false)
+    .moveToAbs(-w / 2 + ro, -h / 2)
+    .lineTo(w - 2 * ro, 0)
+    .arcTo(ro, ro, ro, false)
+    .lineTo(0, h - 2 * ro)
+    .arcTo(-ro, ro, ro, false)
+    .lineTo(-w + 2 * ro, 0)
+    .arcTo(-ro, -ro, ro, false)
+    .lineTo(0, -h + 2 * ro)
+    .arcTo(ro, -ro, ro, false)
     .close();
 
   // Inner cutout — same pattern, inner dimensions
-  // …
+  path
+    .moveToAbs(-iw / 2 + ri, -ih / 2)
+    .lineTo(iw - 2 * ri, 0)
+    .arcTo(ri, ri, ri, false)
+    .lineTo(0, ih - 2 * ri)
+    .arcTo(-ri, ri, ri, false)
+    .lineTo(-iw + 2 * ri, 0)
+    .arcTo(-ri, -ri, ri, false)
+    .lineTo(0, -ih + 2 * ri)
+    .arcTo(ri, -ri, ri, false)
+    .close();
 });
 ```
+  </Fragment>
+</ExampleTabs>
