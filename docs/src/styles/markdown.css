@@ -6,6 +6,18 @@ pre {
   overflow-x: auto;
 }
 
+:root:not([data-theme="light"]) pre.astro-code,
+:root:not([data-theme="light"]) pre.astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+:root[data-theme="light"] pre.astro-code,
+:root[data-theme="light"] pre.astro-code span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+}
+
 pre:is([data-language="plaintext"], [data-language="text"]) code {
   color: var(--text-main);
 }
@@ -27,11 +39,12 @@ pre::after {
   content: attr(data-language);
   font-size: 0.7em;
   font-family: "Inter", sans-serif;
-  background: color-mix(in oklab, var(--accent) 20%, transparent);
-  color: white;
+  background: color-mix(in oklab, var(--accent-light) 85%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent) 32%, transparent);
+  color: var(--accent);
   padding: 0.1em 0.5em;
   border-radius: 0.25em;
-  opacity: 0.8;
+  opacity: 0.95;
 }
 
 blockquote {
@@ -67,11 +80,7 @@ table th {
   font-weight: 600;
   padding: 0.5rem 0.75rem;
   border-bottom: 2px solid var(--panel-border);
-  background: rgba(255, 255, 255, 0.03);
-}
-
-:root[data-theme="light"] table th {
-  background: rgba(0, 0, 0, 0.03);
+  background: var(--table-header-bg);
 }
 
 table td {

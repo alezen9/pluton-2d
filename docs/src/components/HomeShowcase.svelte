@@ -26,11 +26,13 @@
 
     scene = new Pluton2D(svgEl, {});
     scene.enableAxes(false);
-    scene.enableFilter(true)
+    scene.enablePan(false);
+    scene.enableZoom(false);
+    scene.enableFilter(true);
 
     const geom = scene.geometry.group();
-    const dims = scene.dimensions.group();
     geom.setDrawUsage("static");
+    const dims = scene.dimensions.group();
     dims.setDrawUsage("static");
 
     // Beam profile in front view
@@ -105,11 +107,11 @@
 
       // Height
       dim
-        .moveToAbs(right + 42, bottom)
+        .moveToAbs(left - 42, bottom)
         .tick(-Math.PI / 2)
         .lineTo(0, height)
         .tick(Math.PI / 2)
-        .textAt(18, -height / 2, `${height} mm`, "start", "home-iso-dim");
+        .textAt(-18, -height / 2, `${height} mm`, "end", "home-iso-dim");
 
       // Web thickness
       dim
@@ -121,6 +123,8 @@
         .lineTo(46, 0)
         .textAt(10, 0, `${webThickness} mm`, "start", "home-iso-dim");
     });
+
+    scene.resetCamera();
   });
 
   onDestroy(() => {
@@ -132,74 +136,81 @@
   <div class="home-showcase-frame demo-frame">
     <svg bind:this={svgEl}></svg>
   </div>
-  <p class="home-showcase-hint">Isometric I-beam study with static dimensions.</p>
 </div>
 
 <style>
   .home-showcase {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: var(--panel-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: var(--radius);
-    padding: 0.75rem;
-    box-shadow: var(--shadow-soft);
+    --home-iso-front: #3d8f82;
+    --home-iso-back: rgba(61, 143, 130, 0.48);
+    --home-iso-connect: rgba(61, 143, 130, 0.34);
+    --home-iso-dim: rgb(103, 118, 115);
+    --home-iso-dim-text: var(--home-iso-dim);
+    width: min(100%, 64svh);
+    max-width: 660px;
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
   }
 
   .home-showcase-frame {
-    flex: 1;
-    min-height: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .home-showcase-frame.demo-frame {
-    aspect-ratio: auto;
+    aspect-ratio: 1 / 1;
     height: 100%;
-    border-color: color-mix(in oklab, var(--accent) 35%, transparent);
-    background:
-      radial-gradient(140% 85% at 15% 10%, rgba(15, 118, 110, 0.1), transparent 60%),
-      radial-gradient(80% 70% at 85% 95%, rgba(2, 6, 23, 0.07), transparent 65%),
-      linear-gradient(155deg, #fbfbf8 0%, #f0efe8 100%);
+    border: none;
+    border-radius: 0;
+    background: transparent;
   }
 
-  .home-showcase-hint {
-    margin: 0.5rem 0 0;
-    font-size: 0.78rem;
-    color: var(--text-muted);
+  .home-showcase-frame.demo-frame::before,
+  .home-showcase-frame.demo-frame::after {
+    display: none;
+  }
+
+  :global(.home-showcase-frame.demo-frame svg) {
+    clip-path: none;
   }
 
   :global(.pluton-root .pluton-geometry path.home-iso-front) {
-    stroke: #0f766e;
-    stroke-width: 1.5;
+    stroke: var(--home-iso-front);
+    stroke-width: 1.25;
   }
 
   :global(.pluton-root .pluton-geometry path.home-iso-back) {
-    stroke: rgba(15, 118, 110, 0.56);
+    stroke: var(--home-iso-back);
     stroke-dasharray: 0.25em;
   }
 
   :global(.pluton-root .pluton-geometry path.home-iso-connect) {
-    stroke: rgba(15, 118, 110, 0.4);
+    stroke: var(--home-iso-connect);
     stroke-dasharray: 0.25em;
   }
 
   :global(.pluton-root .pluton-dimensions .pluton-dim-stroke.home-iso-dim) {
-    stroke: rgba(12, 67, 63, 0.9);
+    stroke: var(--home-iso-dim);
   }
 
   :global(.pluton-root .pluton-dimensions .pluton-dim-filled.home-iso-dim) {
-    fill: rgba(12, 67, 63, 0.9);
+    fill: var(--home-iso-dim);
   }
 
   :global(.pluton-root .pluton-dimensions text.home-iso-dim) {
-    fill: rgba(12, 67, 63, 0.92);
-    font-size: 11px;
+    fill: var(--home-iso-dim-text);
+    font-size: 10px;
     letter-spacing: 0.03em;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 920px) {
     .home-showcase {
-      padding: 0.6rem;
+      width: min(100%, 520px);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .home-showcase {
+      width: min(100%, 460px);
     }
   }
 </style>

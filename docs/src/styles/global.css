@@ -1,32 +1,25 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap");
 
 :root {
-  --page-bg: #0e1c1a;
-  --panel-bg: #161f1d;
-  --panel-border: rgba(255, 255, 255, 0.07);
-  --text-main: #e2e4e9;
-  --text-muted: #8b8fa3;
-  --accent: #0f766e;
-  --accent-light: rgba(15, 118, 110, 0.15);
-  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --page-bg: #202a2e;
+  --panel-bg: rgba(39, 53, 59, 0.48);
+  --panel-bg-solid: #2a3a41;
+  --panel-border: rgba(178, 194, 198, 0.12);
+  --panel-border-strong: rgba(178, 194, 198, 0.2);
+  --text-main: #e2ebed;
+  --text-muted: #a7b7bc;
+  --accent: #7eb6ad;
+  --accent-hover: #90c2ba;
+  --accent-light: rgba(126, 182, 173, 0.14);
+  --accent-soft: rgba(126, 182, 173, 0.06);
   --radius: 8px;
-  --canvas-bg: #f6f5f2;
-  --nav-bg: rgba(14, 28, 26, 0.88);
-  --dot-color: rgba(255, 255, 255, 0.07);
-  --glow-color: rgba(15, 118, 110, 0.09);
+  --canvas-bg: #f8f4ea;
+  --nav-bg: rgba(18, 26, 29, 0.72);
+  --tab-hover-bg: rgba(198, 222, 230, 0.06);
+  --table-header-bg: rgba(198, 222, 230, 0.035);
+  --code-inline-bg: rgba(198, 222, 230, 0.075);
+  --code-inline-text: color-mix(in oklab, var(--accent) 52%, var(--text-main));
   --font-mono: "SF Mono", "Fira Code", "Consolas", monospace;
-}
-
-:root[data-theme="light"] {
-  --page-bg: #eceae3;
-  --panel-bg: #ffffff;
-  --panel-border: rgba(0, 0, 0, 0.08);
-  --text-main: #1f2933;
-  --text-muted: #5b6775;
-  --nav-bg: rgba(236, 234, 227, 0.88);
-  --dot-color: rgba(0, 0, 0, 0.06);
-  --glow-color: rgba(15, 118, 110, 0.07);
-  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 *,
@@ -42,53 +35,97 @@ html {
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  --page-glow-color: rgba(101, 183, 171, 0.08);
+  --page-grid-minor-step: 28px;
+  --page-grid-major-step: 140px;
+  --page-grid-line-width: 1px;
+  --page-grid-minor-color: rgba(198, 222, 230, 0.012);
+  --page-grid-major-color: rgba(198, 222, 230, 0.02);
+  font-family: "Manrope", sans-serif;
   background-color: var(--page-bg);
-  background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background-image:
+    radial-gradient(
+      100% 90% at 12% -8%,
+      var(--page-glow-color) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      80% 70% at 90% 104%,
+      var(--accent-soft) 0%,
+      transparent 60%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      var(--page-grid-minor-color) 0 var(--page-grid-line-width),
+      transparent var(--page-grid-line-width) var(--page-grid-minor-step)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--page-grid-minor-color) 0 var(--page-grid-line-width),
+      transparent var(--page-grid-line-width) var(--page-grid-minor-step)
+    ),
+    repeating-linear-gradient(
+      0deg,
+      var(--page-grid-major-color) 0 var(--page-grid-line-width),
+      transparent var(--page-grid-line-width) var(--page-grid-major-step)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--page-grid-major-color) 0 var(--page-grid-line-width),
+      transparent var(--page-grid-line-width) var(--page-grid-major-step)
+    ),
+    linear-gradient(180deg, #2b373c 0%, #222d31 100%);
+  background-size: auto;
   background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
-  line-height: 1.6;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 
 body::before {
   content: "";
   position: fixed;
-  top: -180px;
-  left: -180px;
-  width: 700px;
-  height: 700px;
-  background: radial-gradient(ellipse, var(--glow-color) 0%, transparent 65%);
+  inset: 0;
   pointer-events: none;
   z-index: 0;
+  background:
+    radial-gradient(
+      32% 28% at 22% 16%,
+      rgba(126, 182, 173, 0.03),
+      transparent 74%
+    ),
+    radial-gradient(
+      26% 22% at 80% 82%,
+      rgba(151, 191, 205, 0.022),
+      transparent 74%
+    );
 }
 
 h1,
 h2,
 h3 {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Sora", sans-serif;
   letter-spacing: -0.02em;
-  line-height: 1.25;
+  line-height: 1.22;
   color: var(--text-main);
 }
 
 h1 {
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 600;
+  font-size: clamp(2.3rem, 4vw, 3.2rem);
+  font-weight: 500;
 }
 
 h2 {
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 500;
   margin-top: 3.5rem;
   margin-bottom: 1rem;
 }
 
 h3 {
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 500;
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
 }
@@ -123,17 +160,17 @@ code {
   font-size: 0.9em;
   padding: 0 0.5em;
   letter-spacing: -0.05em;
-  background: color-mix(in oklab, var(--text-main) 10%, transparent);
-  border-radius: 0.2em;
+  background: var(--code-inline-bg);
+  border-radius: 0.3em;
   white-space: nowrap;
-  color: color-mix(in oklab, var(--accent) 40%, var(--text-main));
+  color: var(--code-inline-text);
 }
 
 .demo-frame {
   width: 100%;
   aspect-ratio: 4 / 3;
   border-radius: var(--radius);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid color-mix(in oklab, var(--accent) 24%, var(--panel-border));
   background: var(--canvas-bg);
   overflow: visible;
   position: relative;
@@ -146,28 +183,29 @@ code {
   clip-path: inset(0 round var(--radius));
 }
 
-.demo-frame::before {
-  content: "";
-  position: absolute;
-  top: -24px;
-  left: 28px;
-  width: 10px;
-  height: 24px;
-  border-top: 1px solid var(--accent);
-  border-left: 1px solid var(--accent);
-  opacity: 0.2;
-  pointer-events: none;
-}
-
+.demo-frame::before,
 .demo-frame::after {
   content: "";
   position: absolute;
-  top: 20px;
-  right: -36px;
-  width: 36px;
-  height: 10px;
-  border-top: 1px solid var(--accent);
-  border-right: 1px solid var(--accent);
-  opacity: 0.2;
   pointer-events: none;
+}
+
+.demo-frame::before {
+  top: -18px;
+  left: 24px;
+  width: 12px;
+  height: 18px;
+  border-top: 1px solid color-mix(in oklab, var(--accent) 42%, transparent);
+  border-left: 1px solid color-mix(in oklab, var(--accent) 42%, transparent);
+  opacity: 0.45;
+}
+
+.demo-frame::after {
+  top: 20px;
+  right: -28px;
+  width: 28px;
+  height: 12px;
+  border-top: 1px solid color-mix(in oklab, var(--accent) 42%, transparent);
+  border-right: 1px solid color-mix(in oklab, var(--accent) 42%, transparent);
+  opacity: 0.45;
 }

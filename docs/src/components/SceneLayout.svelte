@@ -103,6 +103,9 @@
 
 <style>
   .scene-layout {
+    --control-track: rgba(198, 222, 230, 0.2);
+    --control-thumb: #edf3f5;
+    --control-thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     flex: 1;
     display: flex;
     gap: 1.5rem;
@@ -187,7 +190,7 @@
     appearance: none;
     width: 100%;
     height: 4px;
-    background: var(--panel-border);
+    background: var(--control-track);
     border-radius: 2px;
     outline: none;
   }
@@ -198,9 +201,20 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--control-thumb);
+    border: 2px solid var(--accent);
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    box-shadow: var(--control-thumb-shadow);
+  }
+
+  :global(.demo-control input[type="range"]::-moz-range-thumb) {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--control-thumb);
+    border: 2px solid var(--accent);
+    cursor: pointer;
+    box-shadow: var(--control-thumb-shadow);
   }
 
   :global(.demo-control .value) {
@@ -233,7 +247,7 @@
     appearance: none;
     width: 36px;
     height: 20px;
-    background: var(--panel-border);
+    background: var(--control-track);
     border-radius: 10px;
     cursor: pointer;
     position: relative;
@@ -252,9 +266,9 @@
     left: 2px;
     width: 16px;
     height: 16px;
-    background: white;
+    background: var(--control-thumb);
     border-radius: 50%;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--control-thumb-shadow);
     transition: transform 0.2s;
   }
 

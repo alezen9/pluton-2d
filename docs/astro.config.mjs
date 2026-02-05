@@ -11,6 +11,14 @@ export default defineConfig({
   base: "/pluton-2d",
   devToolbar: { enabled: false },
   integrations: [svelte(), mdx()],
+  markdown: {
+    shikiConfig: {
+      themes: {
+        light: "github-light",
+        dark: "github-dark",
+      },
+    },
+  },
   vite: {
     resolve: {
       alias: {

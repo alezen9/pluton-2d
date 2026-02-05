@@ -17,13 +17,6 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     <title>{title} - Pluton 2D</title>
     <link rel="icon" href={`${base}/favicon.svg`} />
     <ClientRouter />
-    <!-- Flash prevention: set theme before first paint -->
-    <script is:raw>
-      (function () {
-        var t = localStorage.getItem("theme");
-        if (t === "light") document.documentElement.setAttribute("data-theme", "light");
-      })();
-    </script>
   </head>
   <body>
     <Nav currentPage={currentPage} />

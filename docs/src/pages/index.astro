@@ -6,12 +6,12 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 ---
 
 <Layout title="Pluton 2D" currentPage="/">
-  <section class="home-page">
+  <section class="home-page" id="home-page">
     <div class="home-intro">
       <h1>Pluton 2D</h1>
-      <p>
-        SVG-first technical drawing with reactive params, dimensions, and low
-        DOM churn.
+      <p class="home-lead">
+        SVG-first technical drawing for clean geometry, dimensions, and stable
+        rendering performance.
       </p>
       <div class="hero-actions">
         <a href={`${base}/guide`} class="btn btn-primary">Guide</a>
@@ -27,100 +27,132 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 <style>
   .home-page {
-    max-width: 1100px;
-    height: calc(100vh - 60px);
+    max-width: 1180px;
+    height: calc(100svh - 64px);
     margin: 0 auto;
-    padding: 1.25rem 1.5rem;
+    padding: 1.5rem 2rem;
     display: grid;
-    grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
-    gap: 1.25rem;
-    align-items: stretch;
-    overflow: hidden;
+    grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: center;
+    align-content: center;
     position: relative;
+    overflow: hidden;
     z-index: 1;
+    isolation: isolate;
+  }
+
+  .home-page::before {
+    content: "";
+    position: absolute;
+    inset: 6% 0 8%;
+    z-index: -1;
+    pointer-events: none;
   }
 
   .home-intro {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    gap: 0.85rem;
     min-height: 0;
+    padding-left: 0.35rem;
   }
 
   .home-intro h1 {
-    margin-bottom: 0.45rem;
+    margin: 0;
+    font-size: clamp(2rem, 3.8vw, 2.9rem);
   }
 
-  .home-intro p {
-    font-size: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .home-demo {
-    min-height: 0;
+  .home-lead {
+    margin: 0;
+    max-width: 34ch;
+    font-size: 0.98rem;
+    line-height: 1.7;
   }
 
   .hero-actions {
     display: flex;
-    gap: 1rem;
+    gap: 0.8rem;
     flex-wrap: wrap;
+    padding-top: 0.35rem;
   }
 
   .btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.6rem 1.2rem;
+    justify-content: center;
+    padding: 0.62rem 1.15rem;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 0.86rem;
     font-weight: 500;
     text-decoration: none;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    cursor: pointer;
     border: 1px solid transparent;
+    transition: transform 0.2s, border-color 0.2s, background 0.2s, color 0.2s;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
   }
 
   .btn-primary {
-    background: var(--accent);
-    color: white;
+    color: #1e3934;
+    background: color-mix(in oklab, var(--accent) 76%, white);
   }
 
   .btn-primary:hover {
-    background: #0d6b62;
-    text-decoration: none;
+    background: color-mix(in oklab, var(--accent-hover) 72%, white);
   }
 
   .btn-secondary {
-    background: var(--panel-bg);
     color: var(--text-main);
     border-color: var(--panel-border);
+    background: color-mix(in oklab, var(--panel-bg) 90%, transparent);
   }
 
   .btn-secondary:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    text-decoration: none;
+    color: var(--accent-hover);
+    border-color: color-mix(in oklab, var(--accent) 65%, var(--panel-border));
+    background: color-mix(in oklab, var(--accent-light) 34%, transparent);
   }
 
-  @media (max-width: 768px) {
+  .home-demo {
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+  }
+
+  @media (max-width: 920px) {
     .home-page {
+      height: calc(100svh - 58px);
       grid-template-columns: 1fr;
-      grid-template-rows: auto 1fr;
-      padding: 0.9rem;
-      gap: 0.9rem;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .home-demo {
+      order: 1;
     }
 
     .home-intro {
-      justify-content: flex-start;
+      order: 2;
+      gap: 0.65rem;
+      padding-left: 0;
     }
 
     .home-intro h1 {
-      font-size: 1.6rem;
+      font-size: clamp(1.6rem, 7vw, 2rem);
     }
 
-    .home-intro p {
-      margin-bottom: 0.75rem;
+    .home-lead {
+      max-width: none;
       font-size: 0.92rem;
+      line-height: 1.6;
     }
+
   }
 </style>

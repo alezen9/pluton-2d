@@ -83,7 +83,7 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
     width: 200px;
     flex-shrink: 0;
     border-right: 1px solid var(--panel-border);
-    background: var(--panel-bg);
+    background: var(--panel-bg-solid);
     padding: 1.25rem 0.75rem;
     overflow-y: auto;
   }
@@ -124,7 +124,7 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
 
   .examples-sidebar .sidebar-links a:hover {
     color: var(--text-main);
-    background: var(--panel-border);
+    background: var(--tab-hover-bg);
     text-decoration: none;
   }
 
