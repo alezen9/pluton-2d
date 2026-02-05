@@ -20,7 +20,7 @@ export class Engine<P extends Record<string, unknown>> {
       const value = initialParams[key];
       if (value !== null && typeof value === "object") {
         throw new Error(
-          `Pluton2D params must be flat. "${key}" is an object — nested mutations won't trigger redraws.`,
+          `Pluton2D params must be flat. "${key}" is an object - nested mutations won't trigger redraws.`,
         );
       }
     }

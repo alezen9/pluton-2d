@@ -15,19 +15,19 @@
 
     const dynamicGroup = scene.geometry.group();
 
-    const orangeFill = scene.addHatchFill("#f97316");
-    const tealFill = scene.addHatchFill("#0f766e");
+    const orangeFillId = scene.addHatchFill("#f97316");
+    const tealFillId = scene.addHatchFill("#0f766e");
 
     scene.draw((p) => {
       const half = p.size / 2;
       const offset = 90;
 
-      staticGroup.path({ className: "demo-static", fill: orangeFill })
+      staticGroup.path({ className: "demo-static", fill: orangeFillId })
         .moveToAbs(-offset - half, -half)
         .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
         .close();
 
-      dynamicGroup.path({ className: "demo-dynamic", fill: tealFill })
+      dynamicGroup.path({ className: "demo-dynamic", fill: tealFillId })
         .moveToAbs(offset - half, -half)
         .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
         .close();

@@ -10,27 +10,30 @@ import BasicShapes from "./BasicShapes.svelte";
 <ExampleTabs>
   <BasicShapes client:visible slot="scene" />
   <Fragment slot="code">
-```ts
+```typescript
 const geom = scene.geometry.group();
+const blueFillId = scene.addHatchFill("#2563eb");
+const tealFillId = scene.addHatchFill("#0f766e");
+const orangeFillId = scene.addHatchFill("#ea580c");
 
 scene.draw((p) => {
   const s = p.size, half = s / 2, gap = s * 1.2;
 
-  // Triangle — absolute positioning
-  geom.path()
+  // Triangle - absolute positioning
+  geom.path({ className: "demo-blue", fill: blueFillId })
     .moveToAbs(-gap, half)
     .lineToAbs(-gap + half, -half)
     .lineToAbs(-gap - half, -half)
     .close();
 
-  // Rectangle — relative lines
-  geom.path()
+  // Rectangle - relative lines
+  geom.path({ className: "demo-teal", fill: tealFillId })
     .moveToAbs(-half, -half)
     .lineTo(s, 0).lineTo(0, s).lineTo(-s, 0)
     .close();
 
-  // Diamond — absolute lines
-  geom.path()
+  // Diamond - absolute lines
+  geom.path({ className: "demo-orange", fill: orangeFillId })
     .moveToAbs(gap, half)
     .lineToAbs(gap + half, 0)
     .lineToAbs(gap, -half)

@@ -11,25 +11,25 @@
     scene = s;
     const geom = scene.geometry.group();
 
-    const blueFill = scene.addHatchFill("#2563eb");
-    const tealFill = scene.addHatchFill("#0f766e");
-    const orangeFill = scene.addHatchFill("#ea580c");
+    const blueFillId = scene.addHatchFill("#2563eb");
+    const tealFillId = scene.addHatchFill("#0f766e");
+    const orangeFillId = scene.addHatchFill("#ea580c");
 
     scene.draw((p) => {
       const sz = p.size, half = sz / 2, gap = sz * 1.2;
 
-      geom.path({ className: "demo-blue", fill: blueFill })
+      geom.path({ className: "demo-blue", fill: blueFillId })
         .moveToAbs(-gap, half)
         .lineToAbs(-gap + half, -half)
         .lineToAbs(-gap - half, -half)
         .close();
 
-      geom.path({ className: "demo-teal", fill: tealFill })
+      geom.path({ className: "demo-teal", fill: tealFillId })
         .moveToAbs(-half, -half)
         .lineTo(sz, 0).lineTo(0, sz).lineTo(-sz, 0)
         .close();
 
-      geom.path({ className: "demo-orange", fill: orangeFill })
+      geom.path({ className: "demo-orange", fill: orangeFillId })
         .moveToAbs(gap, half)
         .lineToAbs(gap + half, 0)
         .lineToAbs(gap, -half)

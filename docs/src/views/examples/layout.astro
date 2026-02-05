@@ -26,6 +26,13 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
 <Layout {title} currentPage="/examples">
   <div class="examples-layout">
     <aside class="examples-sidebar" transition:persist>
+      <div class="sidebar-category">
+        <ul class="sidebar-links">
+          <li>
+            <a href={`${base}/examples`}>All Examples</a>
+          </li>
+        </ul>
+      </div>
       {categories.map((cat) => (
         <div class="sidebar-category">
           <div class="sidebar-category-label">{cat.label}</div>
@@ -49,12 +56,177 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
 
 <script>
   // Update active link after view transitions (sidebar is persisted, doesn't re-render)
+  const normalize = (value) =>
+    value.length > 1 ? value.replace(/\/+$/, "") : value;
+
   const setActive = () => {
-    const path = window.location.pathname;
+    const path = normalize(window.location.pathname);
     document.querySelectorAll(".examples-sidebar a").forEach((a) => {
-      a.classList.toggle("active", a.getAttribute("href") === path);
+      const href = normalize(a.getAttribute("href") || "");
+      a.classList.toggle("active", href === path);
     });
   };
   setActive();
   document.addEventListener("astro:after-swap", setActive);
 </script>
+
+<style is:global>
+  .examples-layout {
+    display: flex;
+    height: calc(100vh - 60px);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .examples-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--panel-border);
+    background: var(--panel-bg);
+    padding: 1.25rem 0.75rem;
+    overflow-y: auto;
+  }
+
+  .examples-sidebar .sidebar-category {
+    margin-bottom: 1rem;
+  }
+
+  .examples-sidebar .sidebar-category-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 0 0.5rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .examples-sidebar .sidebar-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .examples-sidebar .sidebar-links a {
+    display: block;
+    padding: 0.35rem 0.5rem;
+    border-radius: 5px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    transition: color 0.15s, background 0.15s;
+  }
+
+  .examples-sidebar .sidebar-links a:hover {
+    color: var(--text-main);
+    background: var(--panel-border);
+    text-decoration: none;
+  }
+
+  .examples-sidebar .sidebar-links a.active {
+    color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .examples-main {
+    flex: 1;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-width: 0;
+  }
+
+  .example-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.35rem;
+    flex-shrink: 0;
+  }
+
+  .example-header h1 {
+    font-size: 1.4rem;
+    margin: 0;
+  }
+
+  .example-desc {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+  }
+
+  .demo-card-tag {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 600;
+    background: var(--accent-light);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .examples-layout {
+      flex-direction: column;
+      height: auto;
+      min-height: calc(100vh - 60px);
+      overflow: visible;
+    }
+
+    .examples-sidebar {
+      width: 100%;
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--panel-border);
+      padding: 0.75rem 1rem;
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .examples-sidebar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .examples-sidebar .sidebar-category {
+      margin-bottom: 0;
+      flex-shrink: 0;
+    }
+
+    .examples-sidebar .sidebar-category-label {
+      display: none;
+    }
+
+    .examples-sidebar .sidebar-links {
+      flex-direction: row;
+      gap: 0.4rem;
+    }
+
+    .examples-sidebar .sidebar-links a {
+      white-space: nowrap;
+      padding: 0.35rem 0.7rem;
+      border: 1px solid var(--panel-border);
+      font-size: 0.82rem;
+    }
+
+    .examples-sidebar .sidebar-links a.active {
+      border-color: var(--accent);
+    }
+
+    .examples-main {
+      padding: 1rem;
+      overflow: visible;
+    }
+  }
+</style>

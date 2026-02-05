@@ -10,14 +10,16 @@ import CircularHollowSection from "./CircularHollowSection.svelte";
 <ExampleTabs>
   <CircularHollowSection client:visible slot="scene" />
   <Fragment slot="code">
-```ts
+```typescript
+const tealFillId = scene.addHatchFill("#0f766e");
+
 scene.draw((p) => {
   const { radius: r, thickness: t } = p;
   const ir = r - t;
 
-  const path = geom.path();
+  const path = geom.path({ className: "demo-teal", fill: tealFillId });
 
-  // Outer circle — 4 quarter arcs
+  // Outer circle - 4 quarter arcs
   path
     .moveToAbs(-r, 0)
     .arcTo(r, r, r, true)
@@ -25,7 +27,7 @@ scene.draw((p) => {
     .arcTo(-r, -r, r, true)
     .arcTo(-r, r, r, true);
 
-  // Inner circle — same winding
+  // Inner circle - same winding
   path
     .moveToAbs(-ir, 0)
     .arcTo(ir, ir, ir, true)
@@ -36,12 +38,21 @@ scene.draw((p) => {
   // Center mark + radius callout
   const dim = dims.dimension();
   const angle = Math.PI / 4;
+  const x = r * Math.cos(angle);
+  const y = r * Math.sin(angle);
   dim.moveToAbs(0, 0).centerMark(20);
   dim
     .moveToAbs(0, 0)
-    .lineToAbs(r * Math.cos(angle), r * Math.sin(angle))
+    .lineToAbs(x, y)
     .arrowFilled(angle)
-    .textAtAbs(r / 2 - 10, r / 2, `R${r}mm`, "end");
+    .textAtAbs(x / 2 - 10, y / 2, `R${r}mm`, "end");
+
+  dim
+    .moveToAbs(-r - 25, 0)
+    .tick(-Math.PI / 2)
+    .lineTo(0, -t)
+    .tick(Math.PI / 2)
+    .textAt(-10, t / 2, `${t}mm`, "end");
 });
 ```
   </Fragment>

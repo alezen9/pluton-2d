@@ -18,26 +18,105 @@
 </div>
 
 <script>
-  document.querySelectorAll('.example-tabs').forEach(tabsContainer => {
-    const buttons = tabsContainer.querySelectorAll('.tab-btn');
-    const parent = tabsContainer.parentElement;
-    const panels = parent?.querySelectorAll('.tab-panel');
+  (() => {
+    if (window.__plutonExampleTabsBound) return;
+    window.__plutonExampleTabsBound = true;
 
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tab = btn.getAttribute('data-tab');
+    const activateTab = (container, tab) => {
+      const buttons = container.querySelectorAll(".example-tabs .tab-btn");
+      const panels = container.querySelectorAll(".tab-panel");
 
-        buttons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        panels?.forEach(panel => {
-          if (panel.getAttribute('data-panel') === tab) {
-            panel.classList.remove('hidden');
-          } else {
-            panel.classList.add('hidden');
-          }
-        });
+      buttons.forEach((button) => {
+        const isActive = button.getAttribute("data-tab") === tab;
+        button.classList.toggle("active", isActive);
       });
+
+      panels.forEach((panel) => {
+        const isVisible = panel.getAttribute("data-panel") === tab;
+        panel.classList.toggle("hidden", !isVisible);
+      });
+    };
+
+    const initializeTabs = () => {
+      document.querySelectorAll(".example-content").forEach((container) => {
+        const activeButton = container.querySelector(".example-tabs .tab-btn.active");
+        const tab = activeButton?.getAttribute("data-tab") || "scene";
+        activateTab(container, tab);
+      });
+    };
+
+    document.addEventListener("click", (event) => {
+      if (!(event.target instanceof Element)) return;
+      const button = event.target.closest(".example-tabs .tab-btn");
+      if (!button) return;
+      const container = button.closest(".example-content");
+      const tab = button.getAttribute("data-tab");
+      if (!container || !tab) return;
+      activateTab(container, tab);
     });
-  });
+
+    initializeTabs();
+    document.addEventListener("astro:after-swap", initializeTabs);
+  })();
 </script>
+
+<style is:global>
+  .example-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .example-tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+  }
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .tab-btn:hover:not(.active) {
+    background: var(--panel-border);
+    color: var(--text-main);
+  }
+
+  .tab-btn.active {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  .code-tab {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .code-tab pre {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    margin-bottom: 0;
+    color: var(--text-muted);
+  }
+
+  .tab-panel {
+    display: contents;
+  }
+
+  .tab-panel.hidden {
+    display: none;
+  }
+</style>

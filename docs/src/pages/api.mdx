@@ -6,7 +6,7 @@ currentPage: /api
 
 # API Reference
 
-Full reference for the Pluton 2D public API — constructor, geometry, and dimensions.
+Full reference for the Pluton 2D public API - constructor, geometry, and dimensions.
 
 ---
 
@@ -14,7 +14,7 @@ Full reference for the Pluton 2D public API — constructor, geometry, and dimen
 
 ### Constructor
 
-```ts
+```typescript
 const scene = new Pluton2D(svg, { width: 240, height: 120 });
 
 // With options
@@ -43,7 +43,7 @@ const scene = new Pluton2D(
 
 ### Methods
 
-```ts
+```typescript
 const unsubscribe = scene.draw((params) => {
   // build geometry and dimensions here
 });
@@ -61,10 +61,16 @@ scene.dispose();
 | `enableGrid(bool)`      | Graph-paper background. Default: `true`.                                          |
 | `enableAxes(bool)`      | Center axes (dashed). Default: `true`.                                            |
 | `enablePan(bool)`       | Middle-mouse or shift+left-click pan. Default: `false`.                           |
-| `enableZoom(bool)`      | Mouse-wheel zoom, 1×–20× scale. Default: `false`.                                 |
-| `enableHatchFill(bool)` | Hatch pattern fill on all geometry paths. Default: `false`.                       |
+| `enableZoom(bool)`      | Mouse-wheel zoom, 1×-20× scale. Default: `false`.                                 |
+| `enableHatchFill(bool)` | Toggle visibility of geometry fills (including custom `addHatchFill` fills).      |
 | `resetCamera()`         | Smoothly animate camera back to origin.                                           |
+| `addHatchFill(color, opacity?)` | Create a hatch-fill pattern and return `url(#id)` for `path({ fill })`. |
 | `dispose()`             | Clean up event listeners, DOM elements, and defs.                                 |
+
+```typescript
+const tealFillId = scene.addHatchFill("#0f766e");
+geom.path({ fill: tealFillId }).moveToAbs(...).lineTo(...).close();
+```
 
 ---
 
@@ -78,16 +84,24 @@ Create a geometry group. Call once, outside draw callbacks.
 
 | Method               | Description                                                                                                           |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `path(options?)`     | Request or reuse a PathBuilder. Call inside draw callbacks. `options.className` sets a CSS class on the path element. |
-| `translate(x, y)`    | Offset the entire group. Direct DOM write — no redraw needed.                                                         |
-| `setDrawUsage(mode)` | `"static"` — commit once then stop. `"dynamic"` (default) — commit every frame.                                       |
+| `path(options?)`     | Request or reuse a PathBuilder. Call inside draw callbacks. Supports `className`, `fill`, and `fillRule`. |
+| `translate(x, y)`    | Offset the entire group. Direct DOM write - no redraw needed.                                                         |
+| `setDrawUsage(mode)` | `"static"` - commit once then stop. `"dynamic"` (default) - commit every frame.                                       |
 | `clear()`            | Remove all paths, reset group state.                                                                                  |
+
+#### path(options) fields
+
+| Option | Description |
+| ------ | ----------- |
+| `className` | CSS class applied to the `<path>`. |
+| `fill` | CSS fill value (typically from `scene.addHatchFill(...)`, returns `url(#id)`). |
+| `fillRule` | `"evenodd"` (default) or `"nonzero"` for complex paths/cutouts. |
 
 ### PathBuilder
 
 > **Chaining:** All methods return `this`.
 
-```ts
+```typescript
 const path = geom.path({ className: "optional-class" });
 
 path.moveTo(dx, dy)          // relative move
@@ -118,9 +132,9 @@ Create a dimensions group. Call once, outside draw callbacks.
 
 > Same interface as GeometryGroup: `dimension(options?)`, `translate(x, y)`, `setDrawUsage(mode)`, `clear()`.
 
-### DimensionsBuilder — Positioning
+### DimensionsBuilder - Positioning
 
-```ts
+```typescript
 const dim = dims.dimension({ className: "optional-class" });
 
 dim.moveTo(dx, dy); // relative move
@@ -129,11 +143,11 @@ dim.lineTo(dx, dy); // relative line
 dim.lineToAbs(x, y); // absolute line
 ```
 
-### DimensionsBuilder — Primitives
+### DimensionsBuilder - Primitives
 
 > **Angles are in radians.** `0` = right, `π/2` = up.
 
-```ts
+```typescript
 dim.arc(r, startAngle, endAngle)     // arc centered at current position
 dim.arrow(angleRad, size?)           // open arrow (default size: 8)
 dim.arrowFilled(angleRad, size?)     // filled arrow (default size: 8)
@@ -150,12 +164,12 @@ dim.close()                          // close path
 | `tick`        | Architectural tick: two crossed lines rotated by `angleRad`.                                        |
 | `centerMark`  | Crosshair + filled center dot. Standard for center-point callouts.                                  |
 
-### DimensionsBuilder — Text
+### DimensionsBuilder - Text
 
-```ts
+```typescript
 dim.textAt(dx, dy, text, align?, className?)
 dim.textAtAbs(x, y, text, align?, className?)
 ```
 
-> **align:** `"start"` | `"middle"` | `"end"` — defaults to `"middle"`.
+> **align:** `"start"` | `"middle"` | `"end"` - defaults to `"middle"`.
 > **className:** optional CSS class applied to the `<text>` element.

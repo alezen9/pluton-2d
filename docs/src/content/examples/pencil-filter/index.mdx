@@ -10,9 +10,11 @@ import PencilFilter from "./PencilFilter.svelte";
 <ExampleTabs>
   <PencilFilter client:visible slot="scene" />
   <Fragment slot="code">
-```ts
+```typescript
+const roseFillId = scene.addHatchFill("#e11d48");
+
 scene.draw((p) => {
-  const star = geom.path();
+  const star = geom.path({ className: "demo-rose", fill: roseFillId });
   const points = 5;
   const outerR = p.size;
   const innerR = p.size * 0.4;

@@ -15,14 +15,14 @@
     scene = s;
     const geom = scene.geometry.group();
     const dims = scene.dimensions.group();
-    const blueFill = scene.addHatchFill("#2563eb");
+    const blueFillId = scene.addHatchFill("#2563eb");
 
     scene.draw((p) => {
       const { width: w, height: h, thickness: t, outerRadius: ro, innerRadius: ri } = p;
       const iw = w - 2 * t;
       const ih = h - 2 * t;
 
-      const path = geom.path({ className: "demo-blue", fill: blueFill });
+      const path = geom.path({ className: "demo-blue", fill: blueFillId });
 
       path
         .moveToAbs(-w / 2 + ro, -h / 2)

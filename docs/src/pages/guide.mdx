@@ -20,7 +20,7 @@ npm install pluton-2d
 
 Import the stylesheet and create a scene. The SVG element needs CSS width/height or a viewBox to be visible:
 
-```ts
+```typescript
 import "pluton-2d/style.css";
 import { Pluton2D } from "pluton-2d";
 
@@ -43,20 +43,20 @@ scene.draw((p) => {
 });
 ```
 
-Groups are created once, outside the draw callback. Builders requested inside are recycled — the engine only writes changed attributes.
+Groups are created once, outside the draw callback. Builders requested inside are recycled - the engine only writes changed attributes.
 
 ### Reactive params
 
-Params are wrapped in a Proxy. Any mutation triggers a redraw automatically — redraws are capped at 60 FPS.
+Params are wrapped in a Proxy. Any mutation triggers a redraw automatically - redraws are capped at 60 FPS.
 
-```ts
-// Mutate a single param — triggers redraw
+```typescript
+// Mutate a single param - triggers redraw
 scene.params.width = 300;
 
 // Mutate several at once
 Object.assign(scene.params, { width: 250, height: 150 });
 
-// Don't reassign the whole object — the Proxy is on the original
+// Don't reassign the whole object - the Proxy is on the original
 // scene.params = { ... };  ← won't trigger redraws
 ```
 
@@ -68,14 +68,14 @@ When you're done with a scene, call `scene.dispose()` to clean up event listener
 
 ## Coordinate system
 
-Pluton uses **center origin with Y-axis pointing up** — math convention, not screen coordinates.
+Pluton uses **center origin with Y-axis pointing up** - math convention, not screen coordinates.
 
 - Origin is at the center of the viewport
 - Positive X → right
 - Positive Y → **up**
 - `lineTo(10, 20)` moves right 10 units, up 20 units
 
-The world layer applies `scale(1, -1)` to flip Y. Arc sweep flags are inverted at the SVG level — pass `clockwise = true` and the arc renders clockwise.
+The world layer applies `scale(1, -1)` to flip Y. Arc sweep flags are inverted at the SVG level - pass `clockwise = true` and the arc renders clockwise.
 
 ---
 
@@ -83,18 +83,18 @@ The world layer applies `scale(1, -1)` to flip Y. Arc sweep flags are inverted a
 
 For geometry that never changes, mark the group as static. The engine commits it once and skips all subsequent DOM updates for that group.
 
-```ts
+```typescript
 const bg = scene.geometry.group();
 bg.setDrawUsage("static"); // commit runs once, then stops
 
 const fg = scene.geometry.group(); // dynamic by default
 
 scene.draw((p) => {
-  // Static — still call path() every frame, engine skips the DOM write
+  // Static - still call path() every frame, engine skips the DOM write
   const bgPath = bg.path();
   bgPath.moveToAbs(-100, -100).lineTo(200, 0).lineTo(0, 200).close();
 
-  // Dynamic — DOM updates every frame
+  // Dynamic - DOM updates every frame
   const fgPath = fg.path();
   fgPath.moveToAbs(0, 0).lineTo(p.width, 0).lineTo(0, p.height).close();
 });
@@ -140,7 +140,7 @@ All visual styling is driven by CSS custom properties on `.pluton-root`. Overrid
 
 Pass `className` to `path()` or `dimension()` for fine-grained control:
 
-```ts
+```typescript
 // Pass a class name when requesting a builder
 const path = geom.path({ className: "my-path" });
 
@@ -148,17 +148,21 @@ const path = geom.path({ className: "my-path" });
 // .pluton-root .pluton-geometry path.my-path { stroke: #e11d48; }
 ```
 
+`path()` also accepts `fill` and `fillRule` when you need hatch fills or cutouts.
+
 ### Hatch fill
 
-Hatch fill is opt-in. Enable globally or per-path:
+Create hatch fills with `addHatchFill(...)` and pass the returned pattern to `path({ fill })`:
 
-```ts
-// Enable hatch fill on all geometry paths
-scene.enableHatchFill(true);
+```typescript
+const blueFillId = scene.addHatchFill("#2563eb");
+const orangeFillId = scene.addHatchFill("#ea580c", 0.45);
 
-// Or target a single path
-const path = geom.path({ className: "pluton-fill-hatch" });
+geom.path({ fill: blueFillId }).moveToAbs(...).lineTo(...).close();
+geom.path({ fill: orangeFillId, fillRule: "evenodd" }).moveToAbs(...).lineTo(...).close();
 ```
+
+Use `scene.enableHatchFill(false)` to temporarily hide all geometry fills (including custom hatch fills), then `scene.enableHatchFill(true)` to show them again.
 
 ---
 
@@ -166,9 +170,9 @@ const path = geom.path({ className: "pluton-fill-hatch" });
 
 Pan and zoom are opt-in and can be reset at any time:
 
-```ts
+```typescript
 scene.enablePan(true);   // middle-mouse drag, or shift + left-click drag
-scene.enableZoom(true);  // mouse wheel — scale range 1×–20×
+scene.enableZoom(true);  // mouse wheel - scale range 1×-20×
 
 scene.resetCamera();     // smooth animation back to origin
 ```

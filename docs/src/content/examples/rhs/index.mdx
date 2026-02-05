@@ -10,13 +10,15 @@ import RectangularHollowSection from "./RectangularHollowSection.svelte";
 <ExampleTabs>
   <RectangularHollowSection client:visible slot="scene" />
   <Fragment slot="code">
-```ts
+```typescript
+const blueFillId = scene.addHatchFill("#2563eb");
+
 scene.draw((p) => {
   const { width: w, height: h, thickness: t, outerRadius: ro, innerRadius: ri } = p;
   const iw = w - 2 * t;
   const ih = h - 2 * t;
 
-  const path = geom.path();
+  const path = geom.path({ className: "demo-blue", fill: blueFillId });
 
   // Outer rectangle with rounded corners
   path
@@ -31,7 +33,7 @@ scene.draw((p) => {
     .arcTo(ro, -ro, ro, false)
     .close();
 
-  // Inner cutout — same pattern, inner dimensions
+  // Inner cutout - same pattern, inner dimensions
   path
     .moveToAbs(-iw / 2 + ri, -ih / 2)
     .lineTo(iw - 2 * ri, 0)

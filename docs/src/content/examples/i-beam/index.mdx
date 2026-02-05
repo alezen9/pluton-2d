@@ -10,12 +10,13 @@ import IBeam from "./IBeam.svelte";
 <ExampleTabs>
   <IBeam client:visible slot="scene" />
   <Fragment slot="code">
-```ts
+```typescript
 const geom = scene.geometry.group();
 const dims = scene.dimensions.group();
+const amberFillId = scene.addHatchFill("#d97706");
 
 scene.draw((p) => {
-  const path = geom.path();
+  const path = geom.path({ className: "demo-amber", fill: amberFillId });
   path
     .moveToAbs(0, 0)
     .lineTo(p.width / 2, 0)

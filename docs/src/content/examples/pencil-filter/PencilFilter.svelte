@@ -11,10 +11,10 @@
     scene = s;
     scene.enableFilter(true);
     const geom = scene.geometry.group();
-    const roseFill = scene.addHatchFill("#e11d48");
+    const roseFillId = scene.addHatchFill("#e11d48");
 
     scene.draw((p) => {
-      const star = geom.path({ className: "demo-rose", fill: roseFill });
+      const star = geom.path({ className: "demo-rose", fill: roseFillId });
       const points = 5;
       const outerR = p.size;
       const innerR = p.size * 0.4;

@@ -2,7 +2,7 @@
 
 ![suuuuuprrrrr](https://img.shields.io/badge/suuuuuprrrrr-ff3366?style=flat)
 
-I built this for a specific need in another project—crisp vector output for technical drawings with minimal DOM churn. It's SVG-based, so lines stay sharp at any zoom, and it includes built-in helpers for grids, dimensions, and drafting annotations. Named after Pluton, the battleship from One Piece (blueprints worth keeping). I'm sharing it in case you have a similar need.
+I built this for a specific need in another project-crisp vector output for technical drawings with minimal DOM churn. It's SVG-based, so lines stay sharp at any zoom, and it includes built-in helpers for grids, dimensions, and drafting annotations. Named after Pluton, the battleship from One Piece (blueprints worth keeping). I'm sharing it in case you have a similar need.
 
 - [What you get](#what-you-get)
 - [Getting started](#getting-started)
@@ -28,7 +28,7 @@ Grid, axes, hatch fill, and dimension builders come out of the box. Focus on you
 The engine records draw commands and reuses DOM elements via activeIndex tracking. Only changed attributes get updated, keeping interactions smooth.
 
 **Reactive parameters**
-Params are wrapped in a Proxy. Mutate them anywhere and redraws trigger automatically—no manual scheduling needed.
+Params are wrapped in a Proxy. Mutate them anywhere and redraws trigger automatically-no manual scheduling needed.
 
 **Simple camera controls**
 Pan and zoom are opt-in, with smoothing tuned for natural interaction. Reset to initial view anytime.
@@ -67,7 +67,7 @@ scene.draw((p) => {
 });
 ```
 
-**Params are reactive** — mutations trigger redraws automatically:
+**Params are reactive** - mutations trigger redraws automatically:
 
 ```ts
 // Single property
@@ -87,9 +87,9 @@ Understanding the render cycle helps you use the library effectively.
 Params are wrapped in a Proxy. Any mutation triggers `scheduleRender()`, which queues a frame-limited update.
 
 **2. Render cycle** (capped at 60 FPS)
-- `beginRecord()` — reset activeIndex on all groups
-- Draw callbacks run — you request builders with `path()` or `dimension()`
-- `commit()` — update DOM with changes (skipped for static groups)
+- `beginRecord()` - reset activeIndex on all groups
+- Draw callbacks run - you request builders with `path()` or `dimension()`
+- `commit()` - update DOM with changes (skipped for static groups)
 
 **3. Group reuse**
 Create groups once outside draw callbacks, request builders inside:
@@ -103,7 +103,7 @@ scene.draw(() => {
 });
 ```
 
-Builders are reused internally via activeIndex tracking. This minimizes DOM churn—elements are only created when needed and attributes only update when values change.
+Builders are reused internally via activeIndex tracking. This minimizes DOM churn-elements are only created when needed and attributes only update when values change.
 
 ## Coordinate system
 
@@ -113,7 +113,7 @@ Pluton uses a **center origin with Y-axis pointing up** (math convention, not sc
 - Positive X is right, positive Y is **up**
 - Example: `lineTo(10, 20)` moves right 10 units, up 20 units
 
-The viewport layer applies `scale(1, -1)` to flip the Y-axis for SVG rendering. This matters when placing dimensions and text—use the dimension helpers to ensure correct orientation.
+The viewport layer applies `scale(1, -1)` to flip the Y-axis for SVG rendering. This matters when placing dimensions and text-use the dimension helpers to ensure correct orientation.
 
 ## API
 
@@ -168,7 +168,7 @@ scene.enableGrid(true);       // background grid (default: true)
 scene.enableAxes(true);       // center axes (default: true)
 ```
 
-Filters can be expensive on Safari during zoom—disable them if you see lag.
+Filters can be expensive on Safari during zoom-disable them if you see lag.
 
 ### Geometry
 
@@ -346,7 +346,7 @@ scene.draw((p) => {
 
 **How it works:**
 - Set `setDrawUsage("static")` on the group before rendering starts
-- Draw callbacks run normally—you still call `path()` every frame
+- Draw callbacks run normally-you still call `path()` every frame
 - The engine skips `commit()` for static groups, avoiding DOM updates
 - No flags, no RAF, no conditionals needed in your draw logic
 
@@ -387,7 +387,7 @@ scene.enableFilter(false);
 **Params changes don't trigger redraw**
 - Mutate params: `scene.params.width = 100` ✓
 - Don't reassign: `scene.params = { ... }` ✗
-- Params must be flat — nested objects throw at construction
+- Params must be flat - nested objects throw at construction
 
 **Dimensions not visible**
 - Check layer is created: `scene.dimensions.group()`

@@ -169,8 +169,8 @@ export class Pluton2D<
    * @param opacity - Stroke opacity (0-1), default 0.3
    * @returns Pattern reference (url(#id)) to use as fill value in path options
    * @example
-   * const blueFill = scene.addHatchFill('#2563eb');
-   * geom.path({ fill: blueFill }).moveTo(...).close();
+   * const blueFillId = scene.addHatchFill('#2563eb');
+   * geom.path({ fill: blueFillId }).moveTo(...).close();
    */
   addHatchFill(color: string, opacity?: number): string {
     return this.defs.createHatchFill(color, opacity);

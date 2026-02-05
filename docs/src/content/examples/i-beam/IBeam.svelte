@@ -15,7 +15,7 @@
     scene = s;
     const geom = scene.geometry.group();
     const dims = scene.dimensions.group();
-    const amberFill = scene.addHatchFill("#d97706");
+    const amberFillId = scene.addHatchFill("#d97706");
 
     scene.draw((p) => {
       const fw = p.width;
@@ -24,7 +24,7 @@
       const h = p.height;
       const r = p.filletRadius;
 
-      const path = geom.path({ className: "demo-amber", fill: amberFill });
+      const path = geom.path({ className: "demo-amber", fill: amberFillId });
       path
         .moveToAbs(0, 0)
         .lineTo(fw / 2, 0)

@@ -1,58 +1,126 @@
 ---
+import HomeShowcase from "@components/HomeShowcase.svelte";
 import Layout from "../layouts/Layout.astro";
-import { Code } from "astro/components";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-
-const installCode = `npm install pluton-2d`;
-
-const quickStart = `import "pluton-2d/style.css";
-import { Pluton2D } from "pluton-2d";
-
-const svg = document.querySelector("svg")!;
-const scene = new Pluton2D(svg, { size: 100 });
-
-const geom = scene.geometry.group();
-
-scene.draw((p) => {
-  const path = geom.path();
-  path
-    .moveToAbs(0, -p.size / 2)
-    .lineTo(p.size / 2, p.size)
-    .lineTo(-p.size, 0)
-    .close();
-});
-
-// Reactive — triggers redraw automatically
-scene.params.size = 150;`;
 ---
 
 <Layout title="Pluton 2D" currentPage="/">
-  <div class="page">
-    <div class="hero">
-      <h1>Crisp vector drawings.<br />Zero churn.</h1>
+  <section class="home-page">
+    <div class="home-intro">
+      <h1>Pluton 2D</h1>
       <p>
-        SVG-based technical drawing library with reactive parameters, built-in
-        dimension annotations, and minimal DOM updates.
+        SVG-first technical drawing with reactive params, dimensions, and low
+        DOM churn.
       </p>
       <div class="hero-actions">
-        <a href={`${base}/guide`} class="btn btn-primary">Get Started</a>
-        <a href={`${base}/examples`} class="btn btn-secondary"
-          >View Examples</a
-        >
+        <a href={`${base}/guide`} class="btn btn-primary">Guide</a>
+        <a href={`${base}/examples`} class="btn btn-secondary">Examples</a>
       </div>
     </div>
 
-    <h2 style="margin-top: 1.5rem;">Quick start</h2>
-    <Code code={installCode} lang="bash" theme="one-dark-pro" />
-    <Code code={quickStart} lang="ts" theme="one-dark-pro" />
-
-    <div class="callout">
-      <p>
-        <strong>Params are reactive.</strong> Mutate any property on
-        <code>scene.params</code> and redraws happen automatically — no manual
-        scheduling needed.
-      </p>
+    <div class="home-demo">
+      <HomeShowcase client:load />
     </div>
-  </div>
+  </section>
 </Layout>
+
+<style>
+  .home-page {
+    max-width: 1100px;
+    height: calc(100vh - 60px);
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem;
+    display: grid;
+    grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: stretch;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+
+  .home-intro {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  .home-intro h1 {
+    margin-bottom: 0.45rem;
+  }
+
+  .home-intro p {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .home-demo {
+    min-height: 0;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #0d6b62;
+    text-decoration: none;
+  }
+
+  .btn-secondary {
+    background: var(--panel-bg);
+    color: var(--text-main);
+    border-color: var(--panel-border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  @media (max-width: 768px) {
+    .home-page {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      padding: 0.9rem;
+      gap: 0.9rem;
+    }
+
+    .home-intro {
+      justify-content: flex-start;
+    }
+
+    .home-intro h1 {
+      font-size: 1.6rem;
+    }
+
+    .home-intro p {
+      margin-bottom: 0.75rem;
+      font-size: 0.92rem;
+    }
+  }
+</style>

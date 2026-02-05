@@ -12,13 +12,13 @@
     scene = s;
     const geom = scene.geometry.group();
     const dims = scene.dimensions.group();
-    const tealFill = scene.addHatchFill("#0f766e");
+    const tealFillId = scene.addHatchFill("#0f766e");
 
     scene.draw((p) => {
       const { radius: r, thickness: t } = p;
       const ir = r - t;
 
-      const path = geom.path({ className: "demo-teal", fill: tealFill });
+      const path = geom.path({ className: "demo-teal", fill: tealFillId });
 
       path
         .moveToAbs(-r, 0)
