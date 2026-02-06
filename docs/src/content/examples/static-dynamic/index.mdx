@@ -4,33 +4,37 @@ category: Behavior
 description: Orange shape is static - it freezes after the first render. Teal shape updates live.
 ---
 
-import ExampleTabs from "@examples/components/ExampleTabs.astro";
+import ExampleTabs from "@examples/components/ExampleTabs.svelte";
 import StaticDynamic from "./StaticDynamic.svelte";
 
 <ExampleTabs>
   <StaticDynamic client:visible slot="scene" />
   <Fragment slot="code">
-```typescript
-const staticGroup = scene.geometry.group();
-staticGroup.setDrawUsage("static");
+    ```typescript
+      const staticGroup = scene.geometry.group();
+      staticGroup.setDrawUsage("static");
 
-const dynamicGroup = scene.geometry.group();
-const orangeFillId = scene.addHatchFill("#f97316");
-const tealFillId = scene.addHatchFill("#0f766e");
+    const dynamicGroup = scene.geometry.group();
+    const orangeFillId = scene.addHatchFill("#f97316");
+    const tealFillId = scene.addHatchFill("#0f766e");
+    const offset = 90;
 
-scene.draw((p) => {
-  // Static - committed once, frozen after first frame
-  staticGroup.path({ className: "demo-static", fill: orangeFillId })
-    .moveToAbs(-90 - p.size / 2, -p.size / 2)
+    scene.draw((p) => {
+    const half = p.size / 2;
+
+    // Static - committed once, frozen after first frame
+    staticGroup.path({ fill: orangeFillId })
+    .moveToAbs(-offset - half, -half)
     .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
     .close();
 
-  // Dynamic - redraws every frame
-  dynamicGroup.path({ className: "demo-dynamic", fill: tealFillId })
-    .moveToAbs(90 - p.size / 2, -p.size / 2)
+    // Dynamic - redraws every frame
+    dynamicGroup.path({ fill: tealFillId })
+    .moveToAbs(offset - half, -half)
     .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
     .close();
-});
-```
+    });
+    ```
+
   </Fragment>
 </ExampleTabs>

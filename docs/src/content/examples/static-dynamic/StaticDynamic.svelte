@@ -22,12 +22,12 @@
       const half = p.size / 2;
       const offset = 90;
 
-      staticGroup.path({ className: "demo-static", fill: orangeFillId })
+      staticGroup.path({ fill: orangeFillId })
         .moveToAbs(-offset - half, -half)
         .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
         .close();
 
-      dynamicGroup.path({ className: "demo-dynamic", fill: tealFillId })
+      dynamicGroup.path({ fill: tealFillId })
         .moveToAbs(offset - half, -half)
         .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
         .close();
