@@ -1,145 +1,112 @@
-<script lang="ts" generics="P extends Record<string, unknown>">
-  import { onMount, onDestroy } from "svelte";
-  import { Pluton2D } from "pluton-2d";
+<script lang="ts">
   import type { Snippet } from "svelte";
 
   let {
-    initialParams,
-    onSetup,
     params,
-    initialFilterOn = false,
+    panOn = $bindable(false),
+    zoomOn = $bindable(false),
+    gridOn = $bindable(false),
+    axesOn = $bindable(false),
+    hatchOn = $bindable(false),
+    filterOn = $bindable(false),
+    onResetCamera,
   }: {
-    initialParams: P;
-    onSetup: (scene: Pluton2D<P>) => void;
     params?: Snippet;
-    initialFilterOn?: boolean;
+    panOn?: boolean;
+    zoomOn?: boolean;
+    gridOn?: boolean;
+    axesOn?: boolean;
+    hatchOn?: boolean;
+    filterOn?: boolean;
+    onResetCamera: () => void;
   } = $props();
-
-  let svgEl: SVGSVGElement | undefined = $state();
-  let scene: Pluton2D<P> | undefined = $state();
-
-  let panOn = $state(true);
-  let zoomOn = $state(true);
-  let gridOn = $state(true);
-  let axesOn = $state(true);
-  let hatchOn = $state(true);
-  let filterOn = $state(initialFilterOn);
-
-  onMount(() => {
-    if (svgEl) {
-      scene = new Pluton2D(svgEl, initialParams);
-      onSetup(scene);
-    }
-  });
-
-  onDestroy(() => {
-    scene?.dispose();
-  });
-
-  $effect(() => {
-    if (!scene) return;
-    scene.enablePan(panOn);
-    scene.enableZoom(zoomOn);
-    scene.enableFilter(filterOn);
-    scene.enableGrid(gridOn);
-    scene.enableAxes(axesOn);
-    scene.enableHatchFill(hatchOn);
-  });
 </script>
 
-<div class="scene-layout">
-  <div class="example-canvas-area">
-    <div class="demo-frame">
-      <svg bind:this={svgEl}></svg>
+<div class="example-controls-area">
+  <div class="controls-panel">
+    <div class="controls-panel-title">Parameters</div>
+    <div class="demo-controls">
+      {@render params?.()}
     </div>
   </div>
 
-  <div class="example-controls-area">
-    <div class="controls-panel">
-      <div class="controls-panel-title">Parameters</div>
-      <div class="demo-controls">
-        {@render params?.()}
-      </div>
+  <div class="controls-panel">
+    <div class="controls-panel-title">Display</div>
+    <div class="switch-group">
+      <label class="switch-row">
+        <input
+          type="checkbox"
+          class="switch"
+          bind:checked={gridOn}
+        />
+        <span>Grid</span>
+      </label>
+      <label class="switch-row">
+        <input
+          type="checkbox"
+          class="switch"
+          bind:checked={axesOn}
+        />
+        <span>Axes</span>
+      </label>
+      <label class="switch-row">
+        <input
+          type="checkbox"
+          class="switch"
+          bind:checked={hatchOn}
+        />
+        <span>Hatch</span>
+      </label>
+      <label class="switch-row">
+        <input
+          type="checkbox"
+          class="switch"
+          bind:checked={filterOn}
+        />
+        <span>Pencil</span>
+      </label>
     </div>
+  </div>
 
-    <div class="controls-panel">
-      <div class="controls-panel-title">Display</div>
-      <div class="switch-group">
-        <label class="switch-row">
-          <input type="checkbox" class="switch" bind:checked={gridOn} />
-          <span>Grid</span>
-        </label>
-        <label class="switch-row">
-          <input type="checkbox" class="switch" bind:checked={axesOn} />
-          <span>Axes</span>
-        </label>
-        <label class="switch-row">
-          <input type="checkbox" class="switch" bind:checked={hatchOn} />
-          <span>Hatch</span>
-        </label>
-        <label class="switch-row">
-          <input type="checkbox" class="switch" bind:checked={filterOn} />
-          <span>Pencil</span>
-        </label>
-      </div>
+  <div class="controls-panel">
+    <div class="controls-panel-title">Camera</div>
+    <div class="switch-group">
+      <label class="switch-row">
+        <input
+          type="checkbox"
+          class="switch"
+          bind:checked={panOn}
+        />
+        <span>Pan</span>
+      </label>
+      <label class="switch-row">
+        <input
+          type="checkbox"
+          class="switch"
+          bind:checked={zoomOn}
+        />
+        <span>Zoom</span>
+      </label>
     </div>
-
-    <div class="controls-panel">
-      <div class="controls-panel-title">Camera</div>
-      <div class="switch-group">
-        <label class="switch-row">
-          <input type="checkbox" class="switch" bind:checked={panOn} />
-          <span>Pan</span>
-        </label>
-        <label class="switch-row">
-          <input type="checkbox" class="switch" bind:checked={zoomOn} />
-          <span>Zoom</span>
-        </label>
-      </div>
-      <button class="btn-reset" onclick={() => scene?.resetCamera()}>Reset Camera</button>
-    </div>
+    <button class="btn-reset" onclick={onResetCamera}>Reset Camera</button>
   </div>
 </div>
 
 <style>
-  .scene-layout {
-    --control-track: rgba(198, 222, 230, 0.2);
-    --control-thumb: #edf3f5;
-    --control-thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    flex: 1;
-    display: flex;
-    gap: 1.5rem;
-    min-height: 360px;
-  }
-
-  .example-canvas-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    min-height: 0;
-  }
-
-  .example-canvas-area .demo-frame {
-    aspect-ratio: unset;
-    flex: 1;
-    min-height: 0;
-  }
-
   .example-controls-area {
-    width: 280px;
+    width: 300px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.45rem;
     overflow-y: auto;
   }
 
   .controls-panel {
     background: var(--panel-bg);
     border: 1px solid var(--panel-border);
-    border-radius: var(--radius);
-    padding: 0.5rem 0.65rem;
+    border-radius: calc(var(--radius) - 1px);
+    padding: 0.46rem 0.62rem;
   }
 
   .controls-panel-title {
@@ -287,8 +254,8 @@
     background: transparent;
     border: 1px solid var(--panel-border);
     color: var(--text-muted);
-    padding: 0.4rem 0.75rem;
-    border-radius: 6px;
+    padding: 0.28rem 1.1rem;
+    border-radius: 5px;
     font-size: 0.82rem;
     font-weight: 500;
     font-family: inherit;
@@ -338,51 +305,7 @@
     color: #0f766e;
   }
 
-  :global(.pluton-root .pluton-geometry path.demo-blue) {
-    stroke: #2563eb;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-teal) {
-    stroke: #0f766e;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-orange) {
-    stroke: #ea580c;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-purple) {
-    stroke: #7c3aed;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-rose) {
-    stroke: #e11d48;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-amber) {
-    stroke: #d97706;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-static) {
-    stroke: #f97316;
-    stroke-width: 2;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-dynamic) {
-    stroke: #0f766e;
-    stroke-width: 2;
-  }
-
   @media (max-width: 1024px) {
-    .scene-layout {
-      flex-direction: column;
-      overflow-y: auto;
-    }
-
-    .example-canvas-area {
-      min-height: 300px;
-      flex: none;
-    }
-
     .example-controls-area {
       width: 100%;
       flex-direction: row;
@@ -393,13 +316,6 @@
     .controls-panel {
       flex: 1;
       min-width: 200px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .example-canvas-area .demo-frame {
-      aspect-ratio: 4 / 3;
-      flex: none;
     }
   }
 </style>

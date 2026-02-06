@@ -1,8 +1,9 @@
 <script lang="ts">
   import { Pluton2D } from "pluton-2d";
-  import ExampleLayout from "@components/ExampleLayout.svelte";
+  import ExampleLayout from "@examples/components/ExampleLayout.svelte";
 
   type Params = { radius: number; thickness: number };
+  const CIRCLE_HANDLE_FACTOR = 0.5522847498;
 
   let radius = $state(110);
   let thickness = $state(12);
@@ -19,20 +20,18 @@
       const ir = r - t;
 
       const path = geom.path({ className: "demo-teal", fill: tealFillId });
+      const appendCircle = (radiusValue: number) => {
+        const handleOffset = radiusValue * CIRCLE_HANDLE_FACTOR;
+        path
+          .moveToAbs(-radiusValue, 0)
+          .cubicToAbs(-radiusValue, handleOffset, -handleOffset, radiusValue, 0, radiusValue)
+          .smoothCubicToAbs(radiusValue, handleOffset, radiusValue, 0)
+          .smoothCubicToAbs(handleOffset, -radiusValue, 0, -radiusValue)
+          .smoothCubicToAbs(-radiusValue, -handleOffset, -radiusValue, 0);
+      };
 
-      path
-        .moveToAbs(-r, 0)
-        .arcTo(r, r, r, true)
-        .arcTo(r, -r, r, true)
-        .arcTo(-r, -r, r, true)
-        .arcTo(-r, r, r, true);
-
-      path
-        .moveToAbs(-ir, 0)
-        .arcTo(ir, ir, ir, true)
-        .arcTo(ir, -ir, ir, true)
-        .arcTo(-ir, -ir, ir, true)
-        .arcTo(-ir, ir, ir, true);
+      appendCircle(r);
+      appendCircle(ir);
 
       const dim = dims.dimension();
       const angle = Math.PI / 4;

@@ -46,6 +46,110 @@ export class PathBuilder {
   }
 
   /**
+   * Draw a cubic Bezier curve relative to current position
+   * @param c1dx - first control point horizontal offset
+   * @param c1dy - first control point vertical offset
+   * @param c2dx - second control point horizontal offset
+   * @param c2dy - second control point vertical offset
+   * @param dx - end point horizontal offset
+   * @param dy - end point vertical offset
+   * @returns this builder for chaining
+   */
+  cubicTo(c1dx: number, c1dy: number, c2dx: number, c2dy: number, dx: number, dy: number) {
+    this.commands.push(`c ${c1dx} ${c1dy} ${c2dx} ${c2dy} ${dx} ${dy}`);
+    return this;
+  }
+
+  /**
+   * Draw a cubic Bezier curve to an absolute position
+   * @param c1x - first control point absolute x coordinate
+   * @param c1y - first control point absolute y coordinate
+   * @param c2x - second control point absolute x coordinate
+   * @param c2y - second control point absolute y coordinate
+   * @param x - end point absolute x coordinate
+   * @param y - end point absolute y coordinate
+   * @returns this builder for chaining
+   */
+  cubicToAbs(c1x: number, c1y: number, c2x: number, c2y: number, x: number, y: number) {
+    this.commands.push(`C ${c1x} ${c1y} ${c2x} ${c2y} ${x} ${y}`);
+    return this;
+  }
+
+  /**
+   * Draw a smooth cubic Bezier curve relative to current position
+   * @param c2dx - second control point horizontal offset
+   * @param c2dy - second control point vertical offset
+   * @param dx - end point horizontal offset
+   * @param dy - end point vertical offset
+   * @returns this builder for chaining
+   */
+  smoothCubicTo(c2dx: number, c2dy: number, dx: number, dy: number) {
+    this.commands.push(`s ${c2dx} ${c2dy} ${dx} ${dy}`);
+    return this;
+  }
+
+  /**
+   * Draw a smooth cubic Bezier curve to an absolute position
+   * @param c2x - second control point absolute x coordinate
+   * @param c2y - second control point absolute y coordinate
+   * @param x - end point absolute x coordinate
+   * @param y - end point absolute y coordinate
+   * @returns this builder for chaining
+   */
+  smoothCubicToAbs(c2x: number, c2y: number, x: number, y: number) {
+    this.commands.push(`S ${c2x} ${c2y} ${x} ${y}`);
+    return this;
+  }
+
+  /**
+   * Draw a quadratic Bezier curve relative to current position
+   * @param c1dx - control point horizontal offset
+   * @param c1dy - control point vertical offset
+   * @param dx - end point horizontal offset
+   * @param dy - end point vertical offset
+   * @returns this builder for chaining
+   */
+  quadTo(c1dx: number, c1dy: number, dx: number, dy: number) {
+    this.commands.push(`q ${c1dx} ${c1dy} ${dx} ${dy}`);
+    return this;
+  }
+
+  /**
+   * Draw a quadratic Bezier curve to an absolute position
+   * @param c1x - control point absolute x coordinate
+   * @param c1y - control point absolute y coordinate
+   * @param x - end point absolute x coordinate
+   * @param y - end point absolute y coordinate
+   * @returns this builder for chaining
+   */
+  quadToAbs(c1x: number, c1y: number, x: number, y: number) {
+    this.commands.push(`Q ${c1x} ${c1y} ${x} ${y}`);
+    return this;
+  }
+
+  /**
+   * Draw a smooth quadratic Bezier curve relative to current position
+   * @param dx - end point horizontal offset
+   * @param dy - end point vertical offset
+   * @returns this builder for chaining
+   */
+  smoothQuadTo(dx: number, dy: number) {
+    this.commands.push(`t ${dx} ${dy}`);
+    return this;
+  }
+
+  /**
+   * Draw a smooth quadratic Bezier curve to an absolute position
+   * @param x - end point absolute x coordinate
+   * @param y - end point absolute y coordinate
+   * @returns this builder for chaining
+   */
+  smoothQuadToAbs(x: number, y: number) {
+    this.commands.push(`T ${x} ${y}`);
+    return this;
+  }
+
+  /**
    * Draw an arc relative to current position
    * @param dx - horizontal offset to end point
    * @param dy - vertical offset to end point

@@ -1,5 +1,5 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import BaseLayout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 
 const { title = "Examples" } = Astro.props;
@@ -7,9 +7,21 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const examples = await getCollection("examples");
 
-const CATEGORY_ORDER = ["Drawing", "Profiles", "Effects", "Behavior"];
+const CATEGORY_ORDER = [
+  "Drawing",
+  "Profiles",
+  "Complex Shapes",
+  "Suuuuuprrrrrr",
+  "Effects",
+  "Behavior",
+];
 
-const byCategory = {};
+type ExampleNavItem = {
+  path: string;
+  label: string;
+};
+
+const byCategory: Record<string, ExampleNavItem[]> = Object.create(null);
 for (const ex of examples) {
   (byCategory[ex.data.category] ??= []).push({
     path: `/examples/${ex.id}`,
@@ -23,7 +35,7 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
 }));
 ---
 
-<Layout {title} currentPage="/examples">
+<BaseLayout {title} currentPage="/examples">
   <div class="examples-layout">
     <aside class="examples-sidebar" transition:persist>
       <div class="sidebar-category">
@@ -52,11 +64,11 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
       <slot />
     </div>
   </div>
-</Layout>
+</BaseLayout>
 
 <script>
   // Update active link after view transitions (sidebar is persisted, doesn't re-render)
-  const normalize = (value) =>
+  const normalize = (value: string) =>
     value.length > 1 ? value.replace(/\/+$/, "") : value;
 
   const setActive = () => {
@@ -70,21 +82,21 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
   document.addEventListener("astro:after-swap", setActive);
 </script>
 
-<style is:global>
+<style>
   .examples-layout {
     display: flex;
-    height: calc(100vh - 60px);
+    height: calc(100svh - 64px);
     position: relative;
     z-index: 1;
     overflow: hidden;
   }
 
   .examples-sidebar {
-    width: 200px;
+    width: 300px;
     flex-shrink: 0;
     border-right: 1px solid var(--panel-border);
     background: var(--panel-bg-solid);
-    padding: 1.25rem 0.75rem;
+    padding: 1.2rem 0.72rem;
     overflow-y: auto;
   }
 
@@ -96,7 +108,7 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
     font-size: 0.65rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-muted);
     padding: 0 0.5rem;
     margin-bottom: 0.3rem;
@@ -113,12 +125,12 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
 
   .examples-sidebar .sidebar-links a {
     display: block;
-    padding: 0.35rem 0.5rem;
-    border-radius: 5px;
+    padding: 0.3rem 0.54rem;
+    border-radius: 4px;
     color: var(--text-muted);
     text-decoration: none;
     font-size: 0.82rem;
-    font-weight: 500;
+    font-weight: 400;
     transition: color 0.15s, background 0.15s;
   }
 
@@ -135,42 +147,11 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
 
   .examples-main {
     flex: 1;
-    padding: 1.5rem 2rem;
+    padding: 1.35rem 1.8rem;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     min-width: 0;
-  }
-
-  .example-header {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 0.35rem;
-    flex-shrink: 0;
-  }
-
-  .example-header h1 {
-    font-size: 1.4rem;
-    margin: 0;
-  }
-
-  .example-desc {
-    color: var(--text-muted);
-    font-size: 0.88rem;
-    margin-bottom: 1rem;
-    flex-shrink: 0;
-  }
-
-  .demo-card-tag {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-    font-weight: 600;
-    background: var(--accent-light);
-    padding: 3px 8px;
-    border-radius: 4px;
   }
 
   @media (max-width: 768px) {
@@ -215,7 +196,7 @@ const categories = CATEGORY_ORDER.filter((c) => byCategory[c]).map((c) => ({
 
     .examples-sidebar .sidebar-links a {
       white-space: nowrap;
-      padding: 0.35rem 0.7rem;
+      padding: 0.3rem 0.66rem;
       border: 1px solid var(--panel-border);
       font-size: 0.82rem;
     }

@@ -7,13 +7,17 @@
     initialParams,
     onSetup,
     params,
+    children,
     initialFilterOn = false,
   }: {
     initialParams: P;
     onSetup: (scene: Pluton2D<P>) => void;
     params?: Snippet;
+    children?: Snippet;
     initialFilterOn?: boolean;
   } = $props();
+
+  const controls = params ?? children;
 </script>
 
-<SceneLayout {initialParams} {onSetup} {initialFilterOn} {params} />
+<SceneLayout {initialParams} {onSetup} {initialFilterOn} params={controls} />

@@ -1,0 +1,97 @@
+---
+title: Astrobot
+category: Suuuuuprrrrrr
+description: Hand-shaped Astro Bot silhouette and details built from simple curved primitives.
+---
+
+import ExampleTabs from "@examples/components/ExampleTabs.astro";
+import Astrobot from "./Astrobot.svelte";
+
+<ExampleTabs>
+  <Astrobot client:visible slot="scene" />
+  <Fragment slot="code">
+```typescript
+import { Pluton2D } from "pluton-2d";
+
+type SceneParams = { height: number };
+
+const svgElement = document.querySelector("svg#astrobot") as SVGSVGElement;
+const scene = new Pluton2D<SceneParams>(svgElement, { height: 300 });
+const geometry = scene.geometry.group();
+
+const cubicAbs = (
+  path: any,
+  c1x: number,
+  c1y: number,
+  c2x: number,
+  c2y: number,
+  x: number,
+  y: number,
+  k: number,
+  dx = 0,
+  dy = 0,
+) => path.cubicToAbs(c1x * k + dx, c1y * k + dy, c2x * k + dx, c2y * k + dy, x * k + dx, y * k + dy);
+
+const appendEllipse = (
+  path: any,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  rotation: number,
+  k: number,
+  segments = 24,
+) => {
+  const cosR = Math.cos(rotation);
+  const sinR = Math.sin(rotation);
+  for (let i = 0; i <= segments; i++) {
+    const a = (i / segments) * Math.PI * 2;
+    const localX = rx * Math.cos(a);
+    const localY = ry * Math.sin(a);
+    const x = cx + localX * cosR - localY * sinR;
+    const y = cy + localX * sinR + localY * cosR;
+    if (i === 0) path.moveToAbs(x * k, y * k);
+    else path.lineToAbs(x * k, y * k);
+  }
+  path.close();
+};
+
+const drawHeadShell = (path: any, k: number, dx = 0, dy = 0) => {
+  path.moveToAbs(-104 * k + dx, 62 * k + dy);
+  cubicAbs(path, -113, 97, -109, 136, -78, 151, k, dx, dy);
+  cubicAbs(path, -41, 171, 8, 173, 43, 161, k, dx, dy);
+  cubicAbs(path, 78, 149, 103, 120, 106, 83, k, dx, dy);
+  cubicAbs(path, 108, 54, 102, 20, 90, -8, k, dx, dy);
+  cubicAbs(path, 72, -36, 26, -49, -33, -46, k, dx, dy);
+  cubicAbs(path, -71, -45, -95, -30, -102, 8, k, dx, dy);
+  cubicAbs(path, -105, 23, -104, 43, -104, 62, k, dx, dy);
+  path.close();
+};
+
+const shellFillId = scene.addHatchFill("#f9fcff", 0.06);
+const underlayFillId = scene.addHatchFill("#4a95ff", 0.16);
+const visorFillId = scene.addHatchFill("#15203f", 0.24);
+const cyanFillId = scene.addHatchFill("#8ff3ff", 0.28);
+
+scene.draw((params) => {
+  const k = Math.max(0.45, params.height / 420);
+
+  drawHeadShell(geometry.path({ className: "demo-astro-underlay", fill: underlayFillId }), k, 6 * k, 2 * k);
+  drawHeadShell(geometry.path({ className: "demo-astro-shell", fill: shellFillId }), k);
+
+  const visor = geometry.path({ className: "demo-astro-visor", fill: visorFillId });
+  visor.moveToAbs(-89 * k, 54 * k);
+  cubicAbs(visor, -95, 86, -85, 115, -64, 124, k);
+  cubicAbs(visor, -32, 138, 17, 140, 50, 130, k);
+  cubicAbs(visor, 76, 122, 91, 101, 90, 69, k);
+  cubicAbs(visor, 90, 34, 79, 10, 57, -8, k);
+  cubicAbs(visor, 26, -26, -23, -31, -61, -18, k);
+  cubicAbs(visor, -82, -10, -88, 18, -89, 54, k);
+  visor.close();
+
+  appendEllipse(geometry.path({ className: "demo-astro-eye", fill: cyanFillId }), -31, 45, 18, 16, 0, k, 20);
+  appendEllipse(geometry.path({ className: "demo-astro-eye", fill: cyanFillId }), 25, 49, 18, 16, 0, k, 20);
+});
+```
+  </Fragment>
+</ExampleTabs>

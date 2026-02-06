@@ -72,16 +72,16 @@
   .example-tabs {
     display: flex;
     gap: 0.25rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.9rem;
     flex-shrink: 0;
   }
 
   .tab-btn {
     background: transparent;
-    border: none;
-    padding: 0.4rem 1rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
+    border: 1px solid transparent;
+    padding: 0.28rem 1.1rem;
+    border-radius: 5px;
+    font-size: 0.84rem;
     font-weight: 500;
     font-family: inherit;
     color: var(--text-muted);
@@ -91,11 +91,13 @@
 
   .tab-btn:hover:not(.active) {
     background: var(--tab-hover-bg);
+    border-color: color-mix(in oklab, var(--panel-border) 92%, transparent);
     color: var(--text-main);
   }
 
   .tab-btn.active {
     background: var(--accent-light);
+    border-color: color-mix(in oklab, var(--accent) 32%, var(--panel-border));
     color: var(--accent);
   }
 

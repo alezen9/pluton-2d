@@ -108,11 +108,30 @@ path.moveTo(dx, dy)          // relative move
 path.moveToAbs(x, y)         // absolute move
 path.lineTo(dx, dy)          // relative line
 path.lineToAbs(x, y)         // absolute line
+path.cubicTo(c1dx, c1dy, c2dx, c2dy, dx, dy)         // relative cubic Bezier
+path.cubicToAbs(c1x, c1y, c2x, c2y, x, y)            // absolute cubic Bezier
+path.smoothCubicTo(c2dx, c2dy, dx, dy)               // relative smooth cubic
+path.smoothCubicToAbs(c2x, c2y, x, y)                // absolute smooth cubic
+path.quadTo(c1dx, c1dy, dx, dy)                      // relative quadratic Bezier
+path.quadToAbs(c1x, c1y, x, y)                       // absolute quadratic Bezier
+path.smoothQuadTo(dx, dy)                            // relative smooth quadratic
+path.smoothQuadToAbs(x, y)                           // absolute smooth quadratic
 path.arcTo(dx, dy, r, clockwise?, largeArc?)    // relative arc
 path.arcToAbs(x, y, r, clockwise?, largeArc?)   // absolute arc
 path.close()                 // close path
 path.reset()                 // clear all commands
 ```
+
+#### Curve Types - Why and How
+
+| Command family | When to use |
+| -------------- | ----------- |
+| `cubicTo` / `cubicToAbs` (`C/c`) | Most control for organic shapes. Use when you need independent entry and exit handles. |
+| `smoothCubicTo` / `smoothCubicToAbs` (`S/s`) | Continue a cubic curve smoothly. The first handle is inferred from the previous cubic segment. |
+| `quadTo` / `quadToAbs` (`Q/q`) | Simpler curves with one control point. Good for lightweight rounded forms. |
+| `smoothQuadTo` / `smoothQuadToAbs` (`T/t`) | Continue a quadratic curve smoothly with inferred control point. |
+
+> Smooth commands (`S/s`, `T/t`) depend on the previous curve segment. If no compatible previous segment exists, SVG treats the inferred control point as the current point.
 
 | Param       | Description                                                               |
 | ----------- | ------------------------------------------------------------------------- |

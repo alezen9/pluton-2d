@@ -1,0 +1,117 @@
+---
+title: Base Plate Detail
+category: Complex Shapes
+description: Column base plate with anchor bolts, grout line, and linked front/plan dimensions.
+---
+
+import ExampleTabs from "@examples/components/ExampleTabs.astro";
+import BasePlateDetail from "./BasePlateDetail.svelte";
+
+<ExampleTabs>
+  <BasePlateDetail client:visible slot="scene" />
+  <Fragment slot="code">
+```typescript
+import { Pluton2D } from "pluton-2d";
+
+type SceneParams = {
+  columnWidth: number;
+  columnHeight: number;
+  plateWidth: number;
+  plateDepth: number;
+  plateThickness: number;
+  boltOffsetX: number;
+  boltOffsetY: number;
+  boltDiameter: number;
+  cornerRadius: number;
+  groutThickness: number;
+};
+
+const svgElement = document.querySelector("svg#base-plate") as SVGSVGElement;
+const scene = new Pluton2D<SceneParams>(svgElement, {
+  columnWidth: 120,
+  columnHeight: 220,
+  plateWidth: 230,
+  plateDepth: 180,
+  plateThickness: 24,
+  boltOffsetX: 72,
+  boltOffsetY: 52,
+  boltDiameter: 20,
+  cornerRadius: 14,
+  groutThickness: 14,
+});
+
+const geometry = scene.geometry.group();
+const dimensions = scene.dimensions.group();
+
+const columnFillId = scene.addHatchFill("#0f766e", 0.2);
+const plateFillId = scene.addHatchFill("#475569", 0.15);
+const concreteFillId = scene.addHatchFill("#94a3b8", 0.1);
+const boltFillId = scene.addHatchFill("#7f1d1d", 0.14);
+const CIRCLE_HANDLE_FACTOR = 0.5522847498;
+
+const appendRectangle = (path: any, x0: number, y0: number, x1: number, y1: number) => {
+  path.moveToAbs(x0, y0).lineToAbs(x1, y0).lineToAbs(x1, y1).lineToAbs(x0, y1).close();
+};
+
+const appendCircle = (path: any, centerX: number, centerY: number, radiusValue: number) => {
+  const handleOffset = radiusValue * CIRCLE_HANDLE_FACTOR;
+  path
+    .moveToAbs(centerX - radiusValue, centerY)
+    .cubicToAbs(
+      centerX - radiusValue,
+      centerY + handleOffset,
+      centerX - handleOffset,
+      centerY + radiusValue,
+      centerX,
+      centerY + radiusValue,
+    )
+    .smoothCubicToAbs(centerX + radiusValue, centerY + handleOffset, centerX + radiusValue, centerY)
+    .smoothCubicToAbs(centerX + handleOffset, centerY - radiusValue, centerX, centerY - radiusValue)
+    .smoothCubicToAbs(centerX - radiusValue, centerY - handleOffset, centerX - radiusValue, centerY)
+    .close();
+};
+
+scene.draw((params) => {
+  const plateWidthValue = Math.max(params.plateWidth, params.columnWidth + 60);
+  const plateDepthValue = params.plateDepth;
+  const plateThicknessValue = params.plateThickness;
+  const boltRadius = params.boltDiameter / 2;
+
+  appendRectangle(
+    geometry.path({ className: "demo-base-concrete", fill: concreteFillId }),
+    -370,
+    -138,
+    -100,
+    -82,
+  );
+
+  appendRectangle(
+    geometry.path({ className: "demo-base-column", fill: columnFillId }),
+    -235 - params.columnWidth / 2,
+    -44,
+    -235 + params.columnWidth / 2,
+    176,
+  );
+
+  const planPlatePath = geometry.path({ className: "demo-base-plate", fill: plateFillId });
+  planPlatePath
+    .moveToAbs(235 - plateWidthValue / 2, 34 - plateDepthValue / 2)
+    .lineToAbs(235 + plateWidthValue / 2, 34 - plateDepthValue / 2)
+    .lineToAbs(235 + plateWidthValue / 2, 34 + plateDepthValue / 2)
+    .lineToAbs(235 - plateWidthValue / 2, 34 + plateDepthValue / 2)
+    .close();
+
+  const holePath = geometry.path({ className: "demo-base-hole", fill: boltFillId });
+  for (const sx of [-1, 1]) {
+    for (const sy of [-1, 1]) {
+      appendCircle(holePath, 235 + sx * params.boltOffsetX, 34 + sy * params.boltOffsetY, boltRadius);
+    }
+  }
+
+  const dimensionPath = dimensions.dimension({ className: "base-dim" });
+  dimensionPath.moveToAbs(235 - plateWidthValue / 2, 34 + plateDepthValue / 2 + 28).lineTo(plateWidthValue, 0);
+  dimensionPath.moveToAbs(235 + plateWidthValue / 2 + 34, -44 - plateThicknessValue).lineTo(0, plateThicknessValue);
+});
+```
+  </Fragment>
+</ExampleTabs>

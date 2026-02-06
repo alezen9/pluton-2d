@@ -1,0 +1,165 @@
+---
+title: JoJo Menacing Symbol
+category: Suuuuuprrrrrr
+description: Menacing symbol traced from source vector path data with cubic sampling and blueprint dimensions.
+---
+
+import ExampleTabs from "@examples/components/ExampleTabs.astro";
+import JojoMenacingSymbol from "./JojoMenacingSymbol.svelte";
+
+<ExampleTabs>
+  <JojoMenacingSymbol client:visible slot="scene" />
+  <Fragment slot="code">
+```typescript
+import { Pluton2D } from "pluton-2d";
+
+type SceneParams = { height: number };
+type Point = { x: number; y: number };
+
+type Bounds = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
+
+const MENACING_PATHS = [
+  "M276.8,107.5c19,5.7,39.7,11.7,51.8,14.1C361.7,86.1,424,28.5,444,20.3C418.8,12.5,386.6,7.4,365.2,6C341.6,23.5,295.5,68.3,276.8,107.5z",
+  "M357.1,126.9c3.4,6,32.2,32.2,40,31.5c34.2-16.6,89.9-67.8,101-95c-11.4-9.2-27.5-19-38-20.9C434.7,58.1,371.2,108.1,357.1,126.9z",
+  "M52.9,390.3c-14.3,27-50.6,89.2-35.3,114.4c3.9,6.5,65.1-11.9,131.8-26.9c46.6-10.4,96.4-24.1,125.2-28.1c11.5-1.6,28.5-26.4,29.4-45c1.2-25.3-0.8-147.8,35.6-223.6c6-10.1,4.1-29.6-2.7-35.4c-8-6.8-20.2-10.5-42.5-3.5c-14.7,4.6-117.8,57-122.8,53.7c-3.2-2.1,9.9-58.8,11.5-70.6c-26.3,29.1-164.5,180.1-142.6,202c14.8,14.8,153.9-80.5,185.7-75.9c14.9,2.1,16.9,10.4,16.2,21.4c-1.9,13.7-15.6,100.4-18.1,114.1C167.5,388,79.9,388.9,52.9,390.3z",
+];
+
+const svgElement = document.querySelector("svg#jojo-menacing-symbol") as SVGSVGElement;
+const scene = new Pluton2D<SceneParams>(svgElement, { height: 248 });
+
+const geometry = scene.geometry.group();
+const dimensions = scene.dimensions.group();
+
+const layerA = scene.addHatchFill("#a9447c", 0.22);
+const layerB = scene.addHatchFill("#713068", 0.22);
+const layerC = scene.addHatchFill("#0b0c44", 0.22);
+
+const cubicPoint = (p0: Point, p1: Point, p2: Point, p3: Point, t: number): Point => {
+  const u = 1 - t;
+  const uu = u * u;
+  const tt = t * t;
+
+  return {
+    x: uu * u * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + tt * t * p3.x,
+    y: uu * u * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + tt * t * p3.y,
+  };
+};
+
+const samplePath = (pathData: string, segmentsPerCurve: number): Point[] => {
+  const tokens = pathData.match(/[A-Za-z]|[-+]?\d*\.?\d+(?:e[-+]?\d+)?/g) ?? [];
+
+  let cursor = 0;
+  let command = "";
+  let currentX = 0;
+  let currentY = 0;
+  let startX = 0;
+  let startY = 0;
+  const points: Point[] = [];
+
+  const readNumber = () => Number(tokens[cursor++]);
+
+  while (cursor < tokens.length) {
+    if (/^[A-Za-z]$/.test(tokens[cursor])) command = tokens[cursor++];
+    const relative = command === command.toLowerCase();
+
+    if (command === "M" || command === "m") {
+      currentX = (relative ? currentX : 0) + readNumber();
+      currentY = (relative ? currentY : 0) + readNumber();
+      startX = currentX;
+      startY = currentY;
+      points.push({ x: currentX, y: currentY });
+      command = relative ? "l" : "L";
+      continue;
+    }
+
+    if (command === "C" || command === "c") {
+      while (cursor + 5 < tokens.length && !/^[A-Za-z]$/.test(tokens[cursor])) {
+        const x1 = (relative ? currentX : 0) + readNumber();
+        const y1 = (relative ? currentY : 0) + readNumber();
+        const x2 = (relative ? currentX : 0) + readNumber();
+        const y2 = (relative ? currentY : 0) + readNumber();
+        const x3 = (relative ? currentX : 0) + readNumber();
+        const y3 = (relative ? currentY : 0) + readNumber();
+
+        const p0 = { x: currentX, y: currentY };
+        const p1 = { x: x1, y: y1 };
+        const p2 = { x: x2, y: y2 };
+        const p3 = { x: x3, y: y3 };
+
+        for (let step = 1; step <= segmentsPerCurve; step++) {
+          points.push(cubicPoint(p0, p1, p2, p3, step / segmentsPerCurve));
+        }
+
+        currentX = x3;
+        currentY = y3;
+      }
+      continue;
+    }
+
+    if (command === "Z" || command === "z") {
+      points.push({ x: startX, y: startY });
+      currentX = startX;
+      currentY = startY;
+      continue;
+    }
+  }
+
+  return points;
+};
+
+const measureBounds = (paths: Point[][]): Bounds => {
+  const bounds: Bounds = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+  for (const path of paths) {
+    for (const point of path) {
+      bounds.minX = Math.min(bounds.minX, point.x);
+      bounds.maxX = Math.max(bounds.maxX, point.x);
+      bounds.minY = Math.min(bounds.minY, point.y);
+      bounds.maxY = Math.max(bounds.maxY, point.y);
+    }
+  }
+  return bounds;
+};
+
+const sampled = MENACING_PATHS.map((d) => samplePath(d, 18));
+const sourceBounds = measureBounds(sampled);
+const centerX = (sourceBounds.minX + sourceBounds.maxX) / 2;
+const centerY = (sourceBounds.minY + sourceBounds.maxY) / 2;
+
+scene.draw((params) => {
+  const sourceHeight = sourceBounds.maxY - sourceBounds.minY;
+  const sourceWidth = sourceBounds.maxX - sourceBounds.minX;
+  const scale = params.height / sourceHeight;
+
+  const fills = [layerA, layerB, layerC];
+  const classes = ["demo-jojo-layer-a", "demo-jojo-layer-b", "demo-jojo-layer-c"];
+
+  for (let pathIndex = 0; pathIndex < sampled.length; pathIndex++) {
+    const path = geometry.path({ className: classes[pathIndex], fill: fills[pathIndex] });
+    for (let pointIndex = 0; pointIndex < sampled[pathIndex].length; pointIndex++) {
+      const sourcePoint = sampled[pathIndex][pointIndex];
+      const x = (sourcePoint.x - centerX) * scale;
+      const y = (centerY - sourcePoint.y) * scale;
+      if (pointIndex === 0) path.moveToAbs(x, y);
+      else path.lineToAbs(x, y);
+    }
+    path.close();
+  }
+
+  const width = sourceWidth * scale;
+  const height = sourceHeight * scale;
+  const left = -width / 2;
+  const right = width / 2;
+  const bottom = -height / 2;
+
+  const dim = dimensions.dimension({ className: "jojo-dim" });
+  dim.moveToAbs(left, bottom - 28).tick(0).lineTo(width, 0).tick(0).textAt(-width / 2, -10, `${Math.round(width)} mm`, "middle", "jojo-dim");
+  dim.moveToAbs(right + 30, bottom).tick(-Math.PI / 2).lineTo(0, height).tick(Math.PI / 2).textAt(10, -height / 2, `${Math.round(height)} mm`, "start", "jojo-dim");
+});
+```
+  </Fragment>
+</ExampleTabs>

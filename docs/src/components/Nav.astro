@@ -47,7 +47,7 @@ const links = [
     backdrop-filter: blur(24px) saturate(130%);
     -webkit-backdrop-filter: blur(24px) saturate(130%);
     border-bottom: 1px solid var(--panel-border);
-    padding: 0 2rem;
+    padding: 0 1.75rem;
     height: 64px;
     display: flex;
     align-items: center;
@@ -58,13 +58,16 @@ const links = [
   .nav-brand {
     font-family: "Sora", sans-serif;
     font-size: 0.98rem;
-    font-weight: 500;
+    font-weight: 400;
     color: var(--text-main);
     text-decoration: none;
     letter-spacing: 0.01em;
   }
 
   .nav-links {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     align-items: center;
     gap: 1.5rem;
@@ -83,7 +86,7 @@ const links = [
     text-decoration: none;
     font-size: 0.84rem;
     letter-spacing: 0.02em;
-    font-weight: 500;
+    font-weight: 400;
     transition: color 0.2s;
   }
 
@@ -104,9 +107,9 @@ const links = [
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 33px;
+    height: 33px;
+    border-radius: 6px;
     border: 1px solid var(--panel-border);
     background: color-mix(in oklab, var(--panel-bg) 88%, transparent);
   }
@@ -114,7 +117,7 @@ const links = [
   .nav-github:hover {
     color: var(--text-main);
     border-color: var(--panel-border-strong);
-    transform: translateY(-1px);
+    transform: translateY(-0.5px);
   }
 
   @media (max-width: 600px) {

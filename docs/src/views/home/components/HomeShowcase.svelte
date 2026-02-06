@@ -35,15 +35,23 @@
     const dims = scene.dimensions.group();
     dims.setDrawUsage("static");
 
+    const compact = window.matchMedia("(max-width: 640px)").matches;
+    const shapeScale = compact ? 0.84 : 1;
+
+    const nominalWidth = 220;
+    const nominalHeight = 280;
+    const nominalFlangeThickness = 38;
+    const nominalWebThickness = 54;
+
     // Beam profile in front view
-    const width = 220;
-    const height = 280;
-    const flangeThickness = 38;
-    const webThickness = 54;
+    const width = nominalWidth * shapeScale;
+    const height = nominalHeight * shapeScale;
+    const flangeThickness = nominalFlangeThickness * shapeScale;
+    const webThickness = nominalWebThickness * shapeScale;
 
     // Extrusion vector for isometric depth
-    const depthX = 96;
-    const depthY = 58;
+    const depthX = 96 * shapeScale;
+    const depthY = 58 * shapeScale;
 
     const cx = -20;
     const cy = -12;
@@ -97,31 +105,57 @@
 
       const dim = dims.dimension({ className: "home-iso-dim" });
 
+      const widthDimOffset = compact ? 30 : 40;
+      const widthTextOffset = compact ? 11 : 14;
+      const heightDimOffset = compact ? 34 : 42;
+      const heightTextOffset = compact ? 14 : 18;
+      const webLeftOffset = compact ? 24 : 34;
+      const webRightOffset = compact ? 34 : 46;
+      const webTextOffset = compact ? 8 : 10;
+
       // Width
       dim
-        .moveToAbs(left, bottom - 40)
+        .moveToAbs(left, bottom - widthDimOffset)
         .tick(0)
         .lineTo(width, 0)
         .tick(0)
-        .textAt(-width / 2, -14, `${width} mm`, "middle", "home-iso-dim");
+        .textAt(
+          -width / 2,
+          -widthTextOffset,
+          `${nominalWidth} mm`,
+          "middle",
+          "home-iso-dim",
+        );
 
       // Height
       dim
-        .moveToAbs(left - 42, bottom)
+        .moveToAbs(left - heightDimOffset, bottom)
         .tick(-Math.PI / 2)
         .lineTo(0, height)
         .tick(Math.PI / 2)
-        .textAt(-18, -height / 2, `${height} mm`, "end", "home-iso-dim");
+        .textAt(
+          -heightTextOffset,
+          -height / 2,
+          `${nominalHeight} mm`,
+          "end",
+          "home-iso-dim",
+        );
 
       // Web thickness
       dim
         .moveToAbs(cx - halfWeb, cy)
         .tick(0)
-        .lineTo(-34, 0)
+        .lineTo(-webLeftOffset, 0)
         .moveToAbs(cx + halfWeb, cy)
         .tick(Math.PI)
-        .lineTo(46, 0)
-        .textAt(10, 0, `${webThickness} mm`, "start", "home-iso-dim");
+        .lineTo(webRightOffset, 0)
+        .textAt(
+          webTextOffset,
+          0,
+          `${nominalWebThickness} mm`,
+          "start",
+          "home-iso-dim",
+        );
     });
 
     scene.resetCamera();
@@ -132,10 +166,8 @@
   });
 </script>
 
-<div class="home-showcase">
-  <div class="home-showcase-frame demo-frame">
-    <svg bind:this={svgEl}></svg>
-  </div>
+<div class="home-showcase demo-frame">
+  <svg bind:this={svgEl}></svg>
 </div>
 
 <style>
@@ -151,25 +183,23 @@
     margin: 0 auto;
   }
 
-  .home-showcase-frame {
-    width: 100%;
-    height: 100%;
-  }
-
-  .home-showcase-frame.demo-frame {
+  .home-showcase.demo-frame {
     aspect-ratio: 1 / 1;
-    height: 100%;
+    width: 100%;
     border: none;
     border-radius: 0;
     background: transparent;
   }
 
-  .home-showcase-frame.demo-frame::before,
-  .home-showcase-frame.demo-frame::after {
+  .home-showcase.demo-frame::before,
+  .home-showcase.demo-frame::after {
     display: none;
   }
 
-  :global(.home-showcase-frame.demo-frame svg) {
+  :global(.home-showcase.demo-frame svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
     clip-path: none;
   }
 

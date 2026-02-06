@@ -198,11 +198,21 @@ path.moveTo(dx, dy)                              // relative move (m)
 path.moveToAbs(x, y)                             // absolute move (M)
 path.lineTo(dx, dy)                              // relative line (l)
 path.lineToAbs(x, y)                             // absolute line (L)
+path.cubicTo(c1dx, c1dy, c2dx, c2dy, dx, dy)     // relative cubic Bezier (c)
+path.cubicToAbs(c1x, c1y, c2x, c2y, x, y)       // absolute cubic Bezier (C)
+path.smoothCubicTo(c2dx, c2dy, dx, dy)          // relative smooth cubic (s)
+path.smoothCubicToAbs(c2x, c2y, x, y)           // absolute smooth cubic (S)
+path.quadTo(c1dx, c1dy, dx, dy)                 // relative quadratic Bezier (q)
+path.quadToAbs(c1x, c1y, x, y)                  // absolute quadratic Bezier (Q)
+path.smoothQuadTo(dx, dy)                       // relative smooth quadratic (t)
+path.smoothQuadToAbs(x, y)                      // absolute smooth quadratic (T)
 path.arcTo(dx, dy, r, clockwise?, largeArc?)     // relative arc (a)
 path.arcToAbs(x, y, r, clockwise?, largeArc?)   // absolute arc (A)
 path.close()                                     // close path (z)
 path.reset()                                     // clear builder
 ```
+
+Use `cubic*` when you need maximum curve control, `smoothCubic*` for continuous cubic chains, `quad*` for lighter one-handle curves, and `smoothQuad*` to continue quadratic chains smoothly.
 
 ### Dimensions
 

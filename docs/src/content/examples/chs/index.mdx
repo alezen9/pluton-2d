@@ -4,7 +4,7 @@ category: Profiles
 description: Circular hollow section with centerMark, radius dimension, and wall-thickness callout.
 ---
 
-import ExampleTabs from "@components/ExampleTabs.astro";
+import ExampleTabs from "@examples/components/ExampleTabs.astro";
 import CircularHollowSection from "./CircularHollowSection.svelte";
 
 <ExampleTabs>
@@ -16,24 +16,21 @@ const tealFillId = scene.addHatchFill("#0f766e");
 scene.draw((p) => {
   const { radius: r, thickness: t } = p;
   const ir = r - t;
+  const handleFactor = 0.5522847498;
 
   const path = geom.path({ className: "demo-teal", fill: tealFillId });
+  const appendCircle = (radiusValue: number) => {
+    const handleOffset = radiusValue * handleFactor;
+    path
+      .moveToAbs(-radiusValue, 0)
+      .cubicToAbs(-radiusValue, handleOffset, -handleOffset, radiusValue, 0, radiusValue)
+      .smoothCubicToAbs(radiusValue, handleOffset, radiusValue, 0)
+      .smoothCubicToAbs(handleOffset, -radiusValue, 0, -radiusValue)
+      .smoothCubicToAbs(-radiusValue, -handleOffset, -radiusValue, 0);
+  };
 
-  // Outer circle - 4 quarter arcs
-  path
-    .moveToAbs(-r, 0)
-    .arcTo(r, r, r, true)
-    .arcTo(r, -r, r, true)
-    .arcTo(-r, -r, r, true)
-    .arcTo(-r, r, r, true);
-
-  // Inner circle - same winding
-  path
-    .moveToAbs(-ir, 0)
-    .arcTo(ir, ir, ir, true)
-    .arcTo(ir, -ir, ir, true)
-    .arcTo(-ir, -ir, ir, true)
-    .arcTo(-ir, ir, ir, true);
+  appendCircle(r); // outer ring
+  appendCircle(ir); // inner cutout
 
   // Center mark + radius callout
   const dim = dims.dimension();
