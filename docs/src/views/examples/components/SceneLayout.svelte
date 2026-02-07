@@ -65,28 +65,11 @@
     min-height: 0;
   }
 
-  :global(.pluton-root .pluton-geometry path.stroke-blue) {
-    stroke: #2563eb;
-  }
-
-  :global(.pluton-root .pluton-geometry path.stroke-teal) {
-    stroke: #0f766e;
-  }
-
-  :global(.pluton-root .pluton-geometry path.stroke-orange) {
-    stroke: #ea580c;
-  }
-
-  :global(.pluton-root .pluton-geometry path.stroke-purple) {
-    stroke: #7c3aed;
-  }
-
-  :global(.pluton-root .pluton-geometry path.stroke-rose) {
-    stroke: #e11d48;
-  }
-
-  :global(.pluton-root .pluton-geometry path.stroke-amber) {
-    stroke: #d97706;
+  :global(.pluton-root .pluton-dimensions text.title) {
+    font-size: 0.75rem;
+    letter-spacing: 0.07em;
+    font-weight: 500;
+    text-transform: uppercase;
   }
 
   @media (max-width: 1024px) {

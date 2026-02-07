@@ -1,0 +1,118 @@
+<script lang="ts">
+  import type { Pluton2D } from "pluton-2d";
+  import ExampleLayout from "@examples/components/ExampleLayout.svelte";
+
+  type Params = { width: number; height: number };
+
+  const initialWidth = 240;
+  const initialHeight = 250;
+  let width = $state(initialWidth);
+  let height = $state(initialHeight);
+  let scene: Pluton2D<Params> | null = null;
+
+  const onSetup = (sceneInstance: Pluton2D<Params>) => {
+    scene = sceneInstance;
+    const geometryGroup = scene.geometry.group();
+    const dimensionsGroup = scene.dimensions.group();
+
+    const PURPLE = "#4c1d95";
+    const symbolFillId = scene.addHatchFill(PURPLE, 0.25);
+
+    const dimensionOffset = 30;
+
+    scene.draw((p) => {
+      const { width, height } = p;
+      const scaleX = width / initialWidth;
+      const scaleY = height / initialHeight;
+
+      geometryGroup.scale(scaleX, scaleY);
+
+      const path = geometryGroup.path({
+        stroke: PURPLE,
+        fill: symbolFillId,
+      });
+
+      // ko (japanese katakana コ)
+      path
+        .moveToAbs(-101, -68)
+        .cubicTo(-7, -14, -25, -45, -17, -58)
+        .cubicTo(2, -3, 33, 6, 67, 14)
+        .cubicTo(24, 5, 49, 12, 64, 14)
+        .cubicTo(6, 1, 14, 13, 15, 22)
+        .cubicTo(1, 12, 0, 73, 18, 111)
+        .cubicTo(3, 5, 2, 15, -2, 18)
+        .cubicTo(-4, 4, -10, 5, -21, 2)
+        .cubicTo(-7, -2, -59, -28, -61, -27)
+        .cubicTo(-2, 1, 5, 30, 6, 36)
+        .cubicTo(-13, -15, -82, -90, -71, -101)
+        .cubicTo(8, -8, 77, 40, 93, 38)
+        .cubicTo(8, -1, 9, -5, 8, -11)
+        .cubicTo(-1, -7, -8, -51, -9, -58)
+        .cubicTo(-29, -1, -72, -1, -85, -2)
+        .close();
+
+      // left dakuten
+      path
+        .moveToAbs(10, 74)
+        .cubicTo(10, -3, 20, -6, 26, -7)
+        .cubicTo(17, 18, 48, 47, 58, 51)
+        .cubicTo(-13, 4, -29, 7, -39, 7)
+        .cubicTo(-12, -9, -33, -30, -45, -51)
+        .close();
+
+      // right dakuten
+      path
+        .moveToAbs(50, 64)
+        .cubicTo(2, -3, 16, -16, 20, -16)
+        .cubicTo(17, 8, 45, 34, 50, 47)
+        .cubicTo(-6, 4, -14, 10, -19, 10)
+        .cubicTo(-13, -8, -43, -32, -50, -40)
+        .close();
+
+      const dimensions = dimensionsGroup.dimension();
+      dimensions
+        // width
+        .moveToAbs(-width / 2, -height / 2 - dimensionOffset)
+        .tick(0)
+        .lineTo(width, 0)
+        .tick(0)
+        .textAt(-width / 2, -11, `${width} mm`, "middle")
+
+        // height
+        .moveToAbs(width / 2 + dimensionOffset, -height / 2)
+        .tick(-Math.PI / 2)
+        .lineTo(0, height)
+        .tick(Math.PI / 2)
+        .textAt(11, -height / 2, `${height} mm`, "start")
+
+        // title
+        .moveToAbs(0, 0)
+        .textAtAbs(0, 200, "Yare yare daze!", "middle", "title");
+    });
+  };
+
+  $effect(() => {
+    if (!scene) return;
+    Object.assign(scene.params, {
+      width,
+      height,
+    });
+  });
+</script>
+
+<ExampleLayout initialParams={{ width, height }} {onSetup}>
+  <div class="demo-control">
+    <label>
+      Width
+      <input type="range" bind:value={width} min={180} max={340} step={2} />
+    </label>
+    <span class="value">{width}</span>
+  </div>
+  <div class="demo-control">
+    <label>
+      Height
+      <input type="range" bind:value={height} min={180} max={340} step={2} />
+    </label>
+    <span class="value">{height}</span>
+  </div>
+</ExampleLayout>

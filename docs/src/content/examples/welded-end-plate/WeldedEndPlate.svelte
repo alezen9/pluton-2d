@@ -44,6 +44,15 @@
     close: () => GeometryPathBuilder;
   };
 
+  const ELEVATION_ORIGIN_X = -170;
+  const BEAM_LENGTH = 210;
+  const SUPPORT_GAP_TO_PLATE = 22;
+  const SUPPORT_THICKNESS = 34;
+  const END_VIEW_CENTER_X = 190;
+  const END_VIEW_CENTER_Y = 0;
+  const END_VIEW_PLATE_CORNER_RADIUS = 10;
+  const MIN_WELD_SIZE = 6;
+
   let beamDepth = $state(240);
   let flangeWidth = $state(160);
   let plateThickness = $state(20);
@@ -122,14 +131,14 @@
       const edgeDistanceValue = params.edgeDistance;
       const flangeThicknessValue = Math.max(12, beamDepthValue * 0.11);
       const webThicknessValue = Math.max(10, Math.min(20, flangeWidthValue * 0.15));
-      const elevationOriginX = -170;
-      const beamLength = 210;
+      const elevationOriginX = ELEVATION_ORIGIN_X;
+      const beamLength = BEAM_LENGTH;
       const beamStartX = elevationOriginX - beamLength;
       const beamEndX = elevationOriginX;
       const plateLeft = beamEndX;
       const plateRight = plateLeft + plateThicknessValue;
-      const gapToSupport = 22;
-      const supportT = 34;
+      const gapToSupport = SUPPORT_GAP_TO_PLATE;
+      const supportT = SUPPORT_THICKNESS;
       const supportLeft = plateRight + gapToSupport;
       const supportRight = supportLeft + supportT;
 
@@ -179,7 +188,7 @@
       }
 
       const weld = geometry.path({ className: "demo-weld-symbol" });
-      const w = Math.max(6, params.weldSize);
+      const w = Math.max(MIN_WELD_SIZE, params.weldSize);
       weld
         .moveToAbs(beamEndX, beamDepthValue / 2 - flangeThicknessValue)
         .lineTo(w, 0)
@@ -190,8 +199,8 @@
         .lineTo(0, w)
         .close();
 
-      const endViewCenterX = 190;
-      const endViewCenterY = 0;
+      const endViewCenterX = END_VIEW_CENTER_X;
+      const endViewCenterY = END_VIEW_CENTER_Y;
 
       appendRoundedRectangle(
         geometry.path({ className: "demo-weld-plate", fill: plateFillId }),
@@ -199,7 +208,7 @@
         endViewCenterY,
         plateWidth,
         plateHeight,
-        10,
+        END_VIEW_PLATE_CORNER_RADIUS,
       );
 
       const beamEndPath = geometry.path({ className: "demo-weld-beam", fill: steelFillId });

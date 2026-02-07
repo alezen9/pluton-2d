@@ -42,58 +42,46 @@ const scene = new Pluton2D<SceneParams>(svgElement, {
 
 const geometry = scene.geometry.group();
 const dimensions = scene.dimensions.group();
+const TEAL = "#0f766e";
+const SLATE = "#475569";
+const GRAY = "#64748b";
+const RED = "#7f1d1d";
 
-const columnFillId = scene.addHatchFill("#0f766e", 0.2);
-const plateFillId = scene.addHatchFill("#475569", 0.15);
-const concreteFillId = scene.addHatchFill("#94a3b8", 0.1);
-const boltFillId = scene.addHatchFill("#7f1d1d", 0.14);
-const CIRCLE_HANDLE_FACTOR = 0.5522847498;
+const columnStroke = TEAL;
+const plateStroke = SLATE;
+const concreteStroke = GRAY;
+const boltStroke = RED;
 
-const appendRectangle = (path: any, x0: number, y0: number, x1: number, y1: number) => {
-  path.moveToAbs(x0, y0).lineToAbs(x1, y0).lineToAbs(x1, y1).lineToAbs(x0, y1).close();
-};
-
-const appendCircle = (path: any, centerX: number, centerY: number, radiusValue: number) => {
-  const handleOffset = radiusValue * CIRCLE_HANDLE_FACTOR;
-  path
-    .moveToAbs(centerX - radiusValue, centerY)
-    .cubicToAbs(
-      centerX - radiusValue,
-      centerY + handleOffset,
-      centerX - handleOffset,
-      centerY + radiusValue,
-      centerX,
-      centerY + radiusValue,
-    )
-    .smoothCubicToAbs(centerX + radiusValue, centerY + handleOffset, centerX + radiusValue, centerY)
-    .smoothCubicToAbs(centerX + handleOffset, centerY - radiusValue, centerX, centerY - radiusValue)
-    .smoothCubicToAbs(centerX - radiusValue, centerY - handleOffset, centerX - radiusValue, centerY)
-    .close();
-};
+const columnFillId = scene.addHatchFill(TEAL, 0.2);
+const plateFillId = scene.addHatchFill(SLATE, 0.15);
+const concreteFillId = scene.addHatchFill(GRAY, 0.1);
+const boltFillId = scene.addHatchFill(RED, 0.14);
 
 scene.draw((params) => {
   const plateWidthValue = Math.max(params.plateWidth, params.columnWidth + 60);
   const plateDepthValue = params.plateDepth;
-  const plateThicknessValue = params.plateThickness;
   const boltRadius = params.boltDiameter / 2;
 
-  appendRectangle(
-    geometry.path({ className: "demo-base-concrete", fill: concreteFillId }),
-    -370,
-    -138,
-    -100,
-    -82,
-  );
+  // front concrete
+  geometry
+    .path({ stroke: concreteStroke, fill: concreteFillId })
+    .moveToAbs(-370, -138)
+    .lineToAbs(-100, -138)
+    .lineToAbs(-100, -82)
+    .lineToAbs(-370, -82)
+    .close();
 
-  appendRectangle(
-    geometry.path({ className: "demo-base-column", fill: columnFillId }),
-    -235 - params.columnWidth / 2,
-    -44,
-    -235 + params.columnWidth / 2,
-    176,
-  );
+  // front column
+  geometry
+    .path({ stroke: columnStroke, fill: columnFillId })
+    .moveToAbs(-235 - params.columnWidth / 2, -44)
+    .lineToAbs(-235 + params.columnWidth / 2, -44)
+    .lineToAbs(-235 + params.columnWidth / 2, 176)
+    .lineToAbs(-235 - params.columnWidth / 2, 176)
+    .close();
 
-  const planPlatePath = geometry.path({ className: "demo-base-plate", fill: plateFillId });
+  // plan plate
+  const planPlatePath = geometry.path({ stroke: plateStroke, fill: plateFillId });
   planPlatePath
     .moveToAbs(235 - plateWidthValue / 2, 34 - plateDepthValue / 2)
     .lineToAbs(235 + plateWidthValue / 2, 34 - plateDepthValue / 2)
@@ -101,16 +89,27 @@ scene.draw((params) => {
     .lineToAbs(235 - plateWidthValue / 2, 34 + plateDepthValue / 2)
     .close();
 
-  const holePath = geometry.path({ className: "demo-base-hole", fill: boltFillId });
-  for (const sx of [-1, 1]) {
-    for (const sy of [-1, 1]) {
-      appendCircle(holePath, 235 + sx * params.boltOffsetX, 34 + sy * params.boltOffsetY, boltRadius);
-    }
-  }
+  // bolt holes
+  const holePath = geometry.path({ stroke: boltStroke, fill: boltFillId });
+  holePath
+    .moveToAbs(235 - params.boltOffsetX - boltRadius, 34 + params.boltOffsetY)
+    .arcToAbs(235 - params.boltOffsetX, 34 + params.boltOffsetY + boltRadius, boltRadius, true)
+    .arcToAbs(235 - params.boltOffsetX + boltRadius, 34 + params.boltOffsetY, boltRadius, true)
+    .arcToAbs(235 - params.boltOffsetX, 34 + params.boltOffsetY - boltRadius, boltRadius, true)
+    .arcToAbs(235 - params.boltOffsetX - boltRadius, 34 + params.boltOffsetY, boltRadius, true)
+    .close()
+    .moveToAbs(235 + params.boltOffsetX - boltRadius, 34 + params.boltOffsetY)
+    .arcToAbs(235 + params.boltOffsetX, 34 + params.boltOffsetY + boltRadius, boltRadius, true)
+    .arcToAbs(235 + params.boltOffsetX + boltRadius, 34 + params.boltOffsetY, boltRadius, true)
+    .arcToAbs(235 + params.boltOffsetX, 34 + params.boltOffsetY - boltRadius, boltRadius, true)
+    .arcToAbs(235 + params.boltOffsetX - boltRadius, 34 + params.boltOffsetY, boltRadius, true)
+    .close();
 
-  const dimensionPath = dimensions.dimension({ className: "base-dim" });
-  dimensionPath.moveToAbs(235 - plateWidthValue / 2, 34 + plateDepthValue / 2 + 28).lineTo(plateWidthValue, 0);
-  dimensionPath.moveToAbs(235 + plateWidthValue / 2 + 34, -44 - plateThicknessValue).lineTo(0, plateThicknessValue);
+  // example dimensions
+  const baseDimensions = dimensions.dimension();
+  baseDimensions
+    .moveToAbs(235 - plateWidthValue / 2, 34 + plateDepthValue / 2 + 28)
+    .lineTo(plateWidthValue, 0);
 });
 ```
   </Fragment>

@@ -1,7 +1,7 @@
 ---
 title: Dragon Ball
 category: Suuuuuprrrrrr
-description: Four-star dragon ball with layered fills and a specular highlight.
+description: The simplest shape with the loudest meaning.
 ---
 
 import ExampleTabs from "@examples/components/ExampleTabs.svelte";
@@ -10,80 +10,104 @@ import DragonBall from "./DragonBall.svelte";
 <ExampleTabs>
   <DragonBall client:visible slot="scene" />
   <Fragment slot="code">
-```typescript
-import { Pluton2D } from "pluton-2d";
+    ```typescript
+      const geometryGroup = scene.geometry.group();
+      const dimensionsGroup = scene.dimensions.group();
 
-type SceneParams = { radius: number; starSize: number; specular: number };
+      const ORANGE = "#fb923c";
+      const DARK_ORANGE = "#d4651d";
+      const sphereFillId = scene.addHatchFill(ORANGE, 0.25);
+      const sphereStroke = DARK_ORANGE;
 
-const svgElement = document.querySelector("svg#dragon-ball") as SVGSVGElement;
-const scene = new Pluton2D<SceneParams>(svgElement, {
-  radius: 120,
-  starSize: 16,
-  specular: 0.8,
-});
+      const RED = "#b91c1c";
+      const DARK_RED = "#8f1212";
+      const starsFillId = scene.addHatchFill(RED, 0.5);
+      const starsStroke = DARK_RED;
 
-const geometry = scene.geometry.group();
-const dimensions = scene.dimensions.group();
+      const starStartAngle = -Math.PI / 2;
+      const starOffsetRatio = 0.42;
+      const dimensionOffset = 24;
+      const titleOffset = 76;
 
-const sphereFillId = scene.addHatchFill("#fb923c", 0.3);
-const starFillId = scene.addHatchFill("#b91c1c", 0.5);
-const CIRCLE_HANDLE_FACTOR = 0.5522847498;
+      const drawStar = (
+        path: ReturnType<typeof geometryGroup.path>,
+        centerX: number,
+        centerY: number,
+        outerRadius: number,
+        startAngle: number,
+      ) => {
+        const pointCount = 5;
+        const innerRadiusRatio = 0.44;
+        const step = Math.PI / pointCount;
+        const innerRadius = outerRadius * innerRadiusRatio;
+        const startX = centerX + Math.cos(startAngle) * outerRadius;
+        const startY = centerY + Math.sin(startAngle) * outerRadius;
 
-const appendCircle = (path: any, centerX: number, centerY: number, radiusValue: number) => {
-  const handleOffset = radiusValue * CIRCLE_HANDLE_FACTOR;
-  path
-    .moveToAbs(centerX - radiusValue, centerY)
-    .cubicToAbs(
-      centerX - radiusValue,
-      centerY + handleOffset,
-      centerX - handleOffset,
-      centerY + radiusValue,
-      centerX,
-      centerY + radiusValue,
-    )
-    .smoothCubicToAbs(centerX + radiusValue, centerY + handleOffset, centerX + radiusValue, centerY)
-    .smoothCubicToAbs(centerX + handleOffset, centerY - radiusValue, centerX, centerY - radiusValue)
-    .smoothCubicToAbs(centerX - radiusValue, centerY - handleOffset, centerX - radiusValue, centerY)
-    .close();
-};
+        // outer point 1
+        path.moveToAbs(startX, startY);
+        let previousX = startX;
+        let previousY = startY;
 
-scene.draw((params) => {
-  const sphereRadius = params.radius;
-  const starOuterRadius = params.starSize;
-  const starInnerRadius = starOuterRadius * 0.44;
-  const starCenterOffset = sphereRadius * 0.42;
+        for (let vertexIndex = 1; vertexIndex < pointCount * 2; vertexIndex++) {
+          const isOuterPoint = vertexIndex % 2 === 0;
+          const pointRadius = isOuterPoint ? outerRadius : innerRadius;
+          const pointAngle = startAngle + step * vertexIndex;
+          const pointX = centerX + Math.cos(pointAngle) * pointRadius;
+          const pointY = centerY + Math.sin(pointAngle) * pointRadius;
+          path.lineTo(pointX - previousX, pointY - previousY);
+          previousX = pointX;
+          previousY = pointY;
+        }
 
-  const spherePath = geometry.path({ className: "demo-dragon-sphere", fill: sphereFillId });
-  appendCircle(spherePath, 0, 0, sphereRadius);
+        // close the star
+        path.close();
+      };
 
-  const starPath = geometry.path({ className: "demo-dragon-stars", fill: starFillId });
-  const starCenters = [
-    { x: 0, y: -starCenterOffset },
-    { x: starCenterOffset, y: 0 },
-    { x: 0, y: starCenterOffset },
-    { x: -starCenterOffset, y: 0 },
-  ];
+      scene.draw((p) => {
+        const { radius: sphereRadius, starSize } = p;
+        const starOffset = sphereRadius * starOffsetRatio;
 
-  for (const starCenter of starCenters) {
-    for (let pointIndex = 0; pointIndex < 10; pointIndex++) {
-      const pointAngle = -Math.PI / 2 + (pointIndex * Math.PI) / 5;
-      const pointRadius = pointIndex % 2 === 0 ? starOuterRadius : starInnerRadius;
-      const pointX = starCenter.x + Math.cos(pointAngle) * pointRadius;
-      const pointY = starCenter.y + Math.sin(pointAngle) * pointRadius;
-      if (pointIndex === 0) starPath.moveToAbs(pointX, pointY);
-      else starPath.lineToAbs(pointX, pointY);
-    }
-    starPath.close();
-  }
+        // sphere
+        const spherePath = geometryGroup.path({
+          stroke: sphereStroke,
+          fill: sphereFillId,
+        });
+        spherePath
+          .moveToAbs(-sphereRadius, 0)
+          .arcTo(sphereRadius, sphereRadius, sphereRadius, true)
+          .arcTo(sphereRadius, -sphereRadius, sphereRadius, true)
+          .arcTo(-sphereRadius, -sphereRadius, sphereRadius, true)
+          .arcTo(-sphereRadius, sphereRadius, sphereRadius, true)
+          .close();
 
-  const dimensionPath = dimensions.dimension({ className: "dragon-dim" });
-  dimensionPath.moveToAbs(-sphereRadius, sphereRadius + 24).lineTo(2 * sphereRadius, 0);
+        // four stars
+        const starsPath = geometryGroup.path({
+          stroke: starsStroke,
+          fill: starsFillId,
+        });
+        drawStar(starsPath, 0, -starOffset, starSize, starStartAngle);
+        drawStar(starsPath, starOffset, 0, starSize, starStartAngle);
+        drawStar(starsPath, 0, starOffset, starSize, starStartAngle);
+        drawStar(starsPath, -starOffset, 0, starSize, starStartAngle);
 
-  if (params.specular > 0) {
-    const specularPath = geometry.path({ className: "demo-dragon-specular" });
-    appendCircle(specularPath, -sphereRadius * 0.34, -sphereRadius * 0.34, sphereRadius * 0.36 * params.specular);
-  }
-});
-```
+        // dimensions and title
+        const dimensionsPath = dimensionsGroup.dimension();
+        dimensionsPath
+          .moveToAbs(-sphereRadius, -sphereRadius - dimensionOffset)
+          .tick(0)
+          .lineTo(2 * sphereRadius, 0)
+          .tick(0)
+          .textAt(-sphereRadius, -15, `${Math.round(2 * sphereRadius)} mm`)
+          .moveToAbs(0, 0)
+          .textAtAbs(
+            0,
+            sphereRadius + titleOffset,
+            "FOUR STAR SPHERE",
+            "middle",
+            "dragon-title",
+          );
+      });
+    ```
+
   </Fragment>
 </ExampleTabs>

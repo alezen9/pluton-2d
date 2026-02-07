@@ -38,7 +38,6 @@ import PencilFilter from "./PencilFilter.svelte";
         let previousX = startX;
         let previousY = startY;
 
-        // rest of inner and outer points
         for (let vertexIndex = 1; vertexIndex < pointCount * 2; vertexIndex++) {
           const isOuterPoint = vertexIndex % 2 === 0;
           const pointRadius = isOuterPoint ? outerRadius : innerRadius;
@@ -46,8 +45,7 @@ import PencilFilter from "./PencilFilter.svelte";
           const pointX = pointRadius * Math.cos(pointAngle);
           const pointY = pointRadius * Math.sin(pointAngle);
 
-          if (isOuterPoint) path.lineTo(pointX - previousX, pointY - previousY);
-          else path.lineTo(pointX - previousX, pointY - previousY);
+          path.lineTo(pointX - previousX, pointY - previousY);
 
           previousX = pointX;
           previousY = pointY;

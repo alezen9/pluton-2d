@@ -25,6 +25,12 @@ const DEFAULT_FILL_RULE = "evenodd";
 export type GeometryGroup = Prettify<
   BaseGroup & {
     /**
+     * Scale the entire group
+     * @param x - horizontal scale factor
+     * @param y - vertical scale factor
+     */
+    scale: (x: number, y: number) => void;
+    /**
      * Create or reuse a path builder. To be called within a draw call
      * @param options - optional configuration
      * @returns path builder for chaining commands
@@ -51,6 +57,8 @@ export class GeometryGroupInternal implements GeometryGroup {
   private activeIndex = 0;
   private translateX = 0;
   private translateY = 0;
+  private scaleX = 1;
+  private scaleY = 1;
   private lastTransform = "";
   private drawUsage: "static" | "dynamic" = "dynamic";
   private hasCommitted = false;
@@ -94,6 +102,12 @@ export class GeometryGroupInternal implements GeometryGroup {
   translate(x: number, y: number) {
     this.translateX = x;
     this.translateY = y;
+    this.applyTransform();
+  }
+
+  scale(x: number, y: number) {
+    this.scaleX = x;
+    this.scaleY = y;
     this.applyTransform();
   }
 
@@ -169,11 +183,13 @@ export class GeometryGroupInternal implements GeometryGroup {
 
     this.translateX = 0;
     this.translateY = 0;
+    this.scaleX = 1;
+    this.scaleY = 1;
     this.applyTransform();
   }
 
   private applyTransform() {
-    const t = `translate(${this.translateX}, ${this.translateY})`;
+    const t = `translate(${this.translateX}, ${this.translateY}) scale(${this.scaleX}, ${this.scaleY})`;
     if (t !== this.lastTransform) {
       this.g.setAttribute("transform", t);
       this.lastTransform = t;

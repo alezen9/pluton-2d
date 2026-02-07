@@ -2,7 +2,7 @@
   import { Pluton2D } from "pluton-2d";
   import ExampleLayout from "@examples/components/ExampleLayout.svelte";
 
-  type SceneParams = {
+  type Params = {
     columnWidth: number;
     columnHeight: number;
     plateWidth: number;
@@ -15,36 +15,6 @@
     groutThickness: number;
   };
 
-  type GeometryPathBuilder = {
-    moveToAbs: (x: number, y: number) => GeometryPathBuilder;
-    lineToAbs: (x: number, y: number) => GeometryPathBuilder;
-    lineTo: (dx: number, dy: number) => GeometryPathBuilder;
-    cubicToAbs: (
-      c1x: number,
-      c1y: number,
-      c2x: number,
-      c2y: number,
-      x: number,
-      y: number,
-    ) => GeometryPathBuilder;
-    smoothCubicToAbs: (c2x: number, c2y: number, x: number, y: number) => GeometryPathBuilder;
-    arcToAbs: (
-      x: number,
-      y: number,
-      r: number,
-      clockwise?: boolean,
-      largeArc?: boolean,
-    ) => GeometryPathBuilder;
-    arcTo: (
-      dx: number,
-      dy: number,
-      r: number,
-      clockwise?: boolean,
-      largeArc?: boolean,
-    ) => GeometryPathBuilder;
-    close: () => GeometryPathBuilder;
-  };
-
   let columnWidth = $state(120);
   let columnHeight = $state(220);
   let plateWidth = $state(230);
@@ -55,241 +25,572 @@
   let boltDiameter = $state(20);
   let cornerRadius = $state(14);
   let groutThickness = $state(14);
-  let scene: Pluton2D<SceneParams> | null = null;
+  let scene: Pluton2D<Params> | null = null;
 
-  const appendRectangle = (path: GeometryPathBuilder, x0: number, y0: number, x1: number, y1: number) => {
-    path.moveToAbs(x0, y0).lineToAbs(x1, y0).lineToAbs(x1, y1).lineToAbs(x0, y1).close();
-  };
-
-  const appendCircle = (path: GeometryPathBuilder, cx: number, cy: number, r: number) => {
-    const handleOffset = r * 0.5522847498;
-    path
-      .moveToAbs(cx - r, cy)
-      .cubicToAbs(cx - r, cy + handleOffset, cx - handleOffset, cy + r, cx, cy + r)
-      .smoothCubicToAbs(cx + r, cy + handleOffset, cx + r, cy)
-      .smoothCubicToAbs(cx + handleOffset, cy - r, cx, cy - r)
-      .smoothCubicToAbs(cx - r, cy - handleOffset, cx - r, cy)
-      .close();
-  };
-
-  const appendRoundedRectangle = (
-    path: GeometryPathBuilder,
-    cx: number,
-    cy: number,
-    w: number,
-    h: number,
-    r: number,
-  ) => {
-    const left = cx - w / 2;
-    const right = cx + w / 2;
-    const top = cy + h / 2;
-    const bottom = cy - h / 2;
-    const rr = Math.max(0, Math.min(r, w / 2, h / 2));
-
-    path
-      .moveToAbs(left + rr, top)
-      .lineToAbs(right - rr, top)
-      .arcToAbs(right, top - rr, rr, true)
-      .lineToAbs(right, bottom + rr)
-      .arcToAbs(right - rr, bottom, rr, true)
-      .lineToAbs(left + rr, bottom)
-      .arcToAbs(left, bottom + rr, rr, true)
-      .lineToAbs(left, top - rr)
-      .arcToAbs(left + rr, top, rr, true)
-      .close();
-  };
-
-  const onSetup = (sceneInstance: Pluton2D<SceneParams>) => {
+  const onSetup = (sceneInstance: Pluton2D<Params>) => {
     scene = sceneInstance;
-    const geometry = sceneInstance.geometry.group();
-    const dimensions = sceneInstance.dimensions.group();
+    const geometryGroup = scene.geometry.group();
+    const dimensionsGroup = scene.dimensions.group();
 
-    const columnFillId = sceneInstance.addHatchFill("#0f766e", 0.2);
-    const plateFillId = sceneInstance.addHatchFill("#475569", 0.15);
-    const concreteFillId = sceneInstance.addHatchFill("#94a3b8", 0.1);
-    const boltFillId = sceneInstance.addHatchFill("#7f1d1d", 0.14);
+    const TEAL = "#0f766e";
+    const SLATE = "#475569";
+    const GRAY = "#64748b";
+    const RED = "#7f1d1d";
+    const ORANGE = "#92400e";
+    const GREEN = "#14532d";
 
-    sceneInstance.draw((params) => {
-      const columnWidthValue = params.columnWidth;
-      const columnHeightValue = params.columnHeight;
-      const plateWidthValue = Math.max(params.plateWidth, columnWidthValue + 60);
-      const plateDepthValue = params.plateDepth;
-      const plateThicknessValue = params.plateThickness;
-      const boltOffsetXValue = Math.min(params.boltOffsetX, plateWidthValue * 0.38);
-      const boltOffsetYValue = Math.min(params.boltOffsetY, plateDepthValue * 0.38);
-      const boltR = params.boltDiameter / 2;
-      const cornerR = params.cornerRadius;
-      const groutThicknessValue = params.groutThickness;
+    const columnStroke = TEAL;
+    const plateStroke = SLATE;
+    const concreteStroke = GRAY;
+    const boltStroke = RED;
+    const weldStroke = ORANGE;
+    const groutStroke = SLATE;
+    const centerlineStroke = GREEN;
 
-      const elevationCenterX = -235;
-      const planCenterX = 235;
-      const planCenterY = 34;
+    const columnFillId = scene.addHatchFill(TEAL, 0.2);
+    const plateFillId = scene.addHatchFill(SLATE, 0.15);
+    const concreteFillId = scene.addHatchFill(GRAY, 0.1);
+    const boltFillId = scene.addHatchFill(RED, 0.14);
+    const weldFillId = scene.addHatchFill(ORANGE, 0.2);
 
-      const plateTop = -44;
-      const plateBottom = plateTop - plateThicknessValue;
-      const columnBottom = plateTop;
-      const columnTop = columnBottom + columnHeightValue;
+    const elevationCenterX = -210;
+    const planCenterX = 210;
+    const planCenterY = 34;
+    const plateTopY = -44;
 
-      const concreteTop = plateBottom - groutThicknessValue;
-      const concreteBottom = concreteTop - 70;
-      const planTopDimY = planCenterY + plateDepthValue / 2 + 28;
-      const planLeftDimX = planCenterX - plateWidthValue / 2 - 34;
-      const boltXDimY = planCenterY - plateDepthValue / 2 - 22;
-      const boltYDimX = planCenterX + plateWidthValue / 2 + 30;
-      const columnDimY = columnTop + 22;
-      const plateDimX = elevationCenterX + plateWidthValue / 2 + 34;
-      const groutDimX = elevationCenterX - plateWidthValue * 0.66;
-      appendRectangle(
-        geometry.path({ className: "demo-base-concrete", fill: concreteFillId }),
-        elevationCenterX - plateWidthValue * 0.6,
-        concreteBottom,
-        elevationCenterX + plateWidthValue * 0.6,
-        concreteTop,
+    const columnToPlateWidthClearance = 60;
+    const concreteDepth = 70;
+    const concreteHalfWidthFactor = 0.6;
+    const groutLineHalfWidthFactor = 0.56;
+    const boltOffsetLimitFactor = 0.38;
+
+    const frontPlateRadiusFactor = 0.45;
+    const frontPlateRadiusThicknessFactor = 0.3;
+    const minimumCornerRadius = 0.0001;
+
+    const anchorBottomClearance = 10;
+    const anchorTopExtension = 26;
+    const washerTopOffset = 3;
+    const rodWidthMin = 8;
+    const rodWidthFactor = 0.88;
+    const washerWidthFactor = 0.82;
+    const nutWidthFactor = 0.72;
+    const washerHeightMin = 4;
+    const washerHeightFactor = 0.26;
+    const nutHeightMin = 8;
+    const nutHeightFactor = 0.62;
+
+    const weldSizeMin = 9;
+    const weldSizeFactor = 0.08;
+
+    const centerlineExtensionFactor = 0.52;
+
+    const planTopDimensionOffset = 28;
+    const planLeftDimensionOffset = 34;
+    const boltXDimensionOffset = 22;
+    const boltYDimensionOffset = 30;
+    const columnDimensionOffset = 22;
+    const plateThicknessDimensionOffset = 34;
+    const groutDimensionFactor = 0.66;
+
+    const planWidthTextOffsetY = -14;
+    const planDepthTextOffsetX = -14;
+    const boltXTextOffsetY = -12;
+    const boltYTextOffsetX = 12;
+    const columnTextOffsetY = -12;
+    const plateThicknessTextOffsetX = 11;
+    const groutTextOffsetX = -10;
+
+    const viewLabelOffsetY = 42;
+
+    type PathBuilder = ReturnType<typeof geometryGroup.path>;
+
+    const drawRoundedRectangle = (
+      path: PathBuilder,
+      leftX: number,
+      rightX: number,
+      topY: number,
+      bottomY: number,
+      radius: number,
+    ) => {
+      const safeRadius = Math.max(
+        minimumCornerRadius,
+        Math.min(radius, (rightX - leftX) / 2, (topY - bottomY) / 2),
       );
 
-      geometry
-        .path({ className: "demo-base-grout" })
-        .moveToAbs(elevationCenterX - plateWidthValue * 0.56, concreteTop)
-        .lineToAbs(elevationCenterX + plateWidthValue * 0.56, concreteTop);
-
-      appendRoundedRectangle(
-        geometry.path({ className: "demo-base-plate", fill: plateFillId }),
-        elevationCenterX,
-        (plateTop + plateBottom) / 2,
-        plateWidthValue,
-        plateThicknessValue,
-        Math.min(cornerR * 0.45, plateThicknessValue * 0.3),
-      );
-
-      appendRectangle(
-        geometry.path({ className: "demo-base-column", fill: columnFillId }),
-        elevationCenterX - columnWidthValue / 2,
-        columnBottom,
-        elevationCenterX + columnWidthValue / 2,
-        columnTop,
-      );
-      const rodW = Math.max(8, boltR * 0.88);
-      const rodBottom = concreteBottom + 10;
-      const rodTop = plateTop + 26;
-      const nutH = Math.max(8, rodW * 0.62);
-      const washerH = Math.max(4, rodW * 0.26);
-      const rodPath = geometry.path({ className: "demo-base-bolt", fill: boltFillId });
-
-      for (const x of [-boltOffsetXValue, boltOffsetXValue]) {
-        const cx = elevationCenterX + x;
-
-        appendRectangle(rodPath, cx - rodW / 2, rodBottom, cx + rodW / 2, rodTop);
-        appendRectangle(
-          rodPath,
-          cx - rodW * 0.82,
-          plateTop + 3,
-          cx + rodW * 0.82,
-          plateTop + 3 + washerH,
-        );
-        appendRectangle(
-          rodPath,
-          cx - rodW * 0.72,
-          plateTop + 3 + washerH,
-          cx + rodW * 0.72,
-          plateTop + 3 + washerH + nutH,
-        );
-      }
-      const weld = geometry.path({ className: "demo-base-weld" });
-      const weldSize = Math.max(9, columnWidthValue * 0.08);
-      weld
-        .moveToAbs(elevationCenterX - columnWidthValue / 2, plateTop)
-        .lineTo(weldSize, 0)
-        .lineTo(0, weldSize)
-        .close()
-        .moveToAbs(elevationCenterX + columnWidthValue / 2, plateTop)
-        .lineTo(-weldSize, 0)
-        .lineTo(0, weldSize)
+      path
+        .moveToAbs(leftX + safeRadius, topY)
+        .lineToAbs(rightX - safeRadius, topY)
+        .arcToAbs(rightX, topY - safeRadius, safeRadius, true)
+        .lineToAbs(rightX, bottomY + safeRadius)
+        .arcToAbs(rightX - safeRadius, bottomY, safeRadius, true)
+        .lineToAbs(leftX + safeRadius, bottomY)
+        .arcToAbs(leftX, bottomY + safeRadius, safeRadius, true)
+        .lineToAbs(leftX, topY - safeRadius)
+        .arcToAbs(leftX + safeRadius, topY, safeRadius, true)
         .close();
-      appendRoundedRectangle(
-        geometry.path({ className: "demo-base-plate", fill: plateFillId }),
-        planCenterX,
-        planCenterY,
-        plateWidthValue,
-        plateDepthValue,
-        cornerR,
+    };
+
+    const drawFrontConcrete = (
+      plateWidthValue: number,
+      concreteBottomY: number,
+      concreteTopY: number,
+    ) => {
+      geometryGroup
+        .path({ stroke: concreteStroke, fill: concreteFillId })
+        .moveToAbs(
+          elevationCenterX - plateWidthValue * concreteHalfWidthFactor,
+          concreteBottomY,
+        )
+        .lineToAbs(
+          elevationCenterX + plateWidthValue * concreteHalfWidthFactor,
+          concreteBottomY,
+        )
+        .lineToAbs(
+          elevationCenterX + plateWidthValue * concreteHalfWidthFactor,
+          concreteTopY,
+        )
+        .lineToAbs(
+          elevationCenterX - plateWidthValue * concreteHalfWidthFactor,
+          concreteTopY,
+        )
+        .close();
+    };
+
+    const drawGroutLine = (plateWidthValue: number, concreteTopY: number) => {
+      geometryGroup
+        .path({ stroke: groutStroke })
+        .moveToAbs(
+          elevationCenterX - plateWidthValue * groutLineHalfWidthFactor,
+          concreteTopY,
+        )
+        .lineToAbs(
+          elevationCenterX + plateWidthValue * groutLineHalfWidthFactor,
+          concreteTopY,
+        );
+    };
+
+    const drawFrontPlate = (
+      plateWidthValue: number,
+      plateThicknessValue: number,
+      plateBottomY: number,
+      cornerRadiusValue: number,
+    ) => {
+      const leftX = elevationCenterX - plateWidthValue / 2;
+      const rightX = elevationCenterX + plateWidthValue / 2;
+      const radius = Math.min(
+        cornerRadiusValue * frontPlateRadiusFactor,
+        plateThicknessValue * frontPlateRadiusThicknessFactor,
+        plateWidthValue / 2,
+        plateThicknessValue / 2,
       );
 
-      appendRectangle(
-        geometry.path({ className: "demo-base-column", fill: columnFillId }),
-        planCenterX - columnWidthValue / 2,
-        planCenterY - columnWidthValue / 2,
-        planCenterX + columnWidthValue / 2,
-        planCenterY + columnWidthValue / 2,
+      drawRoundedRectangle(
+        geometryGroup.path({ stroke: plateStroke, fill: plateFillId }),
+        leftX,
+        rightX,
+        plateTopY,
+        plateBottomY,
+        radius,
       );
+    };
 
-      const holes = geometry.path({ className: "demo-base-hole", fill: boltFillId });
-      for (const sx of [-1, 1]) {
-        for (const sy of [-1, 1]) {
-          appendCircle(holes, planCenterX + sx * boltOffsetXValue, planCenterY + sy * boltOffsetYValue, boltR);
-        }
-      }
-      geometry
-        .path({ className: "demo-base-centerline" })
-        .moveToAbs(planCenterX - plateWidthValue * 0.52, planCenterY)
-        .lineToAbs(planCenterX + plateWidthValue * 0.52, planCenterY)
-        .moveToAbs(planCenterX, planCenterY - plateDepthValue * 0.52)
-        .lineToAbs(planCenterX, planCenterY + plateDepthValue * 0.52);
-      const dim = dimensions.dimension({ className: "base-dim" });
+    const drawFrontColumn = (columnWidthValue: number, columnTopY: number) => {
+      geometryGroup
+        .path({ stroke: columnStroke, fill: columnFillId })
+        .moveToAbs(elevationCenterX - columnWidthValue / 2, plateTopY)
+        .lineToAbs(elevationCenterX + columnWidthValue / 2, plateTopY)
+        .lineToAbs(elevationCenterX + columnWidthValue / 2, columnTopY)
+        .lineToAbs(elevationCenterX - columnWidthValue / 2, columnTopY)
+        .close();
+    };
 
-      dim
-        .moveToAbs(planCenterX - plateWidthValue / 2, planTopDimY)
+    const drawAnchors = (
+      boltOffsetXValue: number,
+      boltRadius: number,
+      concreteBottomY: number,
+    ) => {
+      const rodWidth = Math.max(rodWidthMin, boltRadius * rodWidthFactor);
+      const rodBottomY = concreteBottomY + anchorBottomClearance;
+      const rodTopY = plateTopY + anchorTopExtension;
+      const washerHeight = Math.max(washerHeightMin, rodWidth * washerHeightFactor);
+      const nutHeight = Math.max(nutHeightMin, rodWidth * nutHeightFactor);
+      const leftBoltCenterX = elevationCenterX - boltOffsetXValue;
+      const rightBoltCenterX = elevationCenterX + boltOffsetXValue;
+
+      geometryGroup
+        .path({ stroke: boltStroke, fill: boltFillId })
+        .moveToAbs(leftBoltCenterX - rodWidth / 2, rodBottomY)
+        .lineToAbs(leftBoltCenterX + rodWidth / 2, rodBottomY)
+        .lineToAbs(leftBoltCenterX + rodWidth / 2, rodTopY)
+        .lineToAbs(leftBoltCenterX - rodWidth / 2, rodTopY)
+        .close()
+        .moveToAbs(leftBoltCenterX - rodWidth * washerWidthFactor, plateTopY + washerTopOffset)
+        .lineToAbs(leftBoltCenterX + rodWidth * washerWidthFactor, plateTopY + washerTopOffset)
+        .lineToAbs(
+          leftBoltCenterX + rodWidth * washerWidthFactor,
+          plateTopY + washerTopOffset + washerHeight,
+        )
+        .lineToAbs(
+          leftBoltCenterX - rodWidth * washerWidthFactor,
+          plateTopY + washerTopOffset + washerHeight,
+        )
+        .close()
+        .moveToAbs(
+          leftBoltCenterX - rodWidth * nutWidthFactor,
+          plateTopY + washerTopOffset + washerHeight,
+        )
+        .lineToAbs(
+          leftBoltCenterX + rodWidth * nutWidthFactor,
+          plateTopY + washerTopOffset + washerHeight,
+        )
+        .lineToAbs(
+          leftBoltCenterX + rodWidth * nutWidthFactor,
+          plateTopY + washerTopOffset + washerHeight + nutHeight,
+        )
+        .lineToAbs(
+          leftBoltCenterX - rodWidth * nutWidthFactor,
+          plateTopY + washerTopOffset + washerHeight + nutHeight,
+        )
+        .close()
+        .moveToAbs(rightBoltCenterX - rodWidth / 2, rodBottomY)
+        .lineToAbs(rightBoltCenterX + rodWidth / 2, rodBottomY)
+        .lineToAbs(rightBoltCenterX + rodWidth / 2, rodTopY)
+        .lineToAbs(rightBoltCenterX - rodWidth / 2, rodTopY)
+        .close()
+        .moveToAbs(rightBoltCenterX - rodWidth * washerWidthFactor, plateTopY + washerTopOffset)
+        .lineToAbs(rightBoltCenterX + rodWidth * washerWidthFactor, plateTopY + washerTopOffset)
+        .lineToAbs(
+          rightBoltCenterX + rodWidth * washerWidthFactor,
+          plateTopY + washerTopOffset + washerHeight,
+        )
+        .lineToAbs(
+          rightBoltCenterX - rodWidth * washerWidthFactor,
+          plateTopY + washerTopOffset + washerHeight,
+        )
+        .close()
+        .moveToAbs(
+          rightBoltCenterX - rodWidth * nutWidthFactor,
+          plateTopY + washerTopOffset + washerHeight,
+        )
+        .lineToAbs(
+          rightBoltCenterX + rodWidth * nutWidthFactor,
+          plateTopY + washerTopOffset + washerHeight,
+        )
+        .lineToAbs(
+          rightBoltCenterX + rodWidth * nutWidthFactor,
+          plateTopY + washerTopOffset + washerHeight + nutHeight,
+        )
+        .lineToAbs(
+          rightBoltCenterX - rodWidth * nutWidthFactor,
+          plateTopY + washerTopOffset + washerHeight + nutHeight,
+        )
+        .close();
+    };
+
+    const drawWelds = (columnWidthValue: number) => {
+      const weldSize = Math.max(weldSizeMin, columnWidthValue * weldSizeFactor);
+      const leftTopX = elevationCenterX - columnWidthValue / 2;
+      const rightTopX = elevationCenterX + columnWidthValue / 2;
+      const leftBottomX = leftTopX - weldSize;
+      const rightBottomX = rightTopX + weldSize;
+
+      geometryGroup
+        .path({ stroke: weldStroke, fill: weldFillId })
+        .moveToAbs(leftTopX, plateTopY - weldSize)
+        .lineToAbs(rightTopX, plateTopY - weldSize)
+        .lineToAbs(rightBottomX, plateTopY)
+        .lineToAbs(leftBottomX, plateTopY)
+        .close();
+    };
+
+    const drawPlanPlate = (
+      plateWidthValue: number,
+      plateDepthValue: number,
+      cornerRadiusValue: number,
+    ) => {
+      const leftX = planCenterX - plateWidthValue / 2;
+      const rightX = planCenterX + plateWidthValue / 2;
+      const topY = planCenterY + plateDepthValue / 2;
+      const bottomY = planCenterY - plateDepthValue / 2;
+      const radius = Math.min(cornerRadiusValue, plateWidthValue / 2, plateDepthValue / 2);
+
+      drawRoundedRectangle(
+        geometryGroup.path({ stroke: plateStroke, fill: plateFillId }),
+        leftX,
+        rightX,
+        topY,
+        bottomY,
+        radius,
+      );
+    };
+
+    const drawPlanColumn = (columnWidthValue: number) => {
+      geometryGroup
+        .path({ stroke: columnStroke, fill: columnFillId })
+        .moveToAbs(planCenterX - columnWidthValue / 2, planCenterY + columnWidthValue / 2)
+        .lineToAbs(planCenterX + columnWidthValue / 2, planCenterY + columnWidthValue / 2)
+        .lineToAbs(planCenterX + columnWidthValue / 2, planCenterY - columnWidthValue / 2)
+        .lineToAbs(planCenterX - columnWidthValue / 2, planCenterY - columnWidthValue / 2)
+        .close();
+    };
+
+    const drawBoltHoles = (
+      boltOffsetXValue: number,
+      boltOffsetYValue: number,
+      boltRadius: number,
+    ) => {
+      const topLeftHoleX = planCenterX - boltOffsetXValue;
+      const topLeftHoleY = planCenterY + boltOffsetYValue;
+      const topRightHoleX = planCenterX + boltOffsetXValue;
+      const topRightHoleY = planCenterY + boltOffsetYValue;
+      const bottomRightHoleX = planCenterX + boltOffsetXValue;
+      const bottomRightHoleY = planCenterY - boltOffsetYValue;
+      const bottomLeftHoleX = planCenterX - boltOffsetXValue;
+      const bottomLeftHoleY = planCenterY - boltOffsetYValue;
+
+      geometryGroup
+        .path({ stroke: boltStroke, fill: boltFillId })
+        .moveToAbs(topLeftHoleX - boltRadius, topLeftHoleY)
+        .arcToAbs(topLeftHoleX, topLeftHoleY + boltRadius, boltRadius, true)
+        .arcToAbs(topLeftHoleX + boltRadius, topLeftHoleY, boltRadius, true)
+        .arcToAbs(topLeftHoleX, topLeftHoleY - boltRadius, boltRadius, true)
+        .arcToAbs(topLeftHoleX - boltRadius, topLeftHoleY, boltRadius, true)
+        .close()
+        .moveToAbs(topRightHoleX - boltRadius, topRightHoleY)
+        .arcToAbs(topRightHoleX, topRightHoleY + boltRadius, boltRadius, true)
+        .arcToAbs(topRightHoleX + boltRadius, topRightHoleY, boltRadius, true)
+        .arcToAbs(topRightHoleX, topRightHoleY - boltRadius, boltRadius, true)
+        .arcToAbs(topRightHoleX - boltRadius, topRightHoleY, boltRadius, true)
+        .close()
+        .moveToAbs(bottomRightHoleX - boltRadius, bottomRightHoleY)
+        .arcToAbs(bottomRightHoleX, bottomRightHoleY + boltRadius, boltRadius, true)
+        .arcToAbs(bottomRightHoleX + boltRadius, bottomRightHoleY, boltRadius, true)
+        .arcToAbs(bottomRightHoleX, bottomRightHoleY - boltRadius, boltRadius, true)
+        .arcToAbs(bottomRightHoleX - boltRadius, bottomRightHoleY, boltRadius, true)
+        .close()
+        .moveToAbs(bottomLeftHoleX - boltRadius, bottomLeftHoleY)
+        .arcToAbs(bottomLeftHoleX, bottomLeftHoleY + boltRadius, boltRadius, true)
+        .arcToAbs(bottomLeftHoleX + boltRadius, bottomLeftHoleY, boltRadius, true)
+        .arcToAbs(bottomLeftHoleX, bottomLeftHoleY - boltRadius, boltRadius, true)
+        .arcToAbs(bottomLeftHoleX - boltRadius, bottomLeftHoleY, boltRadius, true)
+        .close();
+    };
+
+    const drawCenterlines = (
+      plateWidthValue: number,
+      plateDepthValue: number,
+    ) => {
+      geometryGroup
+        .path({ stroke: centerlineStroke })
+        .moveToAbs(
+          planCenterX - plateWidthValue * centerlineExtensionFactor,
+          planCenterY,
+        )
+        .lineToAbs(
+          planCenterX + plateWidthValue * centerlineExtensionFactor,
+          planCenterY,
+        )
+        .moveToAbs(
+          planCenterX,
+          planCenterY - plateDepthValue * centerlineExtensionFactor,
+        )
+        .lineToAbs(
+          planCenterX,
+          planCenterY + plateDepthValue * centerlineExtensionFactor,
+        );
+    };
+
+    const drawDimensions = (
+      plateWidthValue: number,
+      plateDepthValue: number,
+      boltOffsetXValue: number,
+      boltOffsetYValue: number,
+      columnWidthValue: number,
+      plateThicknessValue: number,
+      groutThicknessValue: number,
+      plateBottomY: number,
+      planTopDimensionY: number,
+      planLeftDimensionX: number,
+      boltXDimensionY: number,
+      boltYDimensionX: number,
+      columnDimensionY: number,
+      plateThicknessDimensionX: number,
+      groutDimensionX: number,
+    ) => {
+      const dimensions = dimensionsGroup.dimension();
+
+      dimensions
+        .moveToAbs(planCenterX - plateWidthValue / 2, planTopDimensionY)
         .tick(0)
         .lineTo(plateWidthValue, 0)
         .tick(0)
-        .textAt(-plateWidthValue / 2, -14, `${Math.round(plateWidthValue)} mm`, "middle", "base-dim");
+        .textAt(
+          -plateWidthValue / 2,
+          planWidthTextOffsetY,
+          `${Math.round(plateWidthValue)} mm`,
+          "middle",
+        );
 
-      dim
-        .moveToAbs(planLeftDimX, planCenterY - plateDepthValue / 2)
+      dimensions
+        .moveToAbs(planLeftDimensionX, planCenterY - plateDepthValue / 2)
         .tick(-Math.PI / 2)
         .lineTo(0, plateDepthValue)
         .tick(Math.PI / 2)
-        .textAt(-14, -plateDepthValue / 2, `${Math.round(plateDepthValue)} mm`, "end", "base-dim");
+        .textAt(
+          planDepthTextOffsetX,
+          -plateDepthValue / 2,
+          `${Math.round(plateDepthValue)} mm`,
+          "end",
+        );
 
-      dim
-        .moveToAbs(planCenterX - boltOffsetXValue, boltXDimY)
+      dimensions
+        .moveToAbs(planCenterX - boltOffsetXValue, boltXDimensionY)
         .tick(0)
         .lineTo(2 * boltOffsetXValue, 0)
         .tick(0)
-        .textAt(-boltOffsetXValue, -12, `${Math.round(2 * boltOffsetXValue)} mm`, "middle", "base-dim");
+        .textAt(
+          -boltOffsetXValue,
+          boltXTextOffsetY,
+          `${Math.round(2 * boltOffsetXValue)} mm`,
+          "middle",
+        );
 
-      dim
-        .moveToAbs(boltYDimX, planCenterY - boltOffsetYValue)
+      dimensions
+        .moveToAbs(boltYDimensionX, planCenterY - boltOffsetYValue)
         .tick(-Math.PI / 2)
         .lineTo(0, 2 * boltOffsetYValue)
         .tick(Math.PI / 2)
-        .textAt(12, -boltOffsetYValue, `${Math.round(2 * boltOffsetYValue)} mm`, "start", "base-dim");
+        .textAt(
+          boltYTextOffsetX,
+          -boltOffsetYValue,
+          `${Math.round(2 * boltOffsetYValue)} mm`,
+          "start",
+        );
 
-      dim
-        .moveToAbs(elevationCenterX - columnWidthValue / 2, columnDimY)
+      dimensions
+        .moveToAbs(elevationCenterX - columnWidthValue / 2, columnDimensionY)
         .tick(0)
         .lineTo(columnWidthValue, 0)
         .tick(0)
-        .textAt(-columnWidthValue / 2, -12, `${Math.round(columnWidthValue)} mm`, "middle", "base-dim");
+        .textAt(
+          -columnWidthValue / 2,
+          columnTextOffsetY,
+          `${Math.round(columnWidthValue)} mm`,
+          "middle",
+        );
 
-      dim
-        .moveToAbs(plateDimX, plateBottom)
+      dimensions
+        .moveToAbs(plateThicknessDimensionX, plateBottomY)
         .tick(-Math.PI / 2)
         .lineTo(0, plateThicknessValue)
         .tick(Math.PI / 2)
-        .textAt(11, -plateThicknessValue / 2, `${Math.round(plateThicknessValue)} mm`, "start", "base-dim");
+        .textAt(
+          plateThicknessTextOffsetX,
+          -plateThicknessValue / 2,
+          `${Math.round(plateThicknessValue)} mm`,
+          "start",
+        );
 
-      dim
-        .moveToAbs(groutDimX, plateBottom)
+      dimensions
+        .moveToAbs(groutDimensionX, plateBottomY)
         .tick(-Math.PI / 2)
         .lineTo(0, -groutThicknessValue)
         .tick(Math.PI / 2)
-        .textAt(-10, groutThicknessValue / 2, `${Math.round(groutThicknessValue)} mm`, "end", "base-dim");
+        .textAt(
+          groutTextOffsetX,
+          groutThicknessValue / 2,
+          `${Math.round(groutThicknessValue)} mm`,
+          "end",
+        );
+    };
 
-      const note = dimensions.dimension({ className: "base-note" });
-      note
+    const drawViewLabels = (
+      columnTopY: number,
+      plateDepthValue: number,
+    ) => {
+      const highestGeometryY = Math.max(columnTopY, planCenterY + plateDepthValue / 2);
+      const viewLabelY = highestGeometryY + viewLabelOffsetY;
+
+      dimensionsGroup
+        .dimension()
         .moveToAbs(0, 0)
-        .textAtAbs(elevationCenterX, columnTop + 34, "FRONT ELEVATION", "middle", "base-note")
-        .textAtAbs(planCenterX, planCenterY + plateDepthValue / 2 + 44, "PLAN VIEW", "middle", "base-note");
+        .textAtAbs(elevationCenterX, viewLabelY, "FRONT ELEVATION", "middle")
+        .textAtAbs(planCenterX, viewLabelY, "PLAN VIEW", "middle");
+    };
+
+    scene.draw((p) => {
+      const plateWidthValue = Math.max(
+        p.plateWidth,
+        p.columnWidth + columnToPlateWidthClearance,
+      );
+      const plateDepthValue = p.plateDepth;
+      const plateThicknessValue = p.plateThickness;
+      const boltOffsetXValue = Math.min(
+        p.boltOffsetX,
+        plateWidthValue * boltOffsetLimitFactor,
+      );
+      const boltOffsetYValue = Math.min(
+        p.boltOffsetY,
+        plateDepthValue * boltOffsetLimitFactor,
+      );
+      const boltRadius = p.boltDiameter / 2;
+      const cornerRadiusValue = Math.max(0, p.cornerRadius);
+      const groutThicknessValue = p.groutThickness;
+
+      const plateBottomY = plateTopY - plateThicknessValue;
+      const columnTopY = plateTopY + p.columnHeight;
+      const concreteTopY = plateBottomY - groutThicknessValue;
+      const concreteBottomY = concreteTopY - concreteDepth;
+
+      const planTopDimensionY =
+        planCenterY + plateDepthValue / 2 + planTopDimensionOffset;
+      const planLeftDimensionX =
+        planCenterX - plateWidthValue / 2 - planLeftDimensionOffset;
+      const boltXDimensionY =
+        planCenterY - plateDepthValue / 2 - boltXDimensionOffset;
+      const boltYDimensionX =
+        planCenterX + plateWidthValue / 2 + boltYDimensionOffset;
+      const columnDimensionY = columnTopY + columnDimensionOffset;
+      const plateThicknessDimensionX =
+        elevationCenterX + plateWidthValue / 2 + plateThicknessDimensionOffset;
+      const groutDimensionX = elevationCenterX - plateWidthValue * groutDimensionFactor;
+
+      drawFrontConcrete(plateWidthValue, concreteBottomY, concreteTopY);
+      drawGroutLine(plateWidthValue, concreteTopY);
+      drawFrontPlate(
+        plateWidthValue,
+        plateThicknessValue,
+        plateBottomY,
+        cornerRadiusValue,
+      );
+      drawFrontColumn(p.columnWidth, columnTopY);
+      drawWelds(p.columnWidth);
+      drawAnchors(boltOffsetXValue, boltRadius, concreteBottomY);
+
+      drawPlanPlate(plateWidthValue, plateDepthValue, cornerRadiusValue);
+      drawPlanColumn(p.columnWidth);
+      drawBoltHoles(boltOffsetXValue, boltOffsetYValue, boltRadius);
+      drawCenterlines(plateWidthValue, plateDepthValue);
+
+      drawDimensions(
+        plateWidthValue,
+        plateDepthValue,
+        boltOffsetXValue,
+        boltOffsetYValue,
+        p.columnWidth,
+        plateThicknessValue,
+        groutThicknessValue,
+        plateBottomY,
+        planTopDimensionY,
+        planLeftDimensionX,
+        boltXDimensionY,
+        boltYDimensionX,
+        columnDimensionY,
+        plateThicknessDimensionX,
+        groutDimensionX,
+      );
+      drawViewLabels(columnTopY, plateDepthValue);
     });
   };
 
@@ -328,113 +629,45 @@
   {#snippet params()}
     <div class="demo-control">
       <label>
-        Column
+        Column width
         <input type="range" bind:value={columnWidth} min={80} max={180} step={1} />
       </label>
       <span class="value">{columnWidth}</span>
     </div>
     <div class="demo-control">
       <label>
-        Plate W
+        Plate width
         <input type="range" bind:value={plateWidth} min={170} max={320} step={1} />
       </label>
       <span class="value">{plateWidth}</span>
     </div>
     <div class="demo-control">
       <label>
-        Plate D
+        Plate depth
         <input type="range" bind:value={plateDepth} min={130} max={260} step={1} />
       </label>
       <span class="value">{plateDepth}</span>
     </div>
     <div class="demo-control">
       <label>
-        Plate t
+        Plate thickness
         <input type="range" bind:value={plateThickness} min={12} max={45} step={1} />
       </label>
       <span class="value">{plateThickness}</span>
     </div>
     <div class="demo-control">
       <label>
-        Bolt Dia
+        Bolt diameter
         <input type="range" bind:value={boltDiameter} min={12} max={30} step={1} />
       </label>
       <span class="value">{boltDiameter}</span>
     </div>
     <div class="demo-control">
       <label>
-        Corner R
+        Corner radius
         <input type="range" bind:value={cornerRadius} min={0} max={30} step={1} />
       </label>
       <span class="value">{cornerRadius}</span>
     </div>
   {/snippet}
 </ExampleLayout>
-
-<style>
-  :global(.pluton-root .pluton-geometry path.demo-base-column) {
-    stroke: #0f766e;
-    stroke-width: 1.2;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-base-plate) {
-    stroke: #334155;
-    stroke-width: 1.2;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-base-bolt) {
-    stroke: #6b1d1d;
-    stroke-width: 0.95;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-base-hole) {
-    stroke: #7f1d1d;
-    stroke-width: 0.95;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-base-weld) {
-    --hatch-fill-override: rgba(180, 83, 9, 0.45);
-    stroke: rgba(146, 64, 14, 0.85);
-    stroke-width: 0.95;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-base-centerline) {
-    --hatch-fill-override: none;
-    stroke: rgba(20, 83, 45, 0.64);
-    stroke-dasharray: 0.32em;
-    stroke-width: 0.92;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-base-grout) {
-    --hatch-fill-override: none;
-    stroke: rgba(71, 85, 105, 0.78);
-    stroke-dasharray: 0.32em;
-    stroke-width: 0.92;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-base-concrete) {
-    stroke: rgba(100, 116, 139, 0.9);
-    stroke-width: 0.95;
-  }
-
-  :global(.pluton-root .pluton-dimensions .pluton-dim-stroke.base-dim) {
-    stroke: rgba(78, 94, 96, 0.9);
-  }
-
-  :global(.pluton-root .pluton-dimensions .pluton-dim-filled.base-dim) {
-    fill: rgba(78, 94, 96, 0.9);
-  }
-
-  :global(.pluton-root .pluton-dimensions text.base-dim) {
-    fill: rgba(78, 94, 96, 0.95);
-    font-size: 10px;
-    letter-spacing: 0.03em;
-  }
-
-  :global(.pluton-root .pluton-dimensions text.base-note) {
-    fill: rgba(47, 83, 88, 0.9);
-    font-size: 10px;
-    letter-spacing: 0.07em;
-    font-weight: 500;
-  }
-</style>
