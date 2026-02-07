@@ -87,7 +87,13 @@
 
         // title
         .moveToAbs(0, 0)
-        .textAtAbs(0, 200, "Yare yare daze!", "middle", "title");
+        .textAtAbs(
+          0,
+          200,
+          `"Yare yare daze." - Jotaro Kujo`,
+          "middle",
+          "title",
+        );
     });
   };
 
