@@ -3,33 +3,43 @@
   import ExampleLayout from "@examples/components/ExampleLayout.svelte";
 
   type Params = { size: number };
+  const SHAPE_HORIZONTAL_OFFSET = 100;
 
   let size = $state(140);
   let scene: Pluton2D<Params> | null = null;
 
-  const onSetup = (s: Pluton2D<Params>) => {
-    scene = s;
+  const onSetup = (sceneInstance: Pluton2D<Params>) => {
+    scene = sceneInstance;
+    const ORANGE = "#f97316";
+    const TEAL = "#0f766e";
 
     const staticGroup = scene.geometry.group();
     staticGroup.setDrawUsage("static");
 
     const dynamicGroup = scene.geometry.group();
 
-    const orangeFillId = scene.addHatchFill("#f97316");
-    const tealFillId = scene.addHatchFill("#0f766e");
+    const orangeFillId = scene.addHatchFill(ORANGE);
+    const orangeStroke = ORANGE;
+    const tealFillId = scene.addHatchFill(TEAL);
+    const tealStroke = TEAL;
 
     scene.draw((p) => {
-      const half = p.size / 2;
-      const offset = 90;
+      const { size } = p;
 
-      staticGroup.path({ fill: orangeFillId })
-        .moveToAbs(-offset - half, -half)
-        .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
+      staticGroup
+        .path({ stroke: orangeStroke, fill: orangeFillId })
+        .moveToAbs(-size / 2 - SHAPE_HORIZONTAL_OFFSET, -size / 2)
+        .lineTo(size, 0)
+        .lineTo(0, size)
+        .lineTo(-size, 0)
         .close();
 
-      dynamicGroup.path({ fill: tealFillId })
-        .moveToAbs(offset - half, -half)
-        .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
+      dynamicGroup
+        .path({ stroke: tealStroke, fill: tealFillId })
+        .moveToAbs(-size / 2 + SHAPE_HORIZONTAL_OFFSET, -size / 2)
+        .lineTo(size, 0)
+        .lineTo(0, size)
+        .lineTo(-size, 0)
         .close();
     });
   };
@@ -50,8 +60,14 @@
       <span class="value">{size}</span>
     </div>
     <div class="legend">
-      <span class="legend-item"><span class="legend-swatch static"></span><span class="legend-label static">Static</span></span>
-      <span class="legend-item"><span class="legend-swatch dynamic"></span><span class="legend-label dynamic">Dynamic</span></span>
+      <span class="legend-item">
+        <span class="legend-swatch static"></span>
+        <span class="legend-label static">Static</span>
+      </span>
+      <span class="legend-item">
+        <span class="legend-swatch dynamic"></span>
+        <span class="legend-label dynamic">Dynamic</span>
+      </span>
     </div>
   {/snippet}
 </ExampleLayout>

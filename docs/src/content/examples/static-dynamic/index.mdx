@@ -11,29 +11,38 @@ import StaticDynamic from "./StaticDynamic.svelte";
   <StaticDynamic client:visible slot="scene" />
   <Fragment slot="code">
     ```typescript
+      const ORANGE = "#f97316";
+      const TEAL = "#0f766e";
+
       const staticGroup = scene.geometry.group();
       staticGroup.setDrawUsage("static");
 
-    const dynamicGroup = scene.geometry.group();
-    const orangeFillId = scene.addHatchFill("#f97316");
-    const tealFillId = scene.addHatchFill("#0f766e");
-    const offset = 90;
+      const dynamicGroup = scene.geometry.group();
 
-    scene.draw((p) => {
-    const half = p.size / 2;
+      const orangeFillId = scene.addHatchFill(ORANGE);
+      const orangeStroke = ORANGE;
+      const tealFillId = scene.addHatchFill(TEAL);
+      const tealStroke = TEAL;
 
-    // Static - committed once, frozen after first frame
-    staticGroup.path({ fill: orangeFillId })
-    .moveToAbs(-offset - half, -half)
-    .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
-    .close();
+      scene.draw((p) => {
+        const { size } = p;
 
-    // Dynamic - redraws every frame
-    dynamicGroup.path({ fill: tealFillId })
-    .moveToAbs(offset - half, -half)
-    .lineTo(p.size, 0).lineTo(0, p.size).lineTo(-p.size, 0)
-    .close();
-    });
+        staticGroup
+          .path({ stroke: orangeStroke, fill: orangeFillId })
+          .moveToAbs(-size / 2 - SHAPE_HORIZONTAL_OFFSET, -size / 2)
+          .lineTo(size, 0)
+          .lineTo(0, size)
+          .lineTo(-size, 0)
+          .close();
+
+        dynamicGroup
+          .path({ stroke: tealStroke, fill: tealFillId })
+          .moveToAbs(-size / 2 + SHAPE_HORIZONTAL_OFFSET, -size / 2)
+          .lineTo(size, 0)
+          .lineTo(0, size)
+          .lineTo(-size, 0)
+          .close();
+      });
     ```
 
   </Fragment>

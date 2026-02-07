@@ -16,8 +16,11 @@
     children?: Snippet;
     initialFilterOn?: boolean;
   } = $props();
-
-  const controls = params ?? children;
 </script>
 
-<SceneLayout {initialParams} {onSetup} {initialFilterOn} params={controls} />
+<SceneLayout
+  {initialParams}
+  {onSetup}
+  {initialFilterOn}
+  params={params ?? children}
+/>

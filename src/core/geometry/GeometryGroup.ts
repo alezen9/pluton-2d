@@ -5,8 +5,17 @@ import type { Prettify } from "../types";
 
 type PathOptions = {
   className?: string;
-  /** CSS fill value (e.g., from createHatchFill) */
+  /**
+   * CSS fill value
+   * @example
+   * fill: "#0f766e"
+   *
+   * const fillId = scene.addHatchFill("red");
+   * fill: fillId
+   */
   fill?: string;
+  /** CSS stroke value */
+  stroke?: string;
   /** Fill rule for paths with holes (default: "evenodd") */
   fillRule?: "nonzero" | "evenodd";
 };
@@ -18,7 +27,6 @@ export type GeometryGroup = Prettify<
     /**
      * Create or reuse a path builder. To be called within a draw call
      * @param options - optional configuration
-     * @param options.className - custom class for the path element
      * @returns path builder for chaining commands
      */
     path: (options?: PathOptions) => PathBuilder;
@@ -31,6 +39,7 @@ type PathEntry = {
   lastD: string;
   lastClass: string;
   lastFill: string;
+  lastStroke: string;
   lastFillRule: string;
 };
 
@@ -97,6 +106,7 @@ export class GeometryGroupInternal implements GeometryGroup {
     const i = this.activeIndex++;
     const className = options?.className ?? "";
     const fill = options?.fill ?? "";
+    const stroke = options?.stroke ?? "";
     const fillRule = options?.fillRule ?? DEFAULT_FILL_RULE;
 
     if (i < this.paths.length) {
@@ -115,6 +125,12 @@ export class GeometryGroupInternal implements GeometryGroup {
         entry.lastFill = fill;
       }
 
+      if (stroke !== entry.lastStroke) {
+        if (stroke) entry.path.style.setProperty("--stroke-value", stroke);
+        else entry.path.style.removeProperty("--stroke-value");
+        entry.lastStroke = stroke;
+      }
+
       if (fillRule !== entry.lastFillRule) {
         if (fillRule) entry.path.setAttribute("fill-rule", fillRule);
         else entry.path.removeAttribute("fill-rule");
@@ -129,10 +145,19 @@ export class GeometryGroupInternal implements GeometryGroup {
 
     if (className) path.setAttribute("class", className);
     if (fill) path.style.setProperty("--hatch-fill-value", fill);
+    if (stroke) path.style.setProperty("--stroke-value", stroke);
     if (fillRule) path.setAttribute("fill-rule", fillRule);
 
     this.g.appendChild(path);
-    this.paths.push({ builder, path, lastD: "", lastClass: className, lastFill: fill, lastFillRule: fillRule });
+    this.paths.push({
+      builder,
+      path,
+      lastD: "",
+      lastClass: className,
+      lastFill: fill,
+      lastStroke: stroke,
+      lastFillRule: fillRule,
+    });
     return builder;
   }
 

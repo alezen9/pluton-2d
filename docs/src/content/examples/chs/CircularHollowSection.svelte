@@ -3,55 +3,79 @@
   import ExampleLayout from "@examples/components/ExampleLayout.svelte";
 
   type Params = { radius: number; thickness: number };
-  const CIRCLE_HANDLE_FACTOR = 0.5522847498;
-
   let radius = $state(110);
-  let thickness = $state(12);
+  let thickness = $state(24);
   let scene: Pluton2D<Params> | null = null;
 
-  const onSetup = (s: Pluton2D<Params>) => {
-    scene = s;
-    const geom = scene.geometry.group();
-    const dims = scene.dimensions.group();
-    const tealFillId = scene.addHatchFill("#0f766e");
+  const onSetup = (sceneInstance: Pluton2D<Params>) => {
+    scene = sceneInstance;
+    const geometryGroup = scene.geometry.group();
+    const dimensionsGroup = scene.dimensions.group();
+    const TEAL = "#0f766e";
+    const tealFillId = scene.addHatchFill(TEAL);
+    const tealStroke = TEAL;
+
+    const radiusDimensionAngle = Math.PI / 4; // 45deg
+    const centerMarkSize = 15;
+    const dimensionOverflow = 15;
+    const thicknessDimensionAngle = -Math.PI / 4; // -45deg
 
     scene.draw((p) => {
-      const { radius: r, thickness: t } = p;
-      const ir = r - t;
+      const { radius: outerRadius, thickness } = p;
+      const innerRadius = outerRadius - thickness;
 
-      const path = geom.path({ className: "demo-teal", fill: tealFillId });
-      const appendCircle = (radiusValue: number) => {
-        const handleOffset = radiusValue * CIRCLE_HANDLE_FACTOR;
-        path
-          .moveToAbs(-radiusValue, 0)
-          .cubicToAbs(-radiusValue, handleOffset, -handleOffset, radiusValue, 0, radiusValue)
-          .smoothCubicToAbs(radiusValue, handleOffset, radiusValue, 0)
-          .smoothCubicToAbs(handleOffset, -radiusValue, 0, -radiusValue)
-          .smoothCubicToAbs(-radiusValue, -handleOffset, -radiusValue, 0);
-      };
+      const path = geometryGroup.path({ stroke: tealStroke, fill: tealFillId });
+      path
+        // outer circle
+        .moveToAbs(-outerRadius, 0)
+        .arcToAbs(0, outerRadius, outerRadius, true)
+        .arcToAbs(outerRadius, 0, outerRadius, true)
+        .arcToAbs(0, -outerRadius, outerRadius, true)
+        .arcToAbs(-outerRadius, 0, outerRadius, true)
+        // inner circle
+        .moveToAbs(-innerRadius, 0)
+        .arcToAbs(0, innerRadius, innerRadius, true)
+        .arcToAbs(innerRadius, 0, innerRadius, true)
+        .arcToAbs(0, -innerRadius, innerRadius, true)
+        .arcToAbs(-innerRadius, 0, innerRadius, true)
+        .close();
 
-      appendCircle(r);
-      appendCircle(ir);
+      const dimensions = dimensionsGroup.dimension();
+      const radiusDirX = Math.cos(radiusDimensionAngle);
+      const radiusDirY = Math.sin(radiusDimensionAngle);
 
-      const dim = dims.dimension();
-      const angle = Math.PI / 4;
-      const x = r * Math.cos(angle);
-      const y = r * Math.sin(angle);
+      // radius dimension
+      dimensions
+        .centerMark(centerMarkSize)
+        .lineTo(outerRadius * radiusDirX, outerRadius * radiusDirY)
+        .arrowFilled(radiusDimensionAngle)
+        .moveToAbs(
+          (innerRadius / 2) * radiusDirX,
+          (innerRadius / 2) * radiusDirY,
+        )
+        .textAt(-5, 5, `R ${outerRadius}mm`, "end");
 
-      dim.moveToAbs(0, 0).centerMark(20);
-
-      dim
-        .moveToAbs(0, 0)
-        .lineToAbs(x, y)
-        .arrowFilled(angle)
-        .textAtAbs(x / 2 - 10, y / 2, `R${r}mm`, "end");
-
-      dim
-        .moveToAbs(-r - 25, 0)
-        .tick(-Math.PI / 2)
-        .lineTo(0, -t)
-        .tick(Math.PI / 2)
-        .textAt(-10, t / 2, `${t}mm`, "end");
+      // wall thickness dimension
+      const thicknessDirX = Math.cos(thicknessDimensionAngle);
+      const thicknessDirY = Math.sin(thicknessDimensionAngle);
+      dimensions
+        .moveToAbs(
+          (innerRadius - dimensionOverflow) * thicknessDirX,
+          (innerRadius - dimensionOverflow) * thicknessDirY,
+        )
+        .lineTo(
+          dimensionOverflow * thicknessDirX,
+          dimensionOverflow * thicknessDirY,
+        )
+        .tick(thicknessDimensionAngle)
+        .moveTo(thickness * thicknessDirX, thickness * thicknessDirY)
+        .tick(thicknessDimensionAngle)
+        .lineTo(
+          dimensionOverflow * thicknessDirX,
+          dimensionOverflow * thicknessDirY,
+        )
+        .lineTo(dimensionOverflow * 2, 0)
+        .textAt(5, 0, `${thickness}mm`, "start");
     });
   };
 
@@ -72,7 +96,7 @@
     </div>
     <div class="demo-control">
       <label>
-        Wall
+        Wall thickness
         <input type="range" bind:value={thickness} min={3} max={50} step={1} />
       </label>
       <span class="value">{thickness}</span>

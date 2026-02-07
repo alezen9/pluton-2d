@@ -10,33 +10,93 @@ import IBeam from "./IBeam.svelte";
 <ExampleTabs>
   <IBeam client:visible slot="scene" />
   <Fragment slot="code">
-```typescript
-const geom = scene.geometry.group();
-const dims = scene.dimensions.group();
-const amberFillId = scene.addHatchFill("#d97706");
+    ```typescript
+      const geometryGroup = scene.geometry.group();
+      const dimensionsGroup = scene.dimensions.group();
 
-scene.draw((p) => {
-  const path = geom.path({ className: "demo-amber", fill: amberFillId });
-  path
-    .moveToAbs(0, 0)
-    .lineTo(p.width / 2, 0)
-    .lineTo(0, p.flangeThickness)
-    .lineTo(-p.width / 2 + p.webThickness / 2 + p.filletRadius, 0)
-    .arcTo(-p.filletRadius, p.filletRadius, p.filletRadius, true)
-    .lineTo(0, p.height - 2 * p.flangeThickness - 2 * p.filletRadius)
-    .arcTo(p.filletRadius, p.filletRadius, p.filletRadius, true)
-    // … mirror symmetry for top half
-    .close();
+      const AMBER = "#d97706";
+      const amberFillId = scene.addHatchFill(AMBER);
+      const amberStroke = AMBER;
 
-  geom.translate(0, -p.height / 2);
+      const dimensionOverflow = 15;
+      const dimensionOffset = 30;
 
-  // Width dimension
-  const dim = dims.dimension();
-  dim
-    .moveToAbs(-p.width / 2, -p.height / 2 - 20)
-    .tick(0).lineTo(p.width, 0).tick(0)
-    .textAt(-p.width / 2, -16, `${p.width}mm`);
-});
-```
+      scene.draw((p) => {
+        const { width, height, flangeThickness, webThickness, filletRadius } = p;
+
+        // i-beam
+        const path = geometryGroup.path({
+          stroke: amberStroke,
+          fill: amberFillId,
+        });
+        path
+          .moveToAbs(0, 0)
+          .lineTo(width / 2, 0)
+          .lineTo(0, flangeThickness)
+          .lineTo(-width / 2 + webThickness / 2 + filletRadius, 0)
+          .arcTo(-filletRadius, filletRadius, filletRadius, true)
+          .lineTo(0, height - 2 * flangeThickness - 2 * filletRadius)
+          .arcTo(filletRadius, filletRadius, filletRadius, true)
+          .lineTo(width / 2 - webThickness / 2 - filletRadius, 0)
+          .lineTo(0, flangeThickness)
+          .lineTo(-width, 0)
+          .lineTo(0, -flangeThickness)
+          .lineTo(width / 2 - webThickness / 2 - filletRadius, 0)
+          .arcTo(filletRadius, -filletRadius, filletRadius, true)
+          .lineTo(0, -height + 2 * flangeThickness + 2 * filletRadius)
+          .arcTo(-filletRadius, -filletRadius, filletRadius, true)
+          .lineTo(-width / 2 + webThickness / 2 + filletRadius, 0)
+          .lineTo(0, -flangeThickness)
+          .lineTo(width / 2, 0)
+          .close();
+
+        geometryGroup.translate(0, -height / 2);
+
+        const dimensions = dimensionsGroup.dimension();
+        const webThicknessDimensionPositionY = (height / 2 - flangeThickness) / 2;
+
+        // web thickness dimension
+        dimensions
+          .moveToAbs(-webThickness / 2, webThicknessDimensionPositionY)
+          .tick(0)
+          .lineTo(-dimensionOverflow, 0)
+          .moveToAbs(webThickness / 2, webThicknessDimensionPositionY)
+          .tick(Math.PI)
+          .lineTo(dimensionOverflow * 2, 0)
+          .textAt(5, 0, `${webThickness}mm`, "start");
+
+        // flange width dimension
+        dimensions
+          .moveToAbs(-width / 2, -height / 2 - dimensionOffset)
+          .tick(0)
+          .lineTo(width, 0)
+          .tick(0)
+          .textAt(-width / 2, -15, `${width}mm`);
+
+        // height dimension
+        dimensions
+          .moveToAbs(width / 2 + dimensionOffset, -height / 2)
+          .tick(-Math.PI / 2)
+          .lineTo(0, height)
+          .tick(Math.PI / 2)
+          .textAt(15, -height / 2, `${height}mm`, "start");
+
+        // fillet radius dimension
+        const filletRadiusDimensionDirX = Math.cos(Math.PI / 4);
+        const filletRadiusDimensionDirY = Math.sin(Math.PI / 4);
+        dimensions
+          .moveToAbs(-webThickness / 2, height / 2 - flangeThickness)
+          .moveTo(-filletRadius, -filletRadius)
+          .moveTo(
+            filletRadius * filletRadiusDimensionDirX,
+            filletRadius * filletRadiusDimensionDirY,
+          )
+          .arrowFilled(Math.PI / 4)
+          .lineTo(-30, -30)
+          .lineTo(-15, 0)
+          .textAt(-5, 0, `R ${filletRadius}mm`, "end");
+      });
+    ```
+
   </Fragment>
 </ExampleTabs>

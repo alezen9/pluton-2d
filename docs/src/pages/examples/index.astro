@@ -2,10 +2,10 @@
 import { getCollection } from "astro:content";
 import Layout from "@views/examples/layout.astro";
 
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const examples = await getCollection("examples");
+const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
+const exampleCollection = await getCollection("examples");
 
-const CATEGORY_ORDER = [
+const exampleCategoryOrder = [
   "Drawing",
   "Profiles",
   "Complex Shapes",
@@ -14,30 +14,40 @@ const CATEGORY_ORDER = [
   "Behavior",
 ];
 
-const byCategory: Record<
-  string,
-  Array<{
-    id: string;
-    title: string;
-    description: string;
-  }>
-> = {};
+type ExampleOverviewItem = {
+  id: string;
+  title: string;
+  description: string;
+};
 
-for (const ex of examples) {
-  (byCategory[ex.data.category] ??= []).push({
-    id: ex.id,
-    title: ex.data.title,
-    description: ex.data.description,
+const exampleItemsByCategory: Record<string, ExampleOverviewItem[]> = {};
+
+for (const exampleEntry of exampleCollection) {
+  const categoryName = exampleEntry.data.category;
+  if (!exampleItemsByCategory[categoryName]) {
+    exampleItemsByCategory[categoryName] = [];
+  }
+
+  exampleItemsByCategory[categoryName].push({
+    id: exampleEntry.id,
+    title: exampleEntry.data.title,
+    description: exampleEntry.data.description,
   });
 }
 
-for (const key of Object.keys(byCategory)) {
-  byCategory[key].sort((a, b) => a.title.localeCompare(b.title));
+for (const categoryName of Object.keys(exampleItemsByCategory)) {
+  exampleItemsByCategory[categoryName].sort((leftItem, rightItem) =>
+    leftItem.title.localeCompare(rightItem.title),
+  );
 }
 
-const orderedCategories = [
-  ...CATEGORY_ORDER.filter((category) => byCategory[category]),
-  ...Object.keys(byCategory).filter((category) => !CATEGORY_ORDER.includes(category)).sort(),
+const orderedCategoryNames = [
+  ...exampleCategoryOrder.filter(
+    (categoryName) => exampleItemsByCategory[categoryName],
+  ),
+  ...Object.keys(exampleItemsByCategory)
+    .filter((categoryName) => !exampleCategoryOrder.includes(categoryName))
+    .sort(),
 ];
 ---
 
@@ -49,19 +59,24 @@ const orderedCategories = [
       dimensions, filters, and static vs dynamic rendering behavior.
     </p>
 
-    {orderedCategories.map((category) => (
-      <section class="examples-category-section">
-        <h2>{category}</h2>
-        <div class="examples-grid">
-          {byCategory[category].map((item) => (
-            <a class="example-overview-card" href={`${base}/examples/${item.id}`}>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
-            </a>
-          ))}
-        </div>
-      </section>
-    ))}
+    {
+      orderedCategoryNames.map((categoryName) => (
+        <section class="examples-category-section">
+          <h2>{categoryName}</h2>
+          <div class="examples-grid">
+            {exampleItemsByCategory[categoryName].map((exampleItem) => (
+              <a
+                class="example-overview-card"
+                href={`${baseUrl}/examples/${exampleItem.id}`}
+              >
+                <h3>{exampleItem.title}</h3>
+                <p>{exampleItem.description}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))
+    }
   </div>
 </Layout>
 
@@ -80,7 +95,7 @@ const orderedCategories = [
   }
 
   .examples-category-section {
-    margin-bottom: 1.5rem;
+    margin-bottom: 5.5rem;
   }
 
   .examples-category-section h2 {
@@ -94,8 +109,8 @@ const orderedCategories = [
 
   .examples-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 0.65rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
   }
 
   .example-overview-card {
@@ -105,7 +120,10 @@ const orderedCategories = [
     border-radius: var(--radius);
     padding: 0.75rem;
     text-decoration: none;
-    transition: border-color 0.15s, transform 0.15s, background 0.15s;
+    transition:
+      border-color 0.15s,
+      transform 0.15s,
+      background 0.15s;
   }
 
   .example-overview-card:hover {

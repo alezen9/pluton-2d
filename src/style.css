@@ -8,9 +8,9 @@
   --pluton-geometry-stroke: rgba(0, 0, 0, 0.7);
   --pluton-geometry-stroke-width: 1;
   --pluton-hatch-color: rgba(0, 39, 50, 0.14);
-  --pluton-dim-color: black;
+  --pluton-dim-color: rgba(0, 0, 0, 0.75);
   --pluton-dim-stroke-width: 1;
-  --pluton-dim-text-color: rgba(0, 0, 0, 0.6);
+  --pluton-dim-text-color: rgba(0, 0, 0, 0.75);
   --pluton-dim-font-size: 12px;
   --pluton-dim-font-family: system-ui, sans-serif;
 }
@@ -49,7 +49,7 @@
 
 .pluton-root .pluton-geometry path {
   fill: var(--hatch-fill-override, var(--hatch-fill-value, none));
-  stroke: var(--pluton-geometry-stroke);
+  stroke: var(--stroke-value, var(--pluton-geometry-stroke));
   stroke-width: var(--pluton-geometry-stroke-width);
   shape-rendering: crispEdges;
 }

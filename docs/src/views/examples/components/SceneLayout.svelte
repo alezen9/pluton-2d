@@ -23,11 +23,10 @@
   let gridOn = $state(true);
   let axesOn = $state(true);
   let hatchOn = $state(true);
+  // svelte-ignore state_referenced_locally
   let filterOn = $state(initialFilterOn);
 
-  const resetCamera = () => {
-    scene?.resetCamera();
-  };
+  const resetCamera = () => scene?.resetCamera();
 </script>
 
 <div class="scene-layout">
@@ -66,38 +65,28 @@
     min-height: 0;
   }
 
-  :global(.pluton-root .pluton-geometry path.demo-blue) {
+  :global(.pluton-root .pluton-geometry path.stroke-blue) {
     stroke: #2563eb;
   }
 
-  :global(.pluton-root .pluton-geometry path.demo-teal) {
+  :global(.pluton-root .pluton-geometry path.stroke-teal) {
     stroke: #0f766e;
   }
 
-  :global(.pluton-root .pluton-geometry path.demo-orange) {
+  :global(.pluton-root .pluton-geometry path.stroke-orange) {
     stroke: #ea580c;
   }
 
-  :global(.pluton-root .pluton-geometry path.demo-purple) {
+  :global(.pluton-root .pluton-geometry path.stroke-purple) {
     stroke: #7c3aed;
   }
 
-  :global(.pluton-root .pluton-geometry path.demo-rose) {
+  :global(.pluton-root .pluton-geometry path.stroke-rose) {
     stroke: #e11d48;
   }
 
-  :global(.pluton-root .pluton-geometry path.demo-amber) {
+  :global(.pluton-root .pluton-geometry path.stroke-amber) {
     stroke: #d97706;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-static) {
-    stroke: #f97316;
-    stroke-width: 2;
-  }
-
-  :global(.pluton-root .pluton-geometry path.demo-dynamic) {
-    stroke: #0f766e;
-    stroke-width: 2;
   }
 
   @media (max-width: 1024px) {

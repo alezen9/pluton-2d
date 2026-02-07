@@ -7,33 +7,52 @@
   let size = $state(150);
   let scene: Pluton2D<Params> | null = null;
 
-  const onSetup = (s: Pluton2D<Params>) => {
-    scene = s;
-    const geom = scene.geometry.group();
+  const onSetup = (sceneInstance: Pluton2D<Params>) => {
+    scene = sceneInstance;
+    const geometryGroup = scene.geometry.group();
+    const SHAPE_GAP_SCALE = 1.5;
 
-    const blueFillId = scene.addHatchFill("#2563eb");
-    const tealFillId = scene.addHatchFill("#0f766e");
-    const orangeFillId = scene.addHatchFill("#ea580c");
+    const BLUE = "#2563eb";
+    const blueFillId = scene.addHatchFill(BLUE);
+    const blueStroke = BLUE;
+
+    const TEAL = "#0f766e";
+    const tealFillId = scene.addHatchFill(TEAL);
+    const tealStroke = TEAL;
+
+    const ORANGE = "#ea580c";
+    const orangeFillId = scene.addHatchFill(ORANGE);
+    const orangeStroke = ORANGE;
 
     scene.draw((p) => {
-      const sz = p.size, half = sz / 2, gap = sz * 1.2;
+      const { size } = p;
+      const halfShapeSize = size / 2;
+      const horizontalGap = size * SHAPE_GAP_SCALE;
 
-      geom.path({ className: "demo-blue", fill: blueFillId })
-        .moveToAbs(-gap, half)
-        .lineToAbs(-gap + half, -half)
-        .lineToAbs(-gap - half, -half)
+      // triangle
+      geometryGroup
+        .path({ stroke: blueStroke, fill: blueFillId })
+        .moveToAbs(-horizontalGap, halfShapeSize)
+        .lineToAbs(-horizontalGap + halfShapeSize, -halfShapeSize)
+        .lineToAbs(-horizontalGap - halfShapeSize, -halfShapeSize)
         .close();
 
-      geom.path({ className: "demo-teal", fill: tealFillId })
-        .moveToAbs(-half, -half)
-        .lineTo(sz, 0).lineTo(0, sz).lineTo(-sz, 0)
+      // square
+      geometryGroup
+        .path({ stroke: tealStroke, fill: tealFillId })
+        .moveToAbs(-halfShapeSize, -halfShapeSize)
+        .lineTo(size, 0)
+        .lineTo(0, size)
+        .lineTo(-size, 0)
         .close();
 
-      geom.path({ className: "demo-orange", fill: orangeFillId })
-        .moveToAbs(gap, half)
-        .lineToAbs(gap + half, 0)
-        .lineToAbs(gap, -half)
-        .lineToAbs(gap - half, 0)
+      // diamond
+      geometryGroup
+        .path({ stroke: orangeStroke, fill: orangeFillId })
+        .moveToAbs(horizontalGap, halfShapeSize)
+        .lineToAbs(horizontalGap + halfShapeSize, 0)
+        .lineToAbs(horizontalGap, -halfShapeSize)
+        .lineToAbs(horizontalGap - halfShapeSize, 0)
         .close();
     });
   };

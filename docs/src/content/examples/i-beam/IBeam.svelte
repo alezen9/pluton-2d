@@ -2,7 +2,13 @@
   import { Pluton2D } from "pluton-2d";
   import ExampleLayout from "@examples/components/ExampleLayout.svelte";
 
-  type Params = { width: number; height: number; flangeThickness: number; webThickness: number; filletRadius: number };
+  type Params = {
+    width: number;
+    height: number;
+    flangeThickness: number;
+    webThickness: number;
+    filletRadius: number;
+  };
 
   let width = $state(200);
   let height = $state(300);
@@ -11,84 +17,111 @@
   let filletRadius = $state(12);
   let scene: Pluton2D<Params> | null = null;
 
-  const onSetup = (s: Pluton2D<Params>) => {
-    scene = s;
-    const geom = scene.geometry.group();
-    const dims = scene.dimensions.group();
-    const amberFillId = scene.addHatchFill("#d97706");
+  const onSetup = (sceneInstance: Pluton2D<Params>) => {
+    scene = sceneInstance;
+    const geometryGroup = scene.geometry.group();
+    const dimensionsGroup = scene.dimensions.group();
+
+    const AMBER = "#d97706";
+    const amberFillId = scene.addHatchFill(AMBER);
+    const amberStroke = AMBER;
+
+    const dimensionOverflow = 15;
+    const dimensionOffset = 30;
 
     scene.draw((p) => {
-      const fw = p.width;
-      const ft = p.flangeThickness;
-      const wt = p.webThickness;
-      const h = p.height;
-      const r = p.filletRadius;
+      const { width, height, flangeThickness, webThickness, filletRadius } = p;
 
-      const path = geom.path({ className: "demo-amber", fill: amberFillId });
+      // i-beam
+      const path = geometryGroup.path({
+        stroke: amberStroke,
+        fill: amberFillId,
+      });
       path
         .moveToAbs(0, 0)
-        .lineTo(fw / 2, 0)
-        .lineTo(0, ft)
-        .lineTo(-fw / 2 + wt / 2 + r, 0)
-        .arcTo(-r, r, r, true)
-        .lineTo(0, h - 2 * ft - 2 * r)
-        .arcTo(r, r, r, true)
-        .lineTo(fw / 2 - wt / 2 - r, 0)
-        .lineTo(0, ft)
-        .lineTo(-fw, 0)
-        .lineTo(0, -ft)
-        .lineTo(fw / 2 - wt / 2 - r, 0)
-        .arcTo(r, -r, r, true)
-        .lineTo(0, -h + 2 * ft + 2 * r)
-        .arcTo(-r, -r, r, true)
-        .lineTo(-fw / 2 + wt / 2 + r, 0)
-        .lineTo(0, -ft)
-        .lineTo(fw / 2, 0)
+        .lineTo(width / 2, 0)
+        .lineTo(0, flangeThickness)
+        .lineTo(-width / 2 + webThickness / 2 + filletRadius, 0)
+        .arcTo(-filletRadius, filletRadius, filletRadius, true)
+        .lineTo(0, height - 2 * flangeThickness - 2 * filletRadius)
+        .arcTo(filletRadius, filletRadius, filletRadius, true)
+        .lineTo(width / 2 - webThickness / 2 - filletRadius, 0)
+        .lineTo(0, flangeThickness)
+        .lineTo(-width, 0)
+        .lineTo(0, -flangeThickness)
+        .lineTo(width / 2 - webThickness / 2 - filletRadius, 0)
+        .arcTo(filletRadius, -filletRadius, filletRadius, true)
+        .lineTo(0, -height + 2 * flangeThickness + 2 * filletRadius)
+        .arcTo(-filletRadius, -filletRadius, filletRadius, true)
+        .lineTo(-width / 2 + webThickness / 2 + filletRadius, 0)
+        .lineTo(0, -flangeThickness)
+        .lineTo(width / 2, 0)
         .close();
 
-      geom.translate(0, -h / 2);
+      geometryGroup.translate(0, -height / 2);
 
-      const dim = dims.dimension();
+      const dimensions = dimensionsGroup.dimension();
+      const webThicknessDimensionPositionY = (height / 2 - flangeThickness) / 2;
 
-      dim
-        .moveToAbs(-wt / 2, (h / 2 - ft) / 2)
+      // web thickness dimension
+      dimensions
+        .moveToAbs(-webThickness / 2, webThicknessDimensionPositionY)
         .tick(0)
-        .lineTo(-30, 0)
-        .moveToAbs(wt / 2, (h / 2 - ft) / 2)
+        .lineTo(-dimensionOverflow, 0)
+        .moveToAbs(webThickness / 2, webThicknessDimensionPositionY)
         .tick(Math.PI)
-        .lineTo(50, 0)
-        .textAt(10, 0, `${wt}mm`, "start");
+        .lineTo(dimensionOverflow * 2, 0)
+        .textAt(5, 0, `${webThickness}mm`, "start");
 
-      dim
-        .moveToAbs(-fw / 2, -h / 2 - 20)
+      // flange width dimension
+      dimensions
+        .moveToAbs(-width / 2, -height / 2 - dimensionOffset)
         .tick(0)
-        .lineTo(fw, 0)
+        .lineTo(width, 0)
         .tick(0)
-        .textAt(-fw / 2, -16, `${fw}mm`, "middle");
+        .textAt(-width / 2, -15, `${width}mm`);
 
-      dim
-        .moveToAbs(fw / 2 + 40, -h / 2)
+      // height dimension
+      dimensions
+        .moveToAbs(width / 2 + dimensionOffset, -height / 2)
         .tick(-Math.PI / 2)
-        .lineTo(0, h)
+        .lineTo(0, height)
         .tick(Math.PI / 2)
-        .textAt(18, -h / 2, `${h}mm`, "start");
+        .textAt(15, -height / 2, `${height}mm`, "start");
 
-      if (r > 0) {
-        dim
-          .moveToAbs(-wt / 2 - r, ft + r)
-          .lineTo(-20, 20)
-          .textAt(-5, 5, `R${r}mm`, "start");
-      }
+      // fillet radius dimension
+      const filletRadiusDimensionDirX = Math.cos(Math.PI / 4);
+      const filletRadiusDimensionDirY = Math.sin(Math.PI / 4);
+      dimensions
+        .moveToAbs(-webThickness / 2, height / 2 - flangeThickness)
+        .moveTo(-filletRadius, -filletRadius)
+        .moveTo(
+          filletRadius * filletRadiusDimensionDirX,
+          filletRadius * filletRadiusDimensionDirY,
+        )
+        .arrowFilled(Math.PI / 4)
+        .lineTo(-30, -30)
+        .lineTo(-15, 0)
+        .textAt(-5, 0, `R ${filletRadius}mm`, "end");
     });
   };
 
   $effect(() => {
     if (!scene) return;
-    Object.assign(scene.params, { width, height, flangeThickness, webThickness, filletRadius });
+    Object.assign(scene.params, {
+      width,
+      height,
+      flangeThickness,
+      webThickness,
+      filletRadius,
+    });
   });
 </script>
 
-<ExampleLayout initialParams={{ width, height, flangeThickness, webThickness, filletRadius }} {onSetup}>
+<ExampleLayout
+  initialParams={{ width, height, flangeThickness, webThickness, filletRadius }}
+  {onSetup}
+>
   {#snippet params()}
     <div class="demo-control">
       <label>
@@ -106,22 +139,40 @@
     </div>
     <div class="demo-control">
       <label>
-        Flange
-        <input type="range" bind:value={flangeThickness} min={10} max={80} step={1} />
+        Flange height
+        <input
+          type="range"
+          bind:value={flangeThickness}
+          min={10}
+          max={80}
+          step={1}
+        />
       </label>
       <span class="value">{flangeThickness}</span>
     </div>
     <div class="demo-control">
       <label>
-        Web
-        <input type="range" bind:value={webThickness} min={5} max={50} step={1} />
+        Web thickness
+        <input
+          type="range"
+          bind:value={webThickness}
+          min={5}
+          max={50}
+          step={1}
+        />
       </label>
       <span class="value">{webThickness}</span>
     </div>
     <div class="demo-control">
       <label>
-        Fillet
-        <input type="range" bind:value={filletRadius} min={0} max={30} step={1} />
+        Fillet radius
+        <input
+          type="range"
+          bind:value={filletRadius}
+          min={0}
+          max={30}
+          step={1}
+        />
       </label>
       <span class="value">{filletRadius}</span>
     </div>
