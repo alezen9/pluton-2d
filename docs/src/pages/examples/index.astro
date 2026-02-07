@@ -1,18 +1,11 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "@views/examples/layout.astro";
+import { exampleCategoryOrder } from "../../content.config";
+import type { ExampleCategory } from "../../content.config";
 
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
 const exampleCollection = await getCollection("examples");
-
-const exampleCategoryOrder = [
-  "Drawing",
-  "Profiles",
-  "Complex Shapes",
-  "Suuuuuprrrrrr",
-  "Effects",
-  "Behavior",
-];
 
 type ExampleOverviewItem = {
   id: string;
@@ -20,35 +13,24 @@ type ExampleOverviewItem = {
   description: string;
 };
 
-const exampleItemsByCategory: Record<string, ExampleOverviewItem[]> = {};
+const exampleItemsByCategory: Partial<Record<ExampleCategory, ExampleOverviewItem[]>> = {};
 
 for (const exampleEntry of exampleCollection) {
-  const categoryName = exampleEntry.data.category;
-  if (!exampleItemsByCategory[categoryName]) {
-    exampleItemsByCategory[categoryName] = [];
+  const category = exampleEntry.data.category;
+  if (!exampleItemsByCategory[category]) {
+    exampleItemsByCategory[category] = [];
   }
 
-  exampleItemsByCategory[categoryName].push({
+  exampleItemsByCategory[category].push({
     id: exampleEntry.id,
     title: exampleEntry.data.title,
     description: exampleEntry.data.description,
   });
 }
 
-for (const categoryName of Object.keys(exampleItemsByCategory)) {
-  exampleItemsByCategory[categoryName].sort((leftItem, rightItem) =>
-    leftItem.title.localeCompare(rightItem.title),
-  );
-}
-
-const orderedCategoryNames = [
-  ...exampleCategoryOrder.filter(
-    (categoryName) => exampleItemsByCategory[categoryName],
-  ),
-  ...Object.keys(exampleItemsByCategory)
-    .filter((categoryName) => !exampleCategoryOrder.includes(categoryName))
-    .sort(),
-];
+const orderedCategories = exampleCategoryOrder.filter(
+  (category) => exampleItemsByCategory[category],
+);
 ---
 
 <Layout title="Examples">
@@ -60,11 +42,11 @@ const orderedCategoryNames = [
     </p>
 
     {
-      orderedCategoryNames.map((categoryName) => (
+      orderedCategories.map((category) => (
         <section class="examples-category-section">
-          <h2>{categoryName}</h2>
+          <h2>{category}</h2>
           <div class="examples-grid">
-            {exampleItemsByCategory[categoryName].map((exampleItem) => (
+            {(exampleItemsByCategory[category] ?? []).map((exampleItem) => (
               <a
                 class="example-overview-card"
                 href={`${baseUrl}/examples/${exampleItem.id}`}
