@@ -24,9 +24,8 @@
     const starsStroke = DARK_RED;
 
     const starStartAngle = -Math.PI / 2;
-    const starOffsetRatio = 0.42;
-    const dimensionOffset = 24;
-    const titleOffset = 76;
+    const starOffsetRatio = 0.4;
+    const dimensionOffset = 30;
 
     const drawStar = (
       path: ReturnType<typeof geometryGroup.path>,
@@ -89,22 +88,18 @@
       drawStar(starsPath, 0, starOffset, starSize, starStartAngle);
       drawStar(starsPath, -starOffset, 0, starSize, starStartAngle);
 
-      // dimensions and title
-      const dimensionsPath = dimensionsGroup.dimension();
-      dimensionsPath
+      const dimensions = dimensionsGroup.dimension();
+      dimensions
+        // diameter
         .moveToAbs(-sphereRadius, -sphereRadius - dimensionOffset)
         .tick(0)
         .lineTo(2 * sphereRadius, 0)
         .tick(0)
         .textAt(-sphereRadius, -15, `${Math.round(2 * sphereRadius)} mm`)
+
+        // title
         .moveToAbs(0, 0)
-        .textAtAbs(
-          0,
-          sphereRadius + titleOffset,
-          "FOUR STAR SPHERE",
-          "middle",
-          "dragon-title",
-        );
+        .textAtAbs(0, 200, "Kamehameha!", "middle", "title");
     });
   };
 
