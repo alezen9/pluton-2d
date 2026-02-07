@@ -99,7 +99,13 @@
 
         // title
         .moveToAbs(0, 0)
-        .textAtAbs(0, 200, "Kamehameha!", "middle", "title");
+        .textAtAbs(
+          0,
+          200,
+          `"Ka...me...ha...me...haaaaaaaa!" - Goku`,
+          "middle",
+          "title",
+        );
     });
   };
 
