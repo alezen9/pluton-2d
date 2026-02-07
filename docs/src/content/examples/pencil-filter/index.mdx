@@ -10,26 +10,53 @@ import PencilFilter from "./PencilFilter.svelte";
 <ExampleTabs>
   <PencilFilter client:visible slot="scene" />
   <Fragment slot="code">
-```typescript
-const roseFillId = scene.addHatchFill("#e11d48");
+    ```typescript
+      scene.enableFilter(true);
+      const geometryGroup = scene.geometry.group();
 
-scene.draw((p) => {
-  const star = geom.path({ className: "demo-rose", fill: roseFillId });
-  const points = 5;
-  const outerR = p.size;
-  const innerR = p.size * 0.4;
+      const ROSE = "#e11d48";
+      const roseFillId = scene.addHatchFill(ROSE);
+      const roseStroke = ROSE;
 
-  for (let i = 0; i < points * 2; i++) {
-    const angle = (i * Math.PI) / points - Math.PI / 2;
-    const r = i % 2 === 0 ? outerR : innerR;
-    const x = r * Math.cos(angle);
-    const y = r * Math.sin(angle);
-    i === 0 ? star.moveToAbs(x, y) : star.lineToAbs(x, y);
-  }
-  star.close();
-});
+      const starStartAngle = Math.PI / 2;
+      scene.draw((p) => {
+        const { size, points, innerRadiusRatio } = p;
+        const path = geometryGroup.path({
+          stroke: roseStroke,
+          fill: roseFillId,
+        });
+        const pointCount = Math.max(3, Math.floor(points));
+        const step = Math.PI / pointCount;
+        const outerRadius = size;
+        const innerRadius = size * innerRadiusRatio;
+        const startX = outerRadius * Math.cos(starStartAngle);
+        const startY = outerRadius * Math.sin(starStartAngle);
 
-scene.enableFilter(true);
-```
+        // outer point 1
+        path.moveToAbs(startX, startY);
+
+        let previousX = startX;
+        let previousY = startY;
+
+        // rest of inner and outer points
+        for (let vertexIndex = 1; vertexIndex < pointCount * 2; vertexIndex++) {
+          const isOuterPoint = vertexIndex % 2 === 0;
+          const pointRadius = isOuterPoint ? outerRadius : innerRadius;
+          const pointAngle = starStartAngle + step * vertexIndex;
+          const pointX = pointRadius * Math.cos(pointAngle);
+          const pointY = pointRadius * Math.sin(pointAngle);
+
+          if (isOuterPoint) path.lineTo(pointX - previousX, pointY - previousY);
+          else path.lineTo(pointX - previousX, pointY - previousY);
+
+          previousX = pointX;
+          previousY = pointY;
+        }
+
+        // close the star
+        path.close();
+      });
+    ```
+
   </Fragment>
 </ExampleTabs>

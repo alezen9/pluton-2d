@@ -2,42 +2,73 @@
   import { Pluton2D } from "pluton-2d";
   import ExampleLayout from "@examples/components/ExampleLayout.svelte";
 
-  type Params = { size: number };
+  type Params = { size: number; points: number; innerRadiusRatio: number };
 
   let size = $state(120);
+  let points = $state(5);
+  let innerRadiusRatio = $state(0.38);
   let scene: Pluton2D<Params> | null = null;
 
-  const onSetup = (s: Pluton2D<Params>) => {
-    scene = s;
+  const onSetup = (sceneInstance: Pluton2D<Params>) => {
+    scene = sceneInstance;
     scene.enableFilter(true);
-    const geom = scene.geometry.group();
-    const roseFillId = scene.addHatchFill("#e11d48");
+    const geometryGroup = scene.geometry.group();
 
+    const ROSE = "#e11d48";
+    const roseFillId = scene.addHatchFill(ROSE);
+    const roseStroke = ROSE;
+
+    const starStartAngle = Math.PI / 2;
     scene.draw((p) => {
-      const star = geom.path({ className: "demo-rose", fill: roseFillId });
-      const points = 5;
-      const outerR = p.size;
-      const innerR = p.size * 0.4;
+      const { size, points, innerRadiusRatio } = p;
+      const path = geometryGroup.path({
+        stroke: roseStroke,
+        fill: roseFillId,
+      });
+      const pointCount = Math.max(3, Math.floor(points));
+      const step = Math.PI / pointCount;
+      const outerRadius = size;
+      const innerRadius = size * innerRadiusRatio;
+      const startX = outerRadius * Math.cos(starStartAngle);
+      const startY = outerRadius * Math.sin(starStartAngle);
 
-      for (let i = 0; i < points * 2; i++) {
-        const angle = (i * Math.PI) / points - Math.PI / 2;
-        const r = i % 2 === 0 ? outerR : innerR;
-        const x = r * Math.cos(angle);
-        const y = r * Math.sin(angle);
-        if (i === 0) star.moveToAbs(x, y);
-        else star.lineToAbs(x, y);
+      // outer point 1
+      path.moveToAbs(startX, startY);
+
+      let previousX = startX;
+      let previousY = startY;
+
+      // rest of inner and outer points
+      for (let vertexIndex = 1; vertexIndex < pointCount * 2; vertexIndex++) {
+        const isOuterPoint = vertexIndex % 2 === 0;
+        const pointRadius = isOuterPoint ? outerRadius : innerRadius;
+        const pointAngle = starStartAngle + step * vertexIndex;
+        const pointX = pointRadius * Math.cos(pointAngle);
+        const pointY = pointRadius * Math.sin(pointAngle);
+
+        if (isOuterPoint) path.lineTo(pointX - previousX, pointY - previousY);
+        else path.lineTo(pointX - previousX, pointY - previousY);
+
+        previousX = pointX;
+        previousY = pointY;
       }
-      star.close();
+
+      // close the star
+      path.close();
     });
   };
 
   $effect(() => {
     if (!scene) return;
-    scene.params.size = size;
+    Object.assign(scene.params, { size, points, innerRadiusRatio });
   });
 </script>
 
-<ExampleLayout initialParams={{ size }} {onSetup} initialFilterOn={true}>
+<ExampleLayout
+  initialParams={{ size, points, innerRadiusRatio }}
+  {onSetup}
+  initialFilterOn={true}
+>
   {#snippet params()}
     <div class="demo-control">
       <label>
@@ -45,6 +76,26 @@
         <input type="range" bind:value={size} min={40} max={160} step={1} />
       </label>
       <span class="value">{size}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Points
+        <input type="range" bind:value={points} min={3} max={12} step={1} />
+      </label>
+      <span class="value">{points}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Inner radius ratio
+        <input
+          type="range"
+          bind:value={innerRadiusRatio}
+          min={0}
+          max={1}
+          step={0.01}
+        />
+      </label>
+      <span class="value">{innerRadiusRatio.toFixed(2)}</span>
     </div>
   {/snippet}
 </ExampleLayout>
