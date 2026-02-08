@@ -1,0 +1,108 @@
+---
+title: Dragon Ball
+category: Personal Playground
+description: The simplest shape with the loudest meaning.
+---
+
+import ExampleTabs from "@examples/components/ExampleTabs.svelte";
+import DragonBall from "./DragonBall.svelte";
+
+<ExampleTabs>
+  <DragonBall client:visible slot="scene" />
+  <Fragment slot="code">
+    ```typescript
+      const geometryGroup = scene.geometry.group();
+      const dimensionsGroup = scene.dimensions.group();
+
+      const ORANGE = "#fb923c";
+      const DARK_ORANGE = "#d4651d";
+      const sphereFillId = scene.addHatchFill(ORANGE, 0.25);
+      const sphereStroke = DARK_ORANGE;
+
+      const RED = "#b91c1c";
+      const DARK_RED = "#8f1212";
+      const starsFillId = scene.addHatchFill(RED, 0.5);
+      const starsStroke = DARK_RED;
+
+      const starStartAngle = -Math.PI / 2;
+      const starOffsetRatio = 0.4;
+      const dimensionOffset = 30;
+
+      const drawStar = (
+        path: ReturnType<typeof geometryGroup.path>,
+        centerX: number,
+        centerY: number,
+        outerRadius: number,
+        startAngle: number,
+      ) => {
+        const pointCount = 5;
+        const innerRadiusRatio = 0.44;
+        const step = Math.PI / pointCount;
+        const innerRadius = outerRadius * innerRadiusRatio;
+        const startX = centerX + Math.cos(startAngle) * outerRadius;
+        const startY = centerY + Math.sin(startAngle) * outerRadius;
+
+        // outer point 1
+        path.moveToAbs(startX, startY);
+        let previousX = startX;
+        let previousY = startY;
+
+        for (let vertexIndex = 1; vertexIndex < pointCount * 2; vertexIndex++) {
+          const isOuterPoint = vertexIndex % 2 === 0;
+          const pointRadius = isOuterPoint ? outerRadius : innerRadius;
+          const pointAngle = startAngle + step * vertexIndex;
+          const pointX = centerX + Math.cos(pointAngle) * pointRadius;
+          const pointY = centerY + Math.sin(pointAngle) * pointRadius;
+          path.lineTo(pointX - previousX, pointY - previousY);
+          previousX = pointX;
+          previousY = pointY;
+        }
+
+        // close the star
+        path.close();
+      };
+
+      scene.draw((p) => {
+        const { radius: sphereRadius, starSize } = p;
+        const starOffset = sphereRadius * starOffsetRatio;
+
+        // sphere
+        const spherePath = geometryGroup.path({
+          stroke: sphereStroke,
+          fill: sphereFillId,
+        });
+        spherePath
+          .moveToAbs(-sphereRadius, 0)
+          .arcTo(sphereRadius, sphereRadius, sphereRadius, true)
+          .arcTo(sphereRadius, -sphereRadius, sphereRadius, true)
+          .arcTo(-sphereRadius, -sphereRadius, sphereRadius, true)
+          .arcTo(-sphereRadius, sphereRadius, sphereRadius, true)
+          .close();
+
+        // four stars
+        const starsPath = geometryGroup.path({
+          stroke: starsStroke,
+          fill: starsFillId,
+        });
+        drawStar(starsPath, 0, -starOffset, starSize, starStartAngle);
+        drawStar(starsPath, starOffset, 0, starSize, starStartAngle);
+        drawStar(starsPath, 0, starOffset, starSize, starStartAngle);
+        drawStar(starsPath, -starOffset, 0, starSize, starStartAngle);
+
+        const dimensions = dimensionsGroup.dimension();
+        dimensions
+          // diameter
+          .moveToAbs(-sphereRadius, -sphereRadius - dimensionOffset)
+          .tick(0)
+          .lineTo(2 * sphereRadius, 0)
+          .tick(0)
+          .textAt(-sphereRadius, -15, `${Math.round(2 * sphereRadius)} mm`)
+
+          // title
+          .moveToAbs(0, 0)
+          .textAtAbs(0, 200, "Kamehameha!", "middle", "title");
+      });
+    ```
+
+  </Fragment>
+</ExampleTabs>

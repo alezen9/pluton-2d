@@ -1,0 +1,116 @@
+---
+title: Base Plate Detail
+category: Draft
+description: Column base plate with anchor bolts, grout line, and linked front/plan dimensions.
+---
+
+import ExampleTabs from "@examples/components/ExampleTabs.svelte";
+import BasePlateDetail from "./BasePlateDetail.svelte";
+
+<ExampleTabs>
+  <BasePlateDetail client:visible slot="scene" />
+  <Fragment slot="code">
+```typescript
+import { Pluton2D } from "pluton-2d";
+
+type SceneParams = {
+  columnWidth: number;
+  columnHeight: number;
+  plateWidth: number;
+  plateDepth: number;
+  plateThickness: number;
+  boltOffsetX: number;
+  boltOffsetY: number;
+  boltDiameter: number;
+  cornerRadius: number;
+  groutThickness: number;
+};
+
+const svgElement = document.querySelector("svg#base-plate") as SVGSVGElement;
+const scene = new Pluton2D<SceneParams>(svgElement, {
+  columnWidth: 120,
+  columnHeight: 220,
+  plateWidth: 230,
+  plateDepth: 180,
+  plateThickness: 24,
+  boltOffsetX: 72,
+  boltOffsetY: 52,
+  boltDiameter: 20,
+  cornerRadius: 14,
+  groutThickness: 14,
+});
+
+const geometry = scene.geometry.group();
+const dimensions = scene.dimensions.group();
+const TEAL = "#0f766e";
+const SLATE = "#475569";
+const GRAY = "#64748b";
+const RED = "#7f1d1d";
+
+const columnStroke = TEAL;
+const plateStroke = SLATE;
+const concreteStroke = GRAY;
+const boltStroke = RED;
+
+const columnFillId = scene.addHatchFill(TEAL, 0.2);
+const plateFillId = scene.addHatchFill(SLATE, 0.15);
+const concreteFillId = scene.addHatchFill(GRAY, 0.1);
+const boltFillId = scene.addHatchFill(RED, 0.14);
+
+scene.draw((params) => {
+  const plateWidthValue = Math.max(params.plateWidth, params.columnWidth + 60);
+  const plateDepthValue = params.plateDepth;
+  const boltRadius = params.boltDiameter / 2;
+
+  // front concrete
+  geometry
+    .path({ stroke: concreteStroke, fill: concreteFillId })
+    .moveToAbs(-370, -138)
+    .lineToAbs(-100, -138)
+    .lineToAbs(-100, -82)
+    .lineToAbs(-370, -82)
+    .close();
+
+  // front column
+  geometry
+    .path({ stroke: columnStroke, fill: columnFillId })
+    .moveToAbs(-235 - params.columnWidth / 2, -44)
+    .lineToAbs(-235 + params.columnWidth / 2, -44)
+    .lineToAbs(-235 + params.columnWidth / 2, 176)
+    .lineToAbs(-235 - params.columnWidth / 2, 176)
+    .close();
+
+  // plan plate
+  const planPlatePath = geometry.path({ stroke: plateStroke, fill: plateFillId });
+  planPlatePath
+    .moveToAbs(235 - plateWidthValue / 2, 34 - plateDepthValue / 2)
+    .lineToAbs(235 + plateWidthValue / 2, 34 - plateDepthValue / 2)
+    .lineToAbs(235 + plateWidthValue / 2, 34 + plateDepthValue / 2)
+    .lineToAbs(235 - plateWidthValue / 2, 34 + plateDepthValue / 2)
+    .close();
+
+  // bolt holes
+  const holePath = geometry.path({ stroke: boltStroke, fill: boltFillId });
+  holePath
+    .moveToAbs(235 - params.boltOffsetX - boltRadius, 34 + params.boltOffsetY)
+    .arcToAbs(235 - params.boltOffsetX, 34 + params.boltOffsetY + boltRadius, boltRadius, true)
+    .arcToAbs(235 - params.boltOffsetX + boltRadius, 34 + params.boltOffsetY, boltRadius, true)
+    .arcToAbs(235 - params.boltOffsetX, 34 + params.boltOffsetY - boltRadius, boltRadius, true)
+    .arcToAbs(235 - params.boltOffsetX - boltRadius, 34 + params.boltOffsetY, boltRadius, true)
+    .close()
+    .moveToAbs(235 + params.boltOffsetX - boltRadius, 34 + params.boltOffsetY)
+    .arcToAbs(235 + params.boltOffsetX, 34 + params.boltOffsetY + boltRadius, boltRadius, true)
+    .arcToAbs(235 + params.boltOffsetX + boltRadius, 34 + params.boltOffsetY, boltRadius, true)
+    .arcToAbs(235 + params.boltOffsetX, 34 + params.boltOffsetY - boltRadius, boltRadius, true)
+    .arcToAbs(235 + params.boltOffsetX - boltRadius, 34 + params.boltOffsetY, boltRadius, true)
+    .close();
+
+  // example dimensions
+  const baseDimensions = dimensions.dimension();
+  baseDimensions
+    .moveToAbs(235 - plateWidthValue / 2, 34 + plateDepthValue / 2 + 28)
+    .lineTo(plateWidthValue, 0);
+});
+```
+  </Fragment>
+</ExampleTabs>

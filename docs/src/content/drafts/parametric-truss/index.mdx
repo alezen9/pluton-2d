@@ -1,0 +1,93 @@
+---
+title: Parametric Truss
+category: Draft
+description: Pratt truss elevation with panelized members, node plates, and linked dimensions.
+---
+
+import ExampleTabs from "@examples/components/ExampleTabs.svelte";
+import ParametricTruss from "./ParametricTruss.svelte";
+
+<ExampleTabs>
+  <ParametricTruss client:visible slot="scene" />
+  <Fragment slot="code">
+```typescript
+import { Pluton2D } from "pluton-2d";
+
+type SceneParams = {
+  span: number;
+  rise: number;
+  panels: number;
+  nodePlateRadius: number;
+  camber: number;
+};
+
+const svgElement = document.querySelector("svg#truss") as SVGSVGElement;
+const scene = new Pluton2D<SceneParams>(svgElement, {
+  span: 840,
+  rise: 190,
+  panels: 8,
+  nodePlateRadius: 8,
+  camber: 18,
+});
+
+const geometry = scene.geometry.group();
+const dimensions = scene.dimensions.group();
+const nodeFillId = scene.addHatchFill("#0f766e", 0.16);
+const CIRCLE_HANDLE_FACTOR = 0.5522847498;
+
+const appendCircle = (path: any, centerX: number, centerY: number, radiusValue: number) => {
+  const handleOffset = radiusValue * CIRCLE_HANDLE_FACTOR;
+  path
+    .moveToAbs(centerX - radiusValue, centerY)
+    .cubicToAbs(
+      centerX - radiusValue,
+      centerY + handleOffset,
+      centerX - handleOffset,
+      centerY + radiusValue,
+      centerX,
+      centerY + radiusValue,
+    )
+    .smoothCubicToAbs(centerX + radiusValue, centerY + handleOffset, centerX + radiusValue, centerY)
+    .smoothCubicToAbs(centerX + handleOffset, centerY - radiusValue, centerX, centerY - radiusValue)
+    .smoothCubicToAbs(centerX - radiusValue, centerY - handleOffset, centerX - radiusValue, centerY)
+    .close();
+};
+
+scene.draw((params) => {
+  const panelCount = Math.max(6, Math.round(params.panels / 2) * 2);
+  const panelLength = params.span / panelCount;
+  const halfSpan = params.span / 2;
+
+  const bottomChordNodes: Array<{ x: number; y: number }> = [];
+  const topChordNodes: Array<{ x: number; y: number }> = [];
+
+  for (let index = 0; index <= panelCount; index++) {
+    const nodeX = -halfSpan + index * panelLength;
+    const crownFactor = 4 * (index / panelCount) * (1 - index / panelCount);
+    bottomChordNodes.push({ x: nodeX, y: params.camber * 0.22 * crownFactor });
+    topChordNodes.push({ x: nodeX, y: params.rise * (0.2 + 0.8 * crownFactor) });
+  }
+
+  const chordPath = geometry.path({ className: "demo-truss-chord" });
+  chordPath.moveToAbs(bottomChordNodes[0].x, bottomChordNodes[0].y);
+  for (let index = 1; index <= panelCount; index++) chordPath.lineToAbs(bottomChordNodes[index].x, bottomChordNodes[index].y);
+
+  chordPath.moveToAbs(topChordNodes[0].x, topChordNodes[0].y);
+  for (let index = 1; index <= panelCount; index++) chordPath.lineToAbs(topChordNodes[index].x, topChordNodes[index].y);
+
+  const webPath = geometry.path({ className: "demo-truss-web" });
+  for (let index = 1; index < panelCount; index++) {
+    webPath.moveToAbs(bottomChordNodes[index].x, bottomChordNodes[index].y).lineToAbs(topChordNodes[index].x, topChordNodes[index].y);
+  }
+
+  const nodePath = geometry.path({ className: "demo-truss-nodes", fill: nodeFillId });
+  for (let index = 0; index <= panelCount; index++) {
+    appendCircle(nodePath, bottomChordNodes[index].x, bottomChordNodes[index].y, params.nodePlateRadius);
+  }
+
+  const dimensionPath = dimensions.dimension({ className: "truss-dim" });
+  dimensionPath.moveToAbs(-halfSpan, -42).lineTo(params.span, 0);
+});
+```
+  </Fragment>
+</ExampleTabs>

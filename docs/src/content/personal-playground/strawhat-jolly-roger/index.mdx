@@ -1,0 +1,99 @@
+---
+title: Straw Hat Jolly Roger
+category: Personal Playground
+description: Straw Hat emblem in blueprint style with crossbones, hat construction, and dimensions.
+---
+
+import ExampleTabs from "@examples/components/ExampleTabs.svelte";
+import StrawhatJollyRoger from "./StrawhatJollyRoger.svelte";
+
+<ExampleTabs>
+  <StrawhatJollyRoger client:visible slot="scene" />
+  <Fragment slot="code">
+```typescript
+import { Pluton2D } from "pluton-2d";
+
+type SceneParams = {
+  skullDiameter: number;
+  brimWidth: number;
+  boneSpan: number;
+};
+
+const svgElement = document.querySelector("svg#strawhat-jolly-roger") as SVGSVGElement;
+const scene = new Pluton2D<SceneParams>(svgElement, {
+  skullDiameter: 170,
+  brimWidth: 254,
+  boneSpan: 338,
+});
+
+const geometry = scene.geometry.group();
+const dimensions = scene.dimensions.group();
+
+const boneFillId = scene.addHatchFill("#e2e8f0", 0.12);
+const skullFillId = scene.addHatchFill("#f8fafc", 0.08);
+const hatFillId = scene.addHatchFill("#facc15", 0.12);
+const CIRCLE_HANDLE_FACTOR = 0.5522847498;
+
+const appendCircle = (path: any, centerX: number, centerY: number, radius: number) => {
+  const handleOffset = radius * CIRCLE_HANDLE_FACTOR;
+  path
+    .moveToAbs(centerX - radius, centerY)
+    .cubicToAbs(
+      centerX - radius,
+      centerY + handleOffset,
+      centerX - handleOffset,
+      centerY + radius,
+      centerX,
+      centerY + radius,
+    )
+    .smoothCubicToAbs(centerX + radius, centerY + handleOffset, centerX + radius, centerY)
+    .smoothCubicToAbs(centerX + handleOffset, centerY - radius, centerX, centerY - radius)
+    .smoothCubicToAbs(centerX - radius, centerY - handleOffset, centerX - radius, centerY)
+    .close();
+};
+
+scene.draw((params) => {
+  const skullRadius = params.skullDiameter / 2;
+  const hatBrimWidth = Math.max(params.brimWidth, params.skullDiameter * 1.2);
+  const crossedBoneSpan = Math.max(params.boneSpan, hatBrimWidth * 1.05);
+  const boneThickness = Math.max(16, params.skullDiameter * 0.14);
+  const boneRise = params.skullDiameter * 0.48;
+
+  const skullCenterY = 8;
+  const boneCenterY = -40;
+  const boneHalfSpan = crossedBoneSpan / 2;
+
+  const bonePath = geometry.path({ className: "demo-jolly-bones", fill: boneFillId });
+  bonePath
+    .moveToAbs(-boneHalfSpan, boneCenterY - boneRise)
+    .lineToAbs(boneHalfSpan, boneCenterY + boneRise)
+    .lineToAbs(boneHalfSpan + boneThickness * 0.4, boneCenterY + boneRise - boneThickness * 0.7)
+    .lineToAbs(-boneHalfSpan + boneThickness * 0.4, boneCenterY - boneRise - boneThickness * 0.7)
+    .close();
+
+  appendCircle(bonePath, -boneHalfSpan, boneCenterY - boneRise, boneThickness * 0.56);
+  appendCircle(bonePath, boneHalfSpan, boneCenterY + boneRise, boneThickness * 0.56);
+
+  appendCircle(geometry.path({ className: "demo-jolly-skull", fill: skullFillId }), 0, skullCenterY, skullRadius);
+
+  const brimCenterY = skullCenterY + skullRadius * 0.82;
+  const brimHeight = params.skullDiameter * 0.18;
+  geometry
+    .path({ className: "demo-jolly-hat", fill: hatFillId })
+    .moveToAbs(-hatBrimWidth / 2, brimCenterY - brimHeight / 2)
+    .lineToAbs(hatBrimWidth / 2, brimCenterY - brimHeight / 2)
+    .lineToAbs(hatBrimWidth / 2, brimCenterY + brimHeight / 2)
+    .lineToAbs(-hatBrimWidth / 2, brimCenterY + brimHeight / 2)
+    .close();
+
+  const dim = dimensions.dimension({ className: "jolly-dim" });
+  dim
+    .moveToAbs(-hatBrimWidth / 2, brimCenterY + skullRadius * 0.92)
+    .tick(0)
+    .lineTo(hatBrimWidth, 0)
+    .tick(0)
+    .textAt(-hatBrimWidth * 0.5, -10, `${Math.round(hatBrimWidth)} mm`, "middle", "jolly-dim");
+});
+```
+  </Fragment>
+</ExampleTabs>

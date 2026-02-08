@@ -1,13 +1,19 @@
 ---
 import { getCollection, render } from "astro:content";
 import Page from "@views/examples/page.astro";
+import { hiddenExampleCategories } from "../../content.config";
+import type { ExampleCategory } from "../../content.config";
 
 export async function getStaticPaths() {
   const examples = await getCollection("examples");
-  return examples.map((entry) => ({
-    params: { slug: entry.id },
-    props: { entry },
-  }));
+  const isHiddenExample = (entryId: string, category: ExampleCategory) =>
+    entryId.startsWith("drafts/") || hiddenExampleCategories.includes(category);
+  return examples
+    .filter((entry) => !isHiddenExample(entry.id, entry.data.category))
+    .map((entry) => ({
+      params: { slug: entry.id },
+      props: { entry },
+    }));
 }
 
 const { entry } = Astro.props;

@@ -2,10 +2,13 @@
 import { getCollection } from "astro:content";
 import Layout from "@views/examples/layout.astro";
 import { exampleCategoryOrder } from "../../content.config";
+import { hiddenExampleCategories } from "../../content.config";
 import type { ExampleCategory } from "../../content.config";
 
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
 const exampleCollection = await getCollection("examples");
+const isHiddenExample = (entryId: string, category: ExampleCategory) =>
+  entryId.startsWith("drafts/") || hiddenExampleCategories.includes(category);
 
 type ExampleOverviewItem = {
   id: string;
@@ -17,6 +20,7 @@ const exampleItemsByCategory: Partial<Record<ExampleCategory, ExampleOverviewIte
 
 for (const exampleEntry of exampleCollection) {
   const category = exampleEntry.data.category;
+  if (isHiddenExample(exampleEntry.id, category)) continue;
   if (!exampleItemsByCategory[category]) {
     exampleItemsByCategory[category] = [];
   }
@@ -29,7 +33,8 @@ for (const exampleEntry of exampleCollection) {
 }
 
 const orderedCategories = exampleCategoryOrder.filter(
-  (category) => exampleItemsByCategory[category],
+  (category) =>
+    !hiddenExampleCategories.includes(category) && exampleItemsByCategory[category],
 );
 ---
 

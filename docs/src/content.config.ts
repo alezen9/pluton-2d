@@ -2,15 +2,17 @@ import { glob } from "astro/loaders";
 import { defineCollection, z } from "astro:content";
 
 export const exampleCategoryOrder = [
-  "Fundamentals",
-  "Sections",
-  "Details",
-  "Parametric",
-  "Rendering",
-  "Symbols",
+  "Getting Started",
+  "Profiles",
+  "Blueprints",
+  "Effects & Performance",
+  "Personal Playground",
+  "Draft",
 ] as const;
 
 export type ExampleCategory = (typeof exampleCategoryOrder)[number];
+
+export const hiddenExampleCategories: ExampleCategory[] = ["Draft"];
 
 const zExample = z.object({
   title: z.string(),
