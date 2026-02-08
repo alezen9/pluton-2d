@@ -11,8 +11,9 @@ import PencilFilter from "./PencilFilter.svelte";
   <PencilFilter client:visible slot="scene" />
   <Fragment slot="code">
     ```typescript
-      scene.enableFilter(true);
       const geometryGroup = scene.geometry.group();
+      scene.enableFilter(true);
+      scene.setFilterIntensity(filterIntensity); // reactive state
 
       const ROSE = "#e11d48";
       const roseFillId = scene.addHatchFill(ROSE);

@@ -7,12 +7,14 @@
   let size = $state(120);
   let points = $state(5);
   let innerRadiusRatio = $state(0.38);
+  let filterIntensity = $state(1.25);
   let scene: Pluton2D<Params> | null = null;
 
   const onSetup = (sceneInstance: Pluton2D<Params>) => {
     scene = sceneInstance;
-    scene.enableFilter(true);
     const geometryGroup = scene.geometry.group();
+    scene.enableFilter(true);
+    scene.setFilterIntensity(filterIntensity); // reactive state
 
     const ROSE = "#e11d48";
     const roseFillId = scene.addHatchFill(ROSE);
@@ -60,6 +62,11 @@
     if (!scene) return;
     Object.assign(scene.params, { size, points, innerRadiusRatio });
   });
+
+  $effect(() => {
+    if (!scene) return;
+    scene.setFilterIntensity(filterIntensity);
+  });
 </script>
 
 <ExampleLayout
@@ -94,6 +101,19 @@
         />
       </label>
       <span class="value">{innerRadiusRatio.toFixed(2)}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Filter intensity
+        <input
+          type="range"
+          bind:value={filterIntensity}
+          min={0}
+          max={10}
+          step={0.05}
+        />
+      </label>
+      <span class="value">{filterIntensity.toFixed(2)}</span>
     </div>
   {/snippet}
 </ExampleLayout>
