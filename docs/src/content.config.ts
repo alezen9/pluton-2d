@@ -4,6 +4,7 @@ import { defineCollection, z } from "astro:content";
 export const exampleCategoryOrder = [
   "Getting Started",
   "Profiles",
+  "Parametric",
   "Blueprints",
   "Effects & Performance",
   "Personal Playground",

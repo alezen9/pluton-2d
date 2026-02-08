@@ -20,7 +20,9 @@ type ExampleNavigationItem = {
   label: string;
 };
 
-const exampleItemsByCategory: Partial<Record<ExampleCategory, ExampleNavigationItem[]>> = {};
+const exampleItemsByCategory: Partial<
+  Record<ExampleCategory, ExampleNavigationItem[]>
+> = {};
 for (const exampleEntry of exampleCollection) {
   const category = exampleEntry.data.category;
   if (isHiddenExample(exampleEntry.id, category)) continue;
@@ -40,7 +42,8 @@ const categorizedExampleNavigation = exampleCategoryOrder
     items: exampleItemsByCategory[category] ?? [],
   }));
 
-const isActiveExampleLink = (href: string) => normalizeUrlPath(href) === currentUrlPath;
+const isActiveExampleLink = (href: string) =>
+  normalizeUrlPath(href) === currentUrlPath;
 ---
 
 <BaseLayout {title} currentPage="/examples">
@@ -49,24 +52,36 @@ const isActiveExampleLink = (href: string) => normalizeUrlPath(href) === current
       <div class="sidebar-category">
         <ul class="sidebar-links">
           <li>
-            <a href={`${baseUrl}/examples`} class:list={{ active: isActiveExampleLink(`${baseUrl}/examples`) }}>All Examples</a>
+            <a
+              href={`${baseUrl}/examples`}
+              class:list={{
+                active: isActiveExampleLink(`${baseUrl}/examples`),
+              }}>All Examples</a
+            >
           </li>
         </ul>
       </div>
-      {categorizedExampleNavigation.map((categoryGroup) => (
-        <div class="sidebar-category">
-          <div class="sidebar-category-label">{categoryGroup.label}</div>
-          <ul class="sidebar-links">
-            {categoryGroup.items.map((item) => (
-              <li>
-                <a href={`${baseUrl}${item.path}`} class:list={{ active: isActiveExampleLink(`${baseUrl}${item.path}`) }}>
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      {
+        categorizedExampleNavigation.map((categoryGroup) => (
+          <div class="sidebar-category">
+            <div class="sidebar-category-label">{categoryGroup.label}</div>
+            <ul class="sidebar-links">
+              {categoryGroup.items.map((item) => (
+                <li>
+                  <a
+                    href={`${baseUrl}${item.path}`}
+                    class:list={{
+                      active: isActiveExampleLink(`${baseUrl}${item.path}`),
+                    }}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
     </aside>
     <div class="examples-main">
       <slot />
@@ -124,7 +139,9 @@ const isActiveExampleLink = (href: string) => normalizeUrlPath(href) === current
     text-decoration: none;
     font-size: 0.8rem;
     font-weight: 500;
-    transition: color 0.15s, background 0.15s;
+    transition:
+      color 0.15s,
+      background 0.15s;
   }
 
   .examples-sidebar .sidebar-category + .sidebar-category .sidebar-links {

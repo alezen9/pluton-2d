@@ -72,10 +72,8 @@
       });
       spherePath
         .moveToAbs(-sphereRadius, 0)
-        .arcTo(sphereRadius, sphereRadius, sphereRadius, true)
-        .arcTo(sphereRadius, -sphereRadius, sphereRadius, true)
-        .arcTo(-sphereRadius, -sphereRadius, sphereRadius, true)
-        .arcTo(-sphereRadius, sphereRadius, sphereRadius, true)
+        .arcTo(sphereRadius * 2, 0, sphereRadius, true)
+        .arcTo(-sphereRadius * 2, 0, sphereRadius, true)
         .close();
 
       // four stars

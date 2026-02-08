@@ -27,19 +27,16 @@ import CircularHollowSection from "./CircularHollowSection.svelte";
           const innerRadius = outerRadius - thickness;
 
           const path = geometryGroup.path({ stroke: tealStroke, fill: tealFillId });
+
+          // a single arcTo can create a circle with the help of a very small displacement (epsilon) and lareArc = true
+          // it looks and behaves like a circle but a perfect one can only be produced by 2 or more arcs
           path
             // outer circle
             .moveToAbs(-outerRadius, 0)
-            .arcToAbs(0, outerRadius, outerRadius, true)
-            .arcToAbs(outerRadius, 0, outerRadius, true)
-            .arcToAbs(0, -outerRadius, outerRadius, true)
-            .arcToAbs(-outerRadius, 0, outerRadius, true)
+            .arcTo(0, -Number.EPSILON, outerRadius, true, true)
             // inner circle
             .moveToAbs(-innerRadius, 0)
-            .arcToAbs(0, innerRadius, innerRadius, true)
-            .arcToAbs(innerRadius, 0, innerRadius, true)
-            .arcToAbs(0, -innerRadius, innerRadius, true)
-            .arcToAbs(-innerRadius, 0, innerRadius, true)
+            .arcTo(0, -Number.EPSILON, innerRadius, true, true)
             .close();
 
           const dimensions = dimensionsGroup.dimension();

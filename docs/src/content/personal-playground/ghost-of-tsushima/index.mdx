@@ -42,16 +42,12 @@ import GhostOfTsushima from "./GhostOfTsushima.svelte";
         ringPath
           // outer circle
           .moveToAbs(-outerRadius, 0)
-          .arcToAbs(0, outerRadius, outerRadius, true)
-          .arcToAbs(outerRadius, 0, outerRadius, true)
-          .arcToAbs(0, -outerRadius, outerRadius, true)
-          .arcToAbs(-outerRadius, 0, outerRadius, true)
+          .arcTo(outerRadius * 2, 0, outerRadius, true)
+          .arcTo(-outerRadius * 2, 0, outerRadius, true)
           // inner circle
           .moveToAbs(-innerRadius, 0)
-          .arcToAbs(0, innerRadius, innerRadius, true)
-          .arcToAbs(innerRadius, 0, innerRadius, true)
-          .arcToAbs(0, -innerRadius, innerRadius, true)
-          .arcToAbs(-innerRadius, 0, innerRadius, true)
+          .arcTo(innerRadius * 2, 0, innerRadius, true)
+          .arcTo(-innerRadius * 2, 0, innerRadius, true)
           .close();
 
         const polygonsPath = geometryGroup.path({
