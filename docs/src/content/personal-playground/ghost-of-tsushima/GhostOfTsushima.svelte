@@ -13,9 +13,8 @@
     const geometryGroup = scene.geometry.group();
     const dimensionsGroup = scene.dimensions.group();
 
-    const GRAY = "#a5a5a5";
-    const grayFillId = scene.addHatchFill(GRAY);
-    const grayStroke = GRAY;
+    const BLACK = "#000";
+    const blackFillId = scene.addHatchFill(BLACK, 0.5);
 
     const RED = "#a40000";
     const redFillId = scene.addHatchFill(RED, 0.5);
@@ -34,8 +33,7 @@
       const innerRadius = initialRadius - thickness;
 
       const ringPath = geometryGroup.path({
-        stroke: grayStroke,
-        fill: grayFillId,
+        fill: blackFillId,
       });
 
       ringPath
@@ -84,7 +82,7 @@
         .textAtAbs(
           0,
           200,
-          `"Honor died on the beach." - Jin Sakai`,
+          `"Honor died on the beach" - Jin Sakai`,
           "middle",
           "title",
         );

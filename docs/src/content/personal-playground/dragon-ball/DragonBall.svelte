@@ -93,17 +93,11 @@
         .tick(0)
         .lineTo(2 * sphereRadius, 0)
         .tick(0)
-        .textAt(-sphereRadius, -15, `${Math.round(2 * sphereRadius)} mm`)
+        .textAt(-sphereRadius, -15, `Ø ${Math.round(2 * sphereRadius)} mm`)
 
         // title
         .moveToAbs(0, 0)
-        .textAtAbs(
-          0,
-          200,
-          `"Ka...me...ha...me...haaaaaaaa!" - Goku`,
-          "middle",
-          "title",
-        );
+        .textAtAbs(0, 200, `"か…め…は…め… 波!!" - Goku`, "middle", "title");
     });
   };
 

@@ -18,7 +18,7 @@
     const PURPLE = "#4c1d95";
     const symbolFillId = scene.addHatchFill(PURPLE, 0.25);
 
-    const dimensionOffset = 30;
+    const dimensionOffset = 50;
 
     scene.draw((p) => {
       const { width, height } = p;
@@ -48,8 +48,7 @@
         .cubicTo(8, -8, 77, 40, 93, 38)
         .cubicTo(8, -1, 9, -5, 8, -11)
         .cubicTo(-1, -7, -8, -51, -9, -58)
-        .cubicTo(-29, -1, -72, -1, -85, -2)
-        .close();
+        .cubicTo(-29, -1, -72, -1, -85, -2);
 
       // left dakuten
       path
@@ -57,8 +56,7 @@
         .cubicTo(10, -3, 20, -6, 26, -7)
         .cubicTo(17, 18, 48, 47, 58, 51)
         .cubicTo(-13, 4, -29, 7, -39, 7)
-        .cubicTo(-12, -9, -33, -30, -45, -51)
-        .close();
+        .cubicTo(-12, -9, -33, -30, -45, -51);
 
       // right dakuten
       path
@@ -66,8 +64,7 @@
         .cubicTo(2, -3, 16, -16, 20, -16)
         .cubicTo(17, 8, 45, 34, 50, 47)
         .cubicTo(-6, 4, -14, 10, -19, 10)
-        .cubicTo(-13, -8, -43, -32, -50, -40)
-        .close();
+        .cubicTo(-13, -8, -43, -32, -50, -40);
 
       const dimensions = dimensionsGroup.dimension();
       dimensions
@@ -90,7 +87,7 @@
         .textAtAbs(
           0,
           200,
-          `"Yare yare daze." - Jotaro Kujo`,
+          `"私の名は吉良吉影、年齢33歳" — Yoshikage Kira`,
           "middle",
           "title",
         );

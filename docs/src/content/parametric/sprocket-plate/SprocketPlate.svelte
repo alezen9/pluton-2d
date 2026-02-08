@@ -137,28 +137,28 @@
         )
 
         // PCD
-        .moveToAbs(outerRadius + 44, -boltCircleRadius)
-        .tick(-Math.PI / 2)
-        .lineTo(0, boltCircleRadius * 2)
+        .moveToAbs(-outerRadius - 44, -boltCircleRadius)
         .tick(Math.PI / 2)
+        .lineTo(0, boltCircleRadius * 2)
+        .tick(-Math.PI / 2)
         .textAt(
-          12,
+          -12,
           -boltCircleRadius,
           `${Math.round(boltCircleRadius * 2)} mm PCD`,
-          "start",
+          "end",
           "sprocket-dim",
         )
 
         // BORE
-        .moveToAbs(outerRadius + 82, -p.boreRadius)
-        .tick(-Math.PI / 2)
-        .lineTo(0, p.boreRadius * 2)
+        .moveToAbs(-outerRadius - 82, -p.boreRadius)
         .tick(Math.PI / 2)
+        .lineTo(0, p.boreRadius * 2)
+        .tick(-Math.PI / 2)
         .textAt(
-          12,
+          -12,
           -p.boreRadius,
           `${Math.round(p.boreRadius * 2)} mm BORE`,
-          "start",
+          "end",
           "sprocket-dim",
         );
 
