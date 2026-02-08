@@ -44,7 +44,7 @@
     scene.enableFilter(filterOn);
     scene.enableGrid(gridOn);
     scene.enableAxes(axesOn);
-    scene.enableHatchFill(hatchOn);
+    scene.enableFill(hatchOn);
   });
 </script>
 

@@ -10,10 +10,10 @@ export class DefsRegistry {
   private lastWidth = 0;
   private lastHeight = 0;
 
-  constructor(defsEl: SVGDefsElement, pencilIntensity = 1.25) {
+  constructor(defsEl: SVGDefsElement) {
     this.patterns = new PatternDefs(defsEl);
     this.gradients = new GradientDefs(defsEl);
-    this.filters = new FilterDefs(defsEl, pencilIntensity);
+    this.filters = new FilterDefs(defsEl);
 
     this.patterns.sync();
     this.filters.sync();
@@ -60,5 +60,9 @@ export class DefsRegistry {
    */
   createHatchFill(color: string, opacity?: number): string {
     return this.patterns.createColoredHatch(color, opacity);
+  }
+
+  setPencilIntensity(intensity: number): void {
+    this.filters.setIntensity(intensity);
   }
 }

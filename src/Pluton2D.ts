@@ -6,11 +6,6 @@ import { Camera } from "./core/Camera";
 import { Scene } from "./core/Scene";
 import { Engine } from "./core/Engine";
 
-export type PlutonOptions = {
-  /** Intensity of the pencil filter effect (default: 1.25) */
-  filterIntensity?: number;
-};
-
 /**
  * Main Pluton2D instance for creating technical drawings
  * @template P - parameter type for reactive drawing
@@ -36,7 +31,7 @@ export class Pluton2D<
    * @param svg - SVG element to render into
    * @param initialParams - initial reactive parameters
    */
-  constructor(svg: SVGSVGElement, initialParams: P, options?: PlutonOptions) {
+  constructor(svg: SVGSVGElement, initialParams: P) {
     this.events = new EventBus();
 
     svg.classList.add("pluton-root");
@@ -44,7 +39,7 @@ export class Pluton2D<
     this.defsEl = document.createElementNS(SVG_NS, "defs");
     svg.insertBefore(this.defsEl, svg.firstChild);
 
-    this.defs = new DefsRegistry(this.defsEl, options?.filterIntensity);
+    this.defs = new DefsRegistry(this.defsEl);
     const defs = this.defs;
 
     this.engine = new Engine<P>(this.events, initialParams);
@@ -111,6 +106,14 @@ export class Pluton2D<
   }
 
   /**
+   * Set the pencil filter intensity
+   * @param intensity - displacement intensity, clamped to 0+
+   */
+  setFilterIntensity(intensity: number) {
+    this.defs.setPencilIntensity(intensity);
+  }
+
+  /**
    * Enable or disable the built-in graph-paper background
    * @param enabled - whether the graph-paper is visible
    * @defaultValue true
@@ -147,11 +150,11 @@ export class Pluton2D<
   }
 
   /**
-   * Enable or disable hatch fills on geometry (both default and custom)
-   * @param enabled - whether hatch fills are visible
+   * Enable or disable geometry fills (solid and hatch)
+   * @param enabled - whether geometry fills are visible
    * @defaultValue true
    */
-  enableHatchFill(enabled: boolean) {
+  enableFill(enabled: boolean) {
     if (enabled) this.context.svg.classList.remove("pluton-no-fill");
     else this.context.svg.classList.add("pluton-no-fill");
   }

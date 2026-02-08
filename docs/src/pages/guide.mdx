@@ -45,6 +45,10 @@ scene.draw((p) => {
 
 Groups are created once, outside the draw callback. Builders requested inside are recycled - the engine only writes changed attributes.
 
+If you are migrating from older versions:
+- `new Pluton2D(svg, params, { filterIntensity })` was removed.
+- use `scene.setFilterIntensity(...)` after scene creation.
+
 ### Reactive params
 
 Params are wrapped in a Proxy. Any mutation triggers a redraw automatically - redraws are capped at 60 FPS.
@@ -149,6 +153,7 @@ const path = geom.path({ className: "my-path" });
 ```
 
 `path()` also accepts `fill` and `fillRule` when you need hatch fills or cutouts.
+`path()` also accepts `stroke`, and geometry groups support `scale(x, y)`.
 
 ### Hatch fill
 
@@ -162,7 +167,22 @@ geom.path({ fill: blueFillId }).moveToAbs(...).lineTo(...).close();
 geom.path({ fill: orangeFillId, fillRule: "evenodd" }).moveToAbs(...).lineTo(...).close();
 ```
 
-Use `scene.enableHatchFill(false)` to temporarily hide all geometry fills (including custom hatch fills), then `scene.enableHatchFill(true)` to show them again.
+Use `scene.enableFill(false)` to temporarily hide all geometry fills (including custom hatch fills), then `scene.enableFill(true)` to show them again. This is a visibility toggle only; it does not assign fills automatically.
+
+### Pencil filter intensity
+
+Use `setFilterIntensity` to tune the filter at runtime:
+
+```typescript
+scene.enableFilter(true);
+const filterIntensity = 1.25; // default value
+scene.setFilterIntensity(filterIntensity);
+
+// can also be called inside draw callbacks
+scene.draw(() => {
+  scene.setFilterIntensity(filterIntensity);
+});
+```
 
 ---
 

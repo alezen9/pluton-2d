@@ -26,6 +26,7 @@
 
     scene = new Pluton2D(svgEl, {});
     scene.enableAxes(false);
+    scene.enableGrid(false);
     scene.enablePan(false);
     scene.enableZoom(false);
     scene.enableFilter(true);

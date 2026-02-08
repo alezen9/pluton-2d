@@ -130,13 +130,15 @@ const scene = new Pluton2D<{ width: number; height: number }>(svg, {
 
 Params can be any shape. The type is inferred from the initial value.
 
-An optional third argument controls instance-level settings:
+Set pencil filter intensity with a method, anytime:
 
 ```ts
-const scene = new Pluton2D(svg, { width: 240, height: 120 }, {
-  filterIntensity: 1.5,  // pencil filter strength (default: 1.25)
-});
+scene.setFilterIntensity(1.5);
 ```
+
+Migration note:
+- Old constructor options like `new Pluton2D(svg, params, { filterIntensity })` were removed.
+- Use `scene.setFilterIntensity(...)` instead.
 
 ### Draw loop
 
@@ -163,12 +165,24 @@ Controls are explicit and opt-in:
 
 ```ts
 scene.enableFilter(true);     // pencil-like filter (default: false)
-scene.enableHatchFill(true);  // hatch pattern fill (default: false)
+scene.setFilterIntensity(1.5); // set pencil displacement intensity (default: 1.25)
+scene.enableFill(true);       // show/hide geometry fills (default: visible)
 scene.enableGrid(true);       // background grid (default: true)
 scene.enableAxes(true);       // center axes (default: true)
 ```
 
 Filters can be expensive on Safari during zoom-disable them if you see lag.
+
+You can set filter intensity both outside and inside draw callbacks:
+
+```ts
+const filterIntensity = 0.9;
+scene.setFilterIntensity(filterIntensity);
+
+scene.draw(() => {
+  scene.setFilterIntensity(filterIntensity);
+});
+```
 
 ### Geometry
 
@@ -187,8 +201,20 @@ scene.draw((p) => {
 
 ```ts
 group.translate(x, y)           // offset entire group
+group.scale(x, y)               // scale entire group
 group.setDrawUsage(mode)        // "static" or "dynamic" (default: "dynamic")
 group.clear()                   // remove all paths and reset
+```
+
+**Path options:**
+
+```ts
+g.path({
+  className: "my-shape",
+  fill: "url(#pattern-id)",
+  stroke: "#0f766e",
+  fillRule: "evenodd",
+});
 ```
 
 **PathBuilder methods:**
@@ -294,7 +320,7 @@ All visual styling is controlled by CSS variables on `.pluton-root`. You can cus
   --pluton-geometry-stroke: rgba(0, 0, 0, 0.7);
   --pluton-geometry-stroke-width: 1;
 
-  /* Hatch fill (opt-in via enableHatchFill) */
+  /* Hatch stroke color used by built-in hatch patterns */
   --pluton-hatch-color: rgba(0, 39, 50, 0.14);
 
   /* Dimensions */
@@ -317,10 +343,11 @@ d.dimension({ className: "highlighted-dim" });
 
 **Hatch fill:**
 
-Hatch fill is opt-in. Enable it at runtime:
+Create fills with `addHatchFill(...)`, then use `enableFill(...)` as a visibility toggle:
 
 ```ts
-scene.enableHatchFill(true);
+scene.enableFill(false); // hide all geometry fills
+scene.enableFill(true);  // show all geometry fills
 ```
 
 Or add the `pluton-fill-hatch` class to specific paths:

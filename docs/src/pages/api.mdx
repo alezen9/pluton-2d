@@ -16,22 +16,16 @@ Full reference for the Pluton 2D public API - constructor, geometry, and dimensi
 
 ```typescript
 const scene = new Pluton2D(svg, { width: 240, height: 120 });
-
-// With options
-const scene = new Pluton2D(
-  svg,
-  { width: 240, height: 120 },
-  {
-    filterIntensity: 1.5, // pencil filter strength (default: 1.25)
-  },
-);
 ```
 
 | Param           | Description                                                                 |
 | --------------- | --------------------------------------------------------------------------- |
 | `svg`           | SVGSVGElement to render into. Needs CSS width/height or a viewBox.          |
 | `initialParams` | Flat object. Keys become reactive params. Nested objects throw.             |
-| `options`       | Optional. `filterIntensity` controls pencil filter strength (default 1.25). |
+
+Migration note:
+- `new Pluton2D(svg, params, { filterIntensity })` was removed.
+- Use `scene.setFilterIntensity(...)` instead.
 
 ### Properties
 
@@ -58,11 +52,12 @@ scene.dispose();
 | Method                  | Description                                                                       |
 | ----------------------- | --------------------------------------------------------------------------------- |
 | `enableFilter(bool)`    | Pencil-like SVG filter. Default: `false`. Can be expensive on Safari during zoom. |
+| `setFilterIntensity(number)` | Set pencil displacement intensity (default: `1.25`). Callable inside or outside draw callbacks. |
 | `enableGrid(bool)`      | Graph-paper background. Default: `true`.                                          |
 | `enableAxes(bool)`      | Center axes (dashed). Default: `true`.                                            |
 | `enablePan(bool)`       | Middle-mouse or shift+left-click pan. Default: `false`.                           |
 | `enableZoom(bool)`      | Mouse-wheel zoom, 1×-20× scale. Default: `false`.                                 |
-| `enableHatchFill(bool)` | Toggle visibility of geometry fills (including custom `addHatchFill` fills).      |
+| `enableFill(bool)`      | Toggle visibility of geometry fills (including custom `addHatchFill` fills). Does not assign hatch fills by itself. |
 | `resetCamera()`         | Smoothly animate camera back to origin.                                           |
 | `addHatchFill(color, opacity?)` | Create a hatch-fill pattern and return `url(#id)` for `path({ fill })`. |
 | `dispose()`             | Clean up event listeners, DOM elements, and defs.                                 |
@@ -70,6 +65,12 @@ scene.dispose();
 ```typescript
 const tealFillId = scene.addHatchFill("#0f766e");
 geom.path({ fill: tealFillId }).moveToAbs(...).lineTo(...).close();
+
+const filterIntensity = 0.9;
+scene.setFilterIntensity(filterIntensity);
+scene.draw(() => {
+  scene.setFilterIntensity(filterIntensity);
+});
 ```
 
 ---
@@ -84,8 +85,9 @@ Create a geometry group. Call once, outside draw callbacks.
 
 | Method               | Description                                                                                                           |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `path(options?)`     | Request or reuse a PathBuilder. Call inside draw callbacks. Supports `className`, `fill`, and `fillRule`. |
+| `path(options?)`     | Request or reuse a PathBuilder. Call inside draw callbacks. Supports `className`, `fill`, `stroke`, and `fillRule`. |
 | `translate(x, y)`    | Offset the entire group. Direct DOM write - no redraw needed.                                                         |
+| `scale(x, y)`        | Scale the entire group. Direct DOM write - no redraw needed.                                                          |
 | `setDrawUsage(mode)` | `"static"` - commit once then stop. `"dynamic"` (default) - commit every frame.                                       |
 | `clear()`            | Remove all paths, reset group state.                                                                                  |
 
@@ -95,6 +97,7 @@ Create a geometry group. Call once, outside draw callbacks.
 | ------ | ----------- |
 | `className` | CSS class applied to the `<path>`. |
 | `fill` | CSS fill value (typically from `scene.addHatchFill(...)`, returns `url(#id)`). |
+| `stroke` | CSS stroke value. |
 | `fillRule` | `"evenodd"` (default) or `"nonzero"` for complex paths/cutouts. |
 
 ### PathBuilder

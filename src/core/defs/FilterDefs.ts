@@ -5,18 +5,33 @@ export class FilterDefs {
   readonly pencilFilterId = "pluton-filter-pencil";
 
   private defsEl: SVGDefsElement;
-  private intensity: number;
+  private intensity = 1.25;
+  private displacementMapEl: SVGElement | null = null;
 
-  constructor(defsEl: SVGDefsElement, intensity = 1) {
+  constructor(defsEl: SVGDefsElement) {
     this.defsEl = defsEl;
-    this.intensity = intensity;
   }
 
   sync(): void {
-    upsertDef(this.defsEl, this.createPencilFilter());
+    const { filter, displacementMap } = this.createPencilFilter();
+    this.displacementMapEl = displacementMap;
+    upsertDef(this.defsEl, filter);
   }
 
-  private createPencilFilter(): SVGFilterElement {
+  setIntensity(intensity: number): void {
+    if (!Number.isFinite(intensity)) return;
+
+    const nextIntensity = Math.max(0, intensity);
+    if (nextIntensity === this.intensity) return;
+
+    this.intensity = nextIntensity;
+    this.displacementMapEl?.setAttribute("scale", String(this.intensity));
+  }
+
+  private createPencilFilter(): {
+    filter: SVGFilterElement;
+    displacementMap: SVGElement;
+  } {
     const frequency = 0.22;
     const octaves = 3;
 
@@ -47,6 +62,6 @@ export class FilterDefs {
     filter.appendChild(turbulence);
     filter.appendChild(displacementMap);
 
-    return filter;
+    return { filter, displacementMap };
   }
 }
