@@ -72,9 +72,9 @@
 <ExampleLayout
   initialParams={{ size, points, innerRadiusRatio }}
   {onSetup}
-  initialFilterOn={true}
+  initialToggles={{ filterOn: true }}
 >
-  {#snippet params()}
+  {#snippet controls()}
     <div class="demo-control">
       <label>
         Size

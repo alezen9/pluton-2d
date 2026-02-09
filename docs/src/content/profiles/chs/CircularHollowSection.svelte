@@ -83,7 +83,7 @@
 </script>
 
 <ExampleLayout initialParams={{ radius, thickness }} {onSetup}>
-  {#snippet params()}
+  {#snippet controls()}
     <div class="demo-control">
       <label>
         Radius

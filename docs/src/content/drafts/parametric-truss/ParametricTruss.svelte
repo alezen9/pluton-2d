@@ -198,7 +198,7 @@
 </script>
 
 <ExampleLayout initialParams={{ span, rise, panels, nodePlateRadius, camber }} {onSetup}>
-  {#snippet params()}
+  {#snippet controls()}
     <div class="demo-control">
       <label>
         Span

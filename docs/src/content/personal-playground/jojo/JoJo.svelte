@@ -104,18 +104,20 @@
 </script>
 
 <ExampleLayout initialParams={{ width, height }} {onSetup}>
-  <div class="demo-control">
-    <label>
-      Width
-      <input type="range" bind:value={width} min={180} max={340} step={2} />
-    </label>
-    <span class="value">{width}</span>
-  </div>
-  <div class="demo-control">
-    <label>
-      Height
-      <input type="range" bind:value={height} min={180} max={340} step={2} />
-    </label>
-    <span class="value">{height}</span>
-  </div>
+  {#snippet controls()}
+    <div class="demo-control">
+      <label>
+        Width
+        <input type="range" bind:value={width} min={180} max={340} step={2} />
+      </label>
+      <span class="value">{width}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Height
+        <input type="range" bind:value={height} min={180} max={340} step={2} />
+      </label>
+      <span class="value">{height}</span>
+    </div>
+  {/snippet}
 </ExampleLayout>

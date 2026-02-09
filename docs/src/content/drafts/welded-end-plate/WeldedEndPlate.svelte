@@ -330,48 +330,50 @@
   }}
   {onSetup}
 >
-  <div class="demo-control">
-    <label>
-      Beam Depth
-      <input type="range" bind:value={beamDepth} min={180} max={420} step={2} />
-    </label>
-    <span class="value">{beamDepth}</span>
-  </div>
-  <div class="demo-control">
-    <label>
-      Flange Width
-      <input type="range" bind:value={flangeWidth} min={120} max={260} step={2} />
-    </label>
-    <span class="value">{flangeWidth}</span>
-  </div>
-  <div class="demo-control">
-    <label>
-      Plate t
-      <input type="range" bind:value={plateThickness} min={12} max={38} step={1} />
-    </label>
-    <span class="value">{plateThickness}</span>
-  </div>
-  <div class="demo-control">
-    <label>
-      Bolt Rows
-      <input type="range" bind:value={boltRows} min={2} max={6} step={1} />
-    </label>
-    <span class="value">{boltRows}</span>
-  </div>
-  <div class="demo-control">
-    <label>
-      Bolt Pitch
-      <input type="range" bind:value={boltPitch} min={40} max={110} step={1} />
-    </label>
-    <span class="value">{boltPitch}</span>
-  </div>
-  <div class="demo-control">
-    <label>
-      Bolt Gauge
-      <input type="range" bind:value={boltGauge} min={70} max={180} step={1} />
-    </label>
-    <span class="value">{boltGauge}</span>
-  </div>
+  {#snippet controls()}
+    <div class="demo-control">
+      <label>
+        Beam Depth
+        <input type="range" bind:value={beamDepth} min={180} max={420} step={2} />
+      </label>
+      <span class="value">{beamDepth}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Flange Width
+        <input type="range" bind:value={flangeWidth} min={120} max={260} step={2} />
+      </label>
+      <span class="value">{flangeWidth}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Plate t
+        <input type="range" bind:value={plateThickness} min={12} max={38} step={1} />
+      </label>
+      <span class="value">{plateThickness}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Bolt Rows
+        <input type="range" bind:value={boltRows} min={2} max={6} step={1} />
+      </label>
+      <span class="value">{boltRows}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Bolt Pitch
+        <input type="range" bind:value={boltPitch} min={40} max={110} step={1} />
+      </label>
+      <span class="value">{boltPitch}</span>
+    </div>
+    <div class="demo-control">
+      <label>
+        Bolt Gauge
+        <input type="range" bind:value={boltGauge} min={70} max={180} step={1} />
+      </label>
+      <span class="value">{boltGauge}</span>
+    </div>
+  {/snippet}
 </ExampleLayout>
 
 <style>

@@ -626,7 +626,7 @@
   }}
   {onSetup}
 >
-  {#snippet params()}
+  {#snippet controls()}
     <div class="demo-control">
       <label>
         Column width

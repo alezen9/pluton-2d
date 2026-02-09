@@ -1,46 +1,13 @@
 ---
 import BaseLayout from "../../layouts/Layout.astro";
-import { getCollection } from "astro:content";
-import { exampleCategoryOrder } from "../../content.config";
-import { hiddenExampleCategories } from "../../content.config";
-import type { ExampleCategory } from "../../content.config";
+import { getExampleNavigation } from "./navigation";
 
 const { title = "Examples" } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
 const normalizeUrlPath = (urlPath: string) =>
   urlPath.length > 1 ? urlPath.replace(/\/+$/, "") : urlPath;
 const currentUrlPath = normalizeUrlPath(Astro.url.pathname);
-
-const exampleCollection = await getCollection("examples");
-const isHiddenExample = (entryId: string, category: ExampleCategory) =>
-  entryId.startsWith("drafts/") || hiddenExampleCategories.includes(category);
-
-type ExampleNavigationItem = {
-  path: string;
-  label: string;
-};
-
-const exampleItemsByCategory: Partial<
-  Record<ExampleCategory, ExampleNavigationItem[]>
-> = {};
-for (const exampleEntry of exampleCollection) {
-  const category = exampleEntry.data.category;
-  if (isHiddenExample(exampleEntry.id, category)) continue;
-  const arr = exampleItemsByCategory[category] ?? [];
-  arr.push({
-    path: `/examples/${exampleEntry.id}`,
-    label: exampleEntry.data.title,
-  });
-  exampleItemsByCategory[category] = arr;
-}
-
-const categorizedExampleNavigation = exampleCategoryOrder
-  .filter((category) => !hiddenExampleCategories.includes(category))
-  .filter((category) => exampleItemsByCategory[category])
-  .map((category) => ({
-    label: category,
-    items: exampleItemsByCategory[category] ?? [],
-  }));
+const categorizedExampleNavigation = await getExampleNavigation();
 
 const isActiveExampleLink = (href: string) =>
   normalizeUrlPath(href) === currentUrlPath;

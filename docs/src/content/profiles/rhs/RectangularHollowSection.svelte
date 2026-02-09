@@ -114,7 +114,7 @@
   initialParams={{ width, height, thickness, outerRadius, innerRadius }}
   {onSetup}
 >
-  {#snippet params()}
+  {#snippet controls()}
     <div class="demo-control">
       <label>
         Width

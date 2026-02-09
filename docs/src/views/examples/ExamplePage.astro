@@ -1,17 +1,17 @@
 ---
-import Layout from "./layout.astro";
+import ExamplesLayout from "./ExamplesLayout.astro";
 
 const { title, category, description } = Astro.props;
 ---
 
-<Layout {title}>
+<ExamplesLayout {title}>
   <div class="example-header">
     <h1>{title}</h1>
     <span class="demo-card-tag">{category}</span>
   </div>
   <p class="example-desc">{description}</p>
   <slot />
-</Layout>
+</ExamplesLayout>
 
 <style>
   .example-header {

@@ -122,7 +122,7 @@
   initialParams={{ width, height, flangeThickness, webThickness, filletRadius }}
   {onSetup}
 >
-  {#snippet params()}
+  {#snippet controls()}
     <div class="demo-control">
       <label>
         Width

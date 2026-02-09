@@ -1,6 +1,6 @@
 ---
 import { getCollection } from "astro:content";
-import Layout from "@views/examples/layout.astro";
+import ExamplesLayout from "@views/examples/ExamplesLayout.astro";
 import { exampleCategoryOrder } from "../../content.config";
 import { hiddenExampleCategories } from "../../content.config";
 import type { ExampleCategory } from "../../content.config";
@@ -38,7 +38,7 @@ const orderedCategories = exampleCategoryOrder.filter(
 );
 ---
 
-<Layout title="Examples">
+<ExamplesLayout title="Examples">
   <div class="examples-overview">
     <h1>Examples</h1>
     <p class="examples-overview-lead">
@@ -65,7 +65,7 @@ const orderedCategories = exampleCategoryOrder.filter(
       ))
     }
   </div>
-</Layout>
+</ExamplesLayout>
 
 <style>
   .examples-overview {

@@ -98,11 +98,13 @@
 </script>
 
 <ExampleLayout initialParams={{ radius }} {onSetup}>
-  <div class="demo-control">
-    <label>
-      Radius
-      <input type="range" bind:value={radius} min={60} max={160} step={2} />
-    </label>
-    <span class="value">{radius}</span>
-  </div>
+  {#snippet controls()}
+    <div class="demo-control">
+      <label>
+        Radius
+        <input type="range" bind:value={radius} min={60} max={160} step={2} />
+      </label>
+      <span class="value">{radius}</span>
+    </div>
+  {/snippet}
 </ExampleLayout>

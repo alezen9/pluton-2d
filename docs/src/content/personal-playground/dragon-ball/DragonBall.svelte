@@ -108,7 +108,7 @@
 </script>
 
 <ExampleLayout initialParams={{ radius, starSize }} {onSetup}>
-  {#snippet params()}
+  {#snippet controls()}
     <div class="demo-control">
       <label>
         Sphere radius

@@ -1,6 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
-import Page from "@views/examples/page.astro";
+import ExamplePage from "@views/examples/ExamplePage.astro";
 import { hiddenExampleCategories } from "../../content.config";
 import type { ExampleCategory } from "../../content.config";
 
@@ -20,6 +20,6 @@ const { entry } = Astro.props;
 const { Content } = await render(entry);
 ---
 
-<Page {...entry.data}>
+<ExamplePage {...entry.data}>
   <Content />
-</Page>
+</ExamplePage>
