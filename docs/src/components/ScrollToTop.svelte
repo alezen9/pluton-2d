@@ -99,6 +99,7 @@
     pointer-events: none;
     transition: opacity 0.22s ease-out;
     z-index: 20;
+    padding: 0.5em;
   }
 
   button:hover {
