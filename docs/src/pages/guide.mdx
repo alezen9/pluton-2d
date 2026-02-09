@@ -6,7 +6,7 @@ currentPage: /guide
 
 # Guide
 
-Everything you need to get from install to interactive scene.
+Everything you need to go from install to a clean, interactive scene.
 
 ---
 
@@ -18,7 +18,7 @@ Install the package:
 npm install pluton-2d
 ```
 
-Import the stylesheet and create a scene. The SVG element needs CSS width/height or a viewBox to be visible:
+Import the stylesheet, create a scene, and make sure the SVG has CSS width/height or a viewBox:
 
 ```typescript
 import "pluton-2d/style.css";
@@ -43,15 +43,15 @@ scene.draw((p) => {
 });
 ```
 
-Groups are created once, outside the draw callback. Builders requested inside are recycled - the engine only writes changed attributes.
+Create groups once outside the draw callback. Builders requested inside are recycled, and the engine only writes changed attributes.
 
 If you are migrating from older versions:
 - `new Pluton2D(svg, params, { filterIntensity })` was removed.
-- use `scene.setFilterIntensity(...)` after scene creation.
+- Use `scene.setFilterIntensity(...)` after scene creation.
 
 ### Reactive params
 
-Params are wrapped in a Proxy. Any mutation triggers a redraw automatically - redraws are capped at 60 FPS.
+Params are wrapped in a Proxy. Any mutation triggers redraw automatically, capped at 60 FPS.
 
 ```typescript
 // Mutate a single param - triggers redraw
@@ -85,7 +85,7 @@ The world layer applies `scale(1, -1)` to flip Y. Arc sweep flags are inverted a
 
 ## Static vs dynamic groups
 
-For geometry that never changes, mark the group as static. The engine commits it once and skips all subsequent DOM updates for that group.
+For geometry that never changes, mark the group as static. The engine commits it once, then skips later DOM writes for that group.
 
 ```typescript
 const bg = scene.geometry.group();
@@ -152,8 +152,8 @@ const path = geom.path({ className: "my-path" });
 // .pluton-root .pluton-geometry path.my-path { stroke: #e11d48; }
 ```
 
-`path()` also accepts `fill` and `fillRule` when you need hatch fills or cutouts.
-`path()` also accepts `stroke`, and geometry groups support `scale(x, y)`.
+`path()` also accepts `fill`, `stroke`, and `fillRule` when you need hatch fills, custom stroke color, or cutouts.
+Geometry groups also support `scale(x, y)`.
 
 ### Hatch fill
 
@@ -167,7 +167,12 @@ geom.path({ fill: blueFillId }).moveToAbs(...).lineTo(...).close();
 geom.path({ fill: orangeFillId, fillRule: "evenodd" }).moveToAbs(...).lineTo(...).close();
 ```
 
-Use `scene.enableFill(false)` to temporarily hide all geometry fills (including custom hatch fills), then `scene.enableFill(true)` to show them again. This is a visibility toggle only; it does not assign fills automatically.
+With fills enabled (default), each geometry path uses this order:
+- If `path({ fill })` is set, that value is used.
+- Otherwise, it falls back to the built-in default hatch fill.
+
+Use `scene.enableFill(false)` to hide all geometry fills (including custom hatch fills), then `scene.enableFill(true)` to show them again.
+For stroke-only geometry, set `fill: "none"` on the path (or in CSS for that class).
 
 ### Pencil filter intensity
 
@@ -198,3 +203,35 @@ scene.resetCamera();     // smooth animation back to origin
 ```
 
 > **Interpolation:** Camera movement is smoothed with exponential easing. `resetCamera()` animates back to the origin rather than jumping.
+
+---
+
+## When to choose Pluton2D vs other tools
+
+Pluton2D was built first for technical drawing workflows: crisp SVG output, hatching, and dimensions with low DOM churn.
+You can use it for broader SVG work too, but it is not trying to replace every rendering stack.
+
+### Good fit for Pluton2D
+
+- Technical drawings, blueprints, and engineering diagrams
+- Annotation-heavy scenes (dimensions, ticks, callouts)
+- Workflows that benefit from inspectable/exportable SVG
+- Interactive scenes with moderate redraw frequency
+
+### Prefer charting libraries when
+
+- Your main goal is data visualization
+- You need chart-specific primitives and conventions out of the box
+- You need built-in scales, legends, and tooltips
+
+### Prefer Canvas when
+
+- You need very high-frequency animation
+- You draw large numbers of moving primitives per frame
+- You hit SVG/DOM performance limits
+
+### Prefer WebGL or WebGPU when
+
+- You need GPU-heavy rendering or advanced visual effects
+- You need shader-driven pipelines or post-processing
+- You need 3D or large-scale real-time rendering

@@ -18,23 +18,12 @@ I built this for a specific need in another project-crisp vector output for tech
 
 ## What you get
 
-**SVG-first rendering**
-Native SVG output means crisp lines at any zoom level. You can inspect the DOM, export to files, or integrate with other SVG tools easily.
-
-**Drafting helpers included**
-Grid, axes, hatch fill, and dimension builders come out of the box. Focus on your geometry, not boilerplate.
-
-**Low-churn rendering**
-The engine records draw commands and reuses DOM elements via activeIndex tracking. Only changed attributes get updated, keeping interactions smooth.
-
-**Reactive parameters**
-Params are wrapped in a Proxy. Mutate them anywhere and redraws trigger automatically-no manual scheduling needed.
-
-**Simple camera controls**
-Pan and zoom are opt-in, with smoothing tuned for natural interaction. Reset to initial view anytime.
-
-**CSS theming**
-All styling is driven by CSS variables on the SVG root. Change themes without touching JavaScript.
+- **SVG-first rendering:** crisp lines at any zoom level, easy DOM inspection, and straightforward SVG export.
+- **Drafting helpers included:** grid, axes, hatch fill, and dimensions are built in, so you can focus on geometry.
+- **Low-churn rendering:** builders are reused and only changed attributes are written to the DOM.
+- **Reactive params:** mutate params directly and redraws are scheduled automatically.
+- **Simple camera controls:** pan/zoom are opt-in and can be reset any time.
+- **CSS theming:** visuals are driven by CSS variables on the SVG root.
 
 ## Getting started
 
@@ -67,7 +56,7 @@ scene.draw((p) => {
 });
 ```
 
-**Params are reactive** - mutations trigger redraws automatically:
+Mutating params triggers redraws automatically:
 
 ```ts
 // Single property
@@ -81,18 +70,16 @@ Draw callbacks run every frame when params change. The engine handles scheduling
 
 ## How rendering works
 
-Understanding the render cycle helps you use the library effectively.
+Understanding the render cycle helps when scenes get more complex:
 
-**1. Reactive params**
-Params are wrapped in a Proxy. Any mutation triggers `scheduleRender()`, which queues a frame-limited update.
+1. **Reactive params**
+   Any mutation triggers `scheduleRender()`, which queues a frame-limited update.
 
-**2. Render cycle** (capped at 60 FPS)
-- `beginRecord()` - reset activeIndex on all groups
-- Draw callbacks run - you request builders with `path()` or `dimension()`
-- `commit()` - update DOM with changes (skipped for static groups)
+2. **Render cycle (capped at 60 FPS)**
+   `beginRecord()` resets active indexes, draw callbacks run, then `commit()` applies changes.
 
-**3. Group reuse**
-Create groups once outside draw callbacks, request builders inside:
+3. **Group reuse**
+   Create groups once outside draw callbacks, then request builders inside draw callbacks:
 
 ```ts
 const g = scene.geometry.group();  // create once
@@ -103,7 +90,7 @@ scene.draw(() => {
 });
 ```
 
-Builders are reused internally via activeIndex tracking. This minimizes DOM churn-elements are only created when needed and attributes only update when values change.
+Builders are reused internally through active-index tracking. Elements are only created when needed, and attributes update only when values change.
 
 ## Coordinate system
 
@@ -128,7 +115,8 @@ const scene = new Pluton2D<{ width: number; height: number }>(svg, {
 });
 ```
 
-Params can be any shape. The type is inferred from the initial value.
+Params can be any **flat** shape. The type is inferred from the initial value.
+Nested objects are not supported.
 
 Set pencil filter intensity with a method, anytime:
 
@@ -137,6 +125,7 @@ scene.setFilterIntensity(1.5);
 ```
 
 Migration note:
+
 - Old constructor options like `new Pluton2D(svg, params, { filterIntensity })` were removed.
 - Use `scene.setFilterIntensity(...)` instead.
 
@@ -197,7 +186,7 @@ scene.draw((p) => {
 });
 ```
 
-**Group methods:**
+#### Geometry group methods
 
 ```ts
 group.translate(x, y)           // offset entire group
@@ -206,7 +195,7 @@ group.setDrawUsage(mode)        // "static" or "dynamic" (default: "dynamic")
 group.clear()                   // remove all paths and reset
 ```
 
-**Path options:**
+#### Path options
 
 ```ts
 g.path({
@@ -217,7 +206,7 @@ g.path({
 });
 ```
 
-**PathBuilder methods:**
+#### PathBuilder methods
 
 ```ts
 path.moveTo(dx, dy)                              // relative move (m)
@@ -253,7 +242,7 @@ scene.draw(() => {
 });
 ```
 
-**Group methods:**
+#### Dimensions group methods
 
 ```ts
 group.translate(x, y)           // offset entire group
@@ -261,7 +250,7 @@ group.setDrawUsage(mode)        // "static" or "dynamic" (default: "dynamic")
 group.clear()                   // remove all dimensions and reset
 ```
 
-**DimensionBuilder positioning:**
+#### DimensionBuilder positioning
 
 ```ts
 dim.moveTo(dx, dy)              // relative move
@@ -270,7 +259,7 @@ dim.lineTo(dx, dy)              // relative line
 dim.lineToAbs(x, y)             // absolute line
 ```
 
-**DimensionBuilder primitives:**
+#### DimensionBuilder primitives
 
 ```ts
 dim.arc(r, startAngle, endAngle)      // arc centered at current point
@@ -281,7 +270,7 @@ dim.centerMark(size?)                 // crosshair with center dot
 dim.close()                           // close path
 ```
 
-**DimensionBuilder text:**
+#### DimensionBuilder text
 
 ```ts
 dim.textAt(dx, dy, text, align?, className?)     // relative text placement
@@ -332,7 +321,7 @@ All visual styling is controlled by CSS variables on `.pluton-root`. You can cus
 }
 ```
 
-**Custom classes:**
+### Custom classes
 
 Pass custom classes to paths and dimensions for fine-grained control:
 
@@ -341,28 +330,38 @@ g.path({ className: "my-custom-path" });
 d.dimension({ className: "highlighted-dim" });
 ```
 
-**Hatch fill:**
+### Hatch fill
 
-Create fills with `addHatchFill(...)`, then use `enableFill(...)` as a visibility toggle:
+With fills enabled (default), each geometry path follows this order:
+
+- if `path({ fill })` is set, that value is used
+- otherwise, it falls back to the built-in default hatch fill
+
+Use `enableFill(...)` as a visibility toggle:
 
 ```ts
 scene.enableFill(false); // hide all geometry fills
 scene.enableFill(true);  // show all geometry fills
 ```
 
-Or add the `pluton-fill-hatch` class to specific paths:
+Create custom hatch fills with `addHatchFill(...)` and apply them per path:
 
 ```ts
-g.path({ className: "pluton-fill-hatch" });
+const blueFillId = scene.addHatchFill("#2563eb", 0.35);
+g.path({ fill: blueFillId });
 ```
+
+For stroke-only paths, set `fill: "none"` in path options or via your CSS class.
 
 ## Performance
 
-**Prefer one draw callback**
-It keeps ordering explicit and avoids confusion when multiple callbacks touch the same layer. Multiple callbacks are supported and run in registration order.
+### Prefer one draw callback
 
-**Mark static groups**
-For geometry that never changes, mark the group as static. The engine optimizes it automatically:
+One callback keeps ordering explicit and easier to reason about. Multiple callbacks are supported and run in registration order.
+
+### Mark static groups
+
+For geometry that never changes, mark the group as static:
 
 ```ts
 const staticGroup = scene.geometry.group();
@@ -381,17 +380,20 @@ scene.draw((p) => {
 });
 ```
 
-**How it works:**
-- Set `setDrawUsage("static")` on the group before rendering starts
-- Draw callbacks run normally-you still call `path()` every frame
-- The engine skips `commit()` for static groups, avoiding DOM updates
-- No flags, no RAF, no conditionals needed in your draw logic
+#### How it works
 
-**When to use:**
+- Set `setDrawUsage("static")` before rendering starts.
+- Draw callbacks still run normally, and you still call `path()` every frame.
+- The engine skips `commit()` for static groups after the first commit.
+- No extra flags or branching needed in draw logic.
+
+#### Choosing static or dynamic
+
 - **Static:** background elements, fixed annotations, unchanging reference shapes
 - **Dynamic (default):** anything reactive to params or user input
 
-**Safari filter performance**
+### Safari filter performance
+
 SVG filters can be expensive during zoom on Safari. Disable them if you notice lag:
 
 ```ts
@@ -400,38 +402,60 @@ scene.enableFilter(false);
 
 ## When to use
 
-**Good fit:**
-- Technical drawings, blueprints
-- Engineering diagrams, schematics
-- Floor plans, architectural views
-- Any crisp vector output at arbitrary zoom levels
+I built Pluton2D for my own workflow: technical drawing with crisp SVG output, dimensions, hatching, and predictable redraw behavior.
+It can be used beyond that, but it is not meant to replace every rendering or visualization tool.
 
-**Not ideal for:**
-- Charts and graphs (D3, Chart.js are better suited)
-- High-frequency animation (Canvas performs better)
-- Raster effects or photos (use Canvas or WebGL)
+### Good fit for Pluton2D
+
+- Technical drawings, blueprints, and engineering diagrams
+- CAD-like annotations (dimensions, ticks, callouts)
+- Cases where inspectable/exportable SVG matters
+- Interactive scenes with moderate redraw frequency
+
+### Prefer charting libraries when
+
+- Your primary goal is data visualization
+- You want chart primitives, scales, legends, and tooltips out of the box
+- You want chart-specific ecosystem tooling
+
+### Prefer Canvas when
+
+- You need very high-frequency animation
+- You render many moving primitives every frame
+- SVG/DOM updates become the bottleneck
+
+### Prefer WebGL or WebGPU when
+
+- You need very large geometry counts or GPU-heavy effects
+- You need shader pipelines or post-processing
+- You need 3D or high-end real-time rendering
 
 ## Troubleshooting
 
-**SVG is blank**
+### SVG is blank
+
 - Check CSS import: `import "pluton-2d/style.css"`
 - Ensure SVG has size: set CSS width/height or use a viewBox
 
-**Y-axis feels inverted**
+### Y-axis feels inverted
+
 - Library uses Y-up (math coords), not Y-down (screen coords)
 - `lineTo(0, 10)` moves UP, not down
 
-**Params changes don't trigger redraw**
+### Params changes don't trigger redraw
+
 - Mutate params: `scene.params.width = 100` ✓
 - Don't reassign: `scene.params = { ... }` ✗
 - Params must be flat - nested objects throw at construction
 
-**Dimensions not visible**
+### Dimensions not visible
+
 - Check layer is created: `scene.dimensions.group()`
 - Verify draw callback is registered
 - Check stroke color CSS variable: `--pluton-dim-color`
 
-**Performance issues during zoom (Safari)**
+### Performance issues during zoom (Safari)
+
 - Disable pencil filter: `scene.enableFilter(false)`
 - SVG filters can be expensive at high zoom levels
 

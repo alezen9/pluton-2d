@@ -239,13 +239,13 @@
 
 <style>
   :global(.pluton-root .pluton-geometry path.demo-truss-chord) {
-    --hatch-fill-override: none;
+    fill: none;
     stroke: rgba(15, 118, 110, 0.92);
     stroke-width: 1.35;
   }
 
   :global(.pluton-root .pluton-geometry path.demo-truss-web) {
-    --hatch-fill-override: none;
+    fill: none;
     stroke: rgba(71, 85, 105, 0.9);
     stroke-width: 0.98;
   }

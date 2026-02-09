@@ -32,6 +32,7 @@
 
 html {
   scroll-behavior: smooth;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -76,11 +77,11 @@ body {
     ),
     linear-gradient(180deg, #2b373c 0%, #222d31 100%);
   background-size: auto;
-  background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
 }
 
 body::before {

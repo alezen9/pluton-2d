@@ -289,13 +289,13 @@
   }
 
   :global(.pluton-root .pluton-geometry path.demo-sprocket-bore) {
-    --hatch-fill-override: none;
+    fill: none;
     stroke: rgba(30, 41, 59, 0.9);
     stroke-width: 1.1;
   }
 
   :global(.pluton-root .pluton-geometry path.demo-sprocket-construction) {
-    --hatch-fill-override: none;
+    fill: none;
     stroke: rgba(100, 116, 139, 0.65);
     stroke-dasharray: 0.32em;
     stroke-width: 0.92;

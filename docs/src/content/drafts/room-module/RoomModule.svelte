@@ -253,19 +253,19 @@
 
 <style>
   :global(.pluton-root .pluton-geometry path.demo-room-walls) {
-    --hatch-fill-override: none;
+    fill: none;
     stroke: rgba(8, 86, 78, 0.94);
     stroke-width: 1.25;
   }
 
   :global(.pluton-root .pluton-geometry path.demo-room-window) {
-    --hatch-fill-override: none;
+    fill: none;
     stroke: rgba(51, 65, 85, 0.88);
     stroke-width: 1;
   }
 
   :global(.pluton-root .pluton-geometry path.demo-room-door) {
-    --hatch-fill-override: none;
+    fill: none;
     stroke: rgba(127, 29, 29, 0.8);
     stroke-width: 1;
   }

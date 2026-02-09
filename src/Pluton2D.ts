@@ -41,6 +41,10 @@ export class Pluton2D<
 
     this.defs = new DefsRegistry(this.defsEl);
     const defs = this.defs;
+    svg.style.setProperty(
+      "--pluton-default-hatch-fill",
+      `url(#${defs.hatchFill45Id})`,
+    );
 
     this.engine = new Engine<P>(this.events, initialParams);
     this.params = this.engine.getParams();
@@ -190,5 +194,6 @@ export class Pluton2D<
     this.events.clear();
     this.defsEl.remove();
     this.context.svg.classList.remove("pluton-root");
+    this.context.svg.style.removeProperty("--pluton-default-hatch-fill");
   }
 }

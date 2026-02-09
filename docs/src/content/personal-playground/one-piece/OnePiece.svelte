@@ -57,7 +57,7 @@
         .arcTo(-5, 25, 67.5, false)
         .close();
 
-      const face = geometryGroup.path();
+      const face = geometryGroup.path({ fill: "none" });
       face
         // upper face
         .moveToAbs(-65, 5)
@@ -79,7 +79,7 @@
         .moveToAbs(15, -47.5)
         .lineTo(10, -37.5);
 
-      const bones = geometryGroup.path();
+      const bones = geometryGroup.path({ fill: "none" });
       bones
         // top right
         .moveToAbs(64, 20)

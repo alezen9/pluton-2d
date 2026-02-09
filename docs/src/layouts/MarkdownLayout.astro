@@ -1,28 +1,35 @@
 ---
 import Layout from "./Layout.astro";
+import TableOfContents from "../components/TableOfContents.svelte";
 
 const { frontmatter } = Astro.props;
 const { title = "Pluton 2D", currentPage = "/" } = frontmatter;
 ---
 
 <Layout {title} {currentPage}>
-  <div class="page-narrow">
-    <slot />
+  <TableOfContents client:only="svelte" />
+  <div class="wrapper">
+    <article id="doc-content">
+      <slot />
+    </article>
   </div>
 </Layout>
 
 <style>
-  .page-narrow {
-    max-width: 760px;
+  .wrapper {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: min(80ch, 100dvw);
+    min-height: 100dvh;
     margin: 0 auto;
-    padding: 3rem 1.5rem 5rem;
+    padding: 2em;
     position: relative;
     z-index: 1;
   }
 
-  @media (max-width: 600px) {
-    .page-narrow {
-      padding: 2rem 1rem 4rem;
+  @media screen and (max-width: 480px) {
+    .wrapper {
+      padding: 1.5em;
     }
   }
 </style>

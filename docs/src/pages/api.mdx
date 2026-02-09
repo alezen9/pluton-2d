@@ -6,7 +6,7 @@ currentPage: /api
 
 # API Reference
 
-Full reference for the Pluton 2D public API - constructor, geometry, and dimensions.
+A practical reference for the Pluton 2D public API: constructor, geometry, and dimensions.
 
 ---
 
@@ -20,8 +20,8 @@ const scene = new Pluton2D(svg, { width: 240, height: 120 });
 
 | Param           | Description                                                                 |
 | --------------- | --------------------------------------------------------------------------- |
-| `svg`           | SVGSVGElement to render into. Needs CSS width/height or a viewBox.          |
-| `initialParams` | Flat object. Keys become reactive params. Nested objects throw.             |
+| `svg`           | SVG element to render into. It needs CSS width/height or a viewBox.         |
+| `initialParams` | Flat object. Keys become reactive params. Nested objects throw.              |
 
 Migration note:
 - `new Pluton2D(svg, params, { filterIntensity })` was removed.
@@ -51,16 +51,16 @@ scene.dispose();
 
 | Method                  | Description                                                                       |
 | ----------------------- | --------------------------------------------------------------------------------- |
-| `enableFilter(bool)`    | Pencil-like SVG filter. Default: `false`. Can be expensive on Safari during zoom. |
-| `setFilterIntensity(number)` | Set pencil displacement intensity (default: `1.25`). Callable inside or outside draw callbacks. |
-| `enableGrid(bool)`      | Graph-paper background. Default: `true`.                                          |
-| `enableAxes(bool)`      | Center axes (dashed). Default: `true`.                                            |
-| `enablePan(bool)`       | Middle-mouse or shift+left-click pan. Default: `false`.                           |
-| `enableZoom(bool)`      | Mouse-wheel zoom, 1×-20× scale. Default: `false`.                                 |
-| `enableFill(bool)`      | Toggle visibility of geometry fills (including custom `addHatchFill` fills). Does not assign hatch fills by itself. |
-| `resetCamera()`         | Smoothly animate camera back to origin.                                           |
+| `enableFilter(bool)`    | Enable the pencil-like SVG filter. Default: `false`. Can be expensive on Safari during zoom. |
+| `setFilterIntensity(number)` | Set pencil displacement intensity (default: `1.25`). Can be called inside or outside draw callbacks. |
+| `enableGrid(bool)`      | Show/hide graph-paper background. Default: `true`.                                |
+| `enableAxes(bool)`      | Show/hide center axes. Default: `true`.                                            |
+| `enablePan(bool)`       | Enable pan (middle-mouse or shift+left-click). Default: `false`.                  |
+| `enableZoom(bool)`      | Enable wheel zoom (1×-20× scale). Default: `false`.                                |
+| `enableFill(bool)`      | Toggle geometry fills. Enabled: per-path `fill` is used, otherwise built-in default hatch fallback. Disabled: all geometry fills are hidden. |
+| `resetCamera()`         | Smoothly animate camera back to origin.                                            |
 | `addHatchFill(color, opacity?)` | Create a hatch-fill pattern and return `url(#id)` for `path({ fill })`. |
-| `dispose()`             | Clean up event listeners, DOM elements, and defs.                                 |
+| `dispose()`             | Clean up listeners and internal DOM/defs created by the scene.                     |
 
 ```typescript
 const tealFillId = scene.addHatchFill("#0f766e");
@@ -79,24 +79,24 @@ scene.draw(() => {
 
 ### geometry.group() → GeometryGroup
 
-Create a geometry group. Call once, outside draw callbacks.
+Create a geometry group once, outside draw callbacks.
 
 ### GeometryGroup
 
 | Method               | Description                                                                                                           |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `path(options?)`     | Request or reuse a PathBuilder. Call inside draw callbacks. Supports `className`, `fill`, `stroke`, and `fillRule`. |
-| `translate(x, y)`    | Offset the entire group. Direct DOM write - no redraw needed.                                                         |
-| `scale(x, y)`        | Scale the entire group. Direct DOM write - no redraw needed.                                                          |
-| `setDrawUsage(mode)` | `"static"` - commit once then stop. `"dynamic"` (default) - commit every frame.                                       |
-| `clear()`            | Remove all paths, reset group state.                                                                                  |
+| `path(options?)`     | Request or reuse a `PathBuilder`. Call inside draw callbacks. Supports `className`, `fill`, `stroke`, and `fillRule`. |
+| `translate(x, y)`    | Offset the whole group. Direct DOM write; no redraw required.                                                         |
+| `scale(x, y)`        | Scale the whole group. Direct DOM write; no redraw required.                                                          |
+| `setDrawUsage(mode)` | `"static"`: commit once then stop. `"dynamic"` (default): commit every frame.                                        |
+| `clear()`            | Remove all paths and reset group state.                                                                               |
 
 #### path(options) fields
 
 | Option | Description |
 | ------ | ----------- |
 | `className` | CSS class applied to the `<path>`. |
-| `fill` | CSS fill value (typically from `scene.addHatchFill(...)`, returns `url(#id)`). |
+| `fill` | CSS fill value (typically from `scene.addHatchFill(...)`, returns `url(#id)`). If omitted and fills are enabled, the built-in default hatch is used. |
 | `stroke` | CSS stroke value. |
 | `fillRule` | `"evenodd"` (default) or `"nonzero"` for complex paths/cutouts. |
 
@@ -152,7 +152,8 @@ Create a dimensions group. Call once, outside draw callbacks.
 
 ### DimensionsGroup
 
-> Same interface as GeometryGroup: `dimension(options?)`, `translate(x, y)`, `setDrawUsage(mode)`, `clear()`.
+Same base controls as `GeometryGroup`: `translate(x, y)`, `setDrawUsage(mode)`, `clear()`.
+Use `dimension(options?)` to request builders.
 
 ### DimensionsBuilder - Positioning
 
@@ -178,13 +179,13 @@ dim.centerMark(size?)                // crosshair with center dot (default size:
 dim.close()                          // close path
 ```
 
-| Primitive     | Notes                                                                                               |
-| ------------- | --------------------------------------------------------------------------------------------------- |
-| `arc`         | Draws from `startAngle` to `endAngle` around current position. Direction inferred from angle order. |
-| `arrow`       | Open V-arrow. Tip at current position, wings extend behind.                                         |
-| `arrowFilled` | Filled triangle arrow. Rendered on a separate path layer.                                           |
-| `tick`        | Architectural tick: two crossed lines rotated by `angleRad`.                                        |
-| `centerMark`  | Crosshair + filled center dot. Standard for center-point callouts.                                  |
+| Primitive     | Notes                                                                                                |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| `arc`         | Draws from `startAngle` to `endAngle` around current position. Direction is inferred from angle order. |
+| `arrow`       | Open V-arrow. Tip is at current position; wings extend behind.                                       |
+| `arrowFilled` | Filled triangle arrow. Rendered on a separate path layer.                                            |
+| `tick`        | Architectural tick: two crossed lines rotated by `angleRad`.                                         |
+| `centerMark`  | Crosshair plus filled center dot. Useful for center-point callouts.                                  |
 
 ### DimensionsBuilder - Text
 

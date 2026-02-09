@@ -396,20 +396,20 @@
   }
 
   :global(.pluton-root .pluton-geometry path.demo-weld-bolt-links) {
-    --hatch-fill-override: none;
+    fill: none;
     stroke: rgba(100, 116, 139, 0.72);
     stroke-dasharray: 0.32em;
     stroke-width: 0.92;
   }
 
   :global(.pluton-root .pluton-geometry path.demo-weld-symbol) {
-    --hatch-fill-override: rgba(180, 83, 9, 0.45);
+    fill: rgba(180, 83, 9, 0.45);
     stroke: rgba(146, 64, 14, 0.85);
     stroke-width: 0.95;
   }
 
   :global(.pluton-root .pluton-geometry path.demo-weld-centerline) {
-    --hatch-fill-override: none;
+    fill: none;
     stroke: rgba(20, 83, 45, 0.64);
     stroke-dasharray: 0.32em;
     stroke-width: 0.92;
