@@ -3,8 +3,6 @@ name: CI
 on:
   push:
     branches: [main]
-    tags:
-      - "v*"
   pull_request:
     branches: [main]
 
@@ -14,8 +12,48 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs_changed: ${{ steps.paths.outputs.docs }}
+      lib_changed: ${{ steps.paths.outputs.lib }}
+      release_tag_name: ${{ steps.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: paths
+        name: Detect docs/lib changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            docs:
+              - "docs/**"
+            lib:
+              - "src/**"
+              - "package.json"
+              - "package-lock.json"
+              - "tsconfig*.json"
+              - "vite.config.ts"
+              - "vite.config.js"
+              - "vite.config.mjs"
+
+      - id: release
+        name: Detect release tag on commit
+        run: |
+          tag=""
+
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            git fetch --force --tags
+            tag="$(git tag --points-at "${GITHUB_SHA}" | grep -E '^v' | head -n 1 || true)"
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
   build:
     runs-on: ubuntu-latest
+    needs: changes
     steps:
       - uses: actions/checkout@v4
 
@@ -47,8 +85,8 @@ jobs:
 
   docs:
     runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [changes, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.docs_changed == 'true'
     permissions:
       contents: read
       pages: write
@@ -85,7 +123,7 @@ jobs:
           path: docs/dist
 
   deploy-docs:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.docs.result == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -103,10 +141,9 @@ jobs:
         uses: actions/deploy-pages@v4
 
   publish:
-    # Publish only when pushing a version tag like v1.2.3
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.release_tag_name != '' && needs.changes.outputs.lib_changed == 'true'
     runs-on: ubuntu-latest
-    needs: build
+    needs: [changes, build]
     permissions:
       contents: read
       id-token: write
@@ -126,8 +163,10 @@ jobs:
         run: npm run build
 
       - name: Check tag matches package.json version
+        env:
+          RELEASE_TAG: ${{ needs.changes.outputs.release_tag_name }}
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
+          TAG="${RELEASE_TAG#v}"
           PKG=$(node -p "require('./package.json').version")
           test "$TAG" = "$PKG" || (echo "Tag v$TAG != package.json $PKG" && exit 1)
 

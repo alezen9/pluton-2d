@@ -6,8 +6,8 @@ type FrameScheduler = {
 };
 
 const defaultScheduler: FrameScheduler = {
-  request: requestAnimationFrame,
-  cancel: cancelAnimationFrame
+  request: (callback) => globalThis.requestAnimationFrame(callback),
+  cancel: (id) => globalThis.cancelAnimationFrame(id),
 };
 
 export class Engine<P extends Record<string, unknown>> {
