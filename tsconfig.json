@@ -13,6 +13,11 @@
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "pluton-2d": ["src/index.ts"],
+      "pluton-2d/style.css": ["src/style.css"]
+    },
 
     /* Linting */
     "strict": true,
@@ -22,5 +27,10 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "e2e/**/*.ts",
+    "playwright.config.ts",
+    "playwright.ci.config.ts"
+  ]
 }

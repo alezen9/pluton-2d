@@ -32,7 +32,7 @@ Migration note:
 
 | Property     | Description                                                      |
 | ------------ | ---------------------------------------------------------------- |
-| `params`     | Reactive parameter object. Mutate properties to trigger redraws. |
+| `params`     | Reactive parameter object. Mutate properties to trigger redraws. Top-level reassignment is not supported. |
 | `geometry`   | The geometry layer. Call `.group()` to create groups.            |
 | `dimensions` | The dimensions layer. Call `.group()` to create groups.          |
 
@@ -50,6 +50,12 @@ unsubscribe();
 scene.dispose();
 ```
 
+```typescript
+scene.params.width = 150; // supported
+Object.assign(scene.params, { width: 200, height: 100 }); // supported
+scene.params = { width: 200, height: 100 }; // throws
+```
+
 | Method                          | Description                                                                                                                                  |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `enableFilter(bool)`            | Enable the pencil-like SVG filter. Default: `false`. Can be expensive on Safari during zoom.                                                 |
@@ -62,6 +68,8 @@ scene.dispose();
 | `resetCamera()`                 | Smoothly animate camera back to origin.                                                                                                      |
 | `addHatchFill(color, opacity?)` | Create a hatch-fill pattern and return `url(#id)` for `path({ fill })`.                                                                      |
 | `dispose()`                     | Clean up listeners and internal DOM/defs created by the scene.                                                                               |
+
+If all draw callbacks are unsubscribed, render commits stop unless input/camera activity requests frames.
 
 ```typescript
 const tealFillId = scene.addHatchFill("#0f766e");
@@ -88,7 +96,9 @@ Create a geometry group once, outside draw callbacks.
 | `translate(x, y)`    | Offset the whole group. Direct DOM write; no redraw required.                                                         |
 | `scale(x, y)`        | Scale the whole group. Direct DOM write; no redraw required.                                                          |
 | `setDrawUsage(mode)` | `"static"`: commit once then stop. `"dynamic"` (default): commit every frame.                                         |
-| `clear()`            | Remove all paths and reset group state.                                                                               |
+| `clear()`            | Remove all paths and reset group state, including transform back to identity.                                         |
+
+In `"static"` mode, keep calling `path()` in your draw callback; only post-first commit DOM writes are skipped.
 
 #### path(options) fields
 
@@ -150,6 +160,7 @@ path.reset()                 // clear all commands
 Create a dimensions group. Call once, outside draw callbacks.
 
 Same base controls as `GeometryGroup`: `translate(x, y)`, `setDrawUsage(mode)`, `clear()`.
+`clear()` resets translation back to origin for dimensions groups.
 Use `dimension(options?)` to request builders.
 
 ### DimensionsBuilder - Positioning

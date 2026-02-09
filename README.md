@@ -66,6 +66,12 @@ scene.params.width = 150;
 Object.assign(scene.params, { width: 200, height: 100 });
 ```
 
+Top-level params reassignment is intentionally not supported:
+
+```ts
+scene.params = { width: 200, height: 100 }; // throws
+```
+
 Draw callbacks run every frame when params change. The engine handles scheduling at 60 FPS.
 
 ## How rendering works
@@ -143,6 +149,7 @@ unsubscribe();
 ```
 
 Unsubscribing is optional. When you're done with a scene, call `dispose()` to clean up event listeners and stop rendering.
+If all draw callbacks are removed, pending renders stop unless another camera/input tick requests frames.
 
 ```ts
 scene.dispose();
@@ -192,7 +199,7 @@ scene.draw((p) => {
 group.translate(x, y)           // offset entire group
 group.scale(x, y)               // scale entire group
 group.setDrawUsage(mode)        // "static" or "dynamic" (default: "dynamic")
-group.clear()                   // remove all paths and reset
+group.clear()                   // remove all paths and reset transform to identity
 ```
 
 #### Path options
@@ -247,7 +254,7 @@ scene.draw(() => {
 ```ts
 group.translate(x, y)           // offset entire group
 group.setDrawUsage(mode)        // "static" or "dynamic" (default: "dynamic")
-group.clear()                   // remove all dimensions and reset
+group.clear()                   // remove all dimensions and reset transform to origin
 ```
 
 #### DimensionBuilder positioning
@@ -445,7 +452,7 @@ It can be used beyond that, but it is not meant to replace every rendering or vi
 ### Params changes don't trigger redraw
 
 - Mutate params: `scene.params.width = 100` ✓
-- Don't reassign: `scene.params = { ... }` ✗
+- Top-level params object is immutable: `scene.params = { ... }` ✗
 - Params must be flat - nested objects throw at construction
 
 ### Dimensions not visible

@@ -1,10 +1,21 @@
 import type { EventBus } from "./EventBus";
 
+type FrameScheduler = {
+  request: (callback: FrameRequestCallback) => number;
+  cancel: (id: number) => void;
+};
+
+const defaultScheduler: FrameScheduler = {
+  request: requestAnimationFrame,
+  cancel: cancelAnimationFrame
+};
+
 export class Engine<P extends Record<string, unknown>> {
   private drawCallbacks: ((params: P) => void)[] = [];
   private paramsState: P;
   private autoRenderEnabled = false;
   private events: EventBus;
+  private scheduler: FrameScheduler;
 
   private readonly frameBudget = 1000 / 60; // 60 FPS cap (~16.67ms)
   private lastFrameTime = 0;
@@ -13,8 +24,9 @@ export class Engine<P extends Record<string, unknown>> {
   private rafId: number | undefined;
   private tickFn: (() => boolean) | null = null;
 
-  constructor(events: EventBus, initialParams: P) {
+  constructor(events: EventBus, initialParams: P, scheduler: FrameScheduler = defaultScheduler) {
     this.events = events;
+    this.scheduler = scheduler;
 
     for (const key of Object.keys(initialParams)) {
       const value = initialParams[key];
@@ -68,7 +80,7 @@ export class Engine<P extends Record<string, unknown>> {
     this.autoRenderEnabled = false;
     this.renderPending = false;
     if (this.rafId !== undefined) {
-      cancelAnimationFrame(this.rafId);
+      this.scheduler.cancel(this.rafId);
       this.rafId = undefined;
     }
   }
@@ -86,7 +98,7 @@ export class Engine<P extends Record<string, unknown>> {
 
   private ensureLoop() {
     if (this.rafId !== undefined) return;
-    this.rafId = requestAnimationFrame((now) => this.loop(now));
+    this.rafId = this.scheduler.request((now) => this.loop(now));
   }
 
   private loop(now: number) {

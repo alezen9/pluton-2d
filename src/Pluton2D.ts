@@ -21,10 +21,7 @@ export class Pluton2D<
   private defsEl: SVGDefsElement;
   private defs: DefsRegistry;
 
-  /**
-   * Reactive parameters that trigger redraw when modified or reassigned
-   */
-  params: P;
+  private paramsState: P;
 
   /**
    * Create a new Pluton2D instance
@@ -47,7 +44,7 @@ export class Pluton2D<
     );
 
     this.engine = new Engine<P>(this.events, initialParams);
-    this.params = this.engine.getParams();
+    this.paramsState = this.engine.getParams();
 
     this.camera = new Camera(svg, this.events, () => this.engine.requestFrame());
     this.engine.setTickFn(() => this.camera.tick());
@@ -75,6 +72,14 @@ export class Pluton2D<
       this.scene.updateTransforms();
     });
 
+  }
+
+  /**
+   * Reactive parameters that trigger redraw when mutated
+   * Top-level reassignment is intentionally not supported.
+   */
+  get params() {
+    return this.paramsState;
   }
 
   /**
