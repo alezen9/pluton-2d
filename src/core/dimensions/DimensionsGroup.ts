@@ -150,6 +150,11 @@ export class DimensionsGroupInternal implements DimensionsGroup {
     if (usage === "dynamic") this.hasCommitted = false;
   }
 
+  visible(visible: boolean) {
+    if (visible) this.g.removeAttribute("display");
+    else this.g.setAttribute("display", "none");
+  }
+
   dimension(options?: DimensionOptions) {
     const { className = "" } = options ?? {};
     const i = this.activeIndex++;

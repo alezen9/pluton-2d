@@ -14,6 +14,12 @@ export type BaseGroup = {
    */
   setDrawUsage: (usage: "static" | "dynamic") => void;
   /**
+   * Set visibility of this group
+   * @param visible - whether the group is visible
+   * @defaultValue true
+   */
+  visible: (visible: boolean) => void;
+  /**
    * Clear all items in this group
    */
   clear: VoidFunction;

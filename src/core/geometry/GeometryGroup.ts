@@ -116,6 +116,11 @@ export class GeometryGroupInternal implements GeometryGroup {
     if (usage === "dynamic") this.hasCommitted = false;
   }
 
+  visible(visible: boolean) {
+    if (visible) this.g.removeAttribute("display");
+    else this.g.setAttribute("display", "none");
+  }
+
   path(options?: PathOptions) {
     const i = this.activeIndex++;
     const className = options?.className ?? "";

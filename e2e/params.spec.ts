@@ -59,3 +59,65 @@ test("params allow property mutation but block top-level reassignment", async ({
   expect(result.replaceAccepted).toBe(false);
   expect(result.widthAfter).toBe(140);
 });
+
+test("rapid param mutations are batched into fewer draws", async ({ page }) => {
+  await openFixturePage(page);
+
+  const result = await page.evaluate(async () => {
+    const api = (window as Window & {
+      plutonE2E?: { Pluton2D?: new (...args: any[]) => any };
+    }).plutonE2E;
+    const Pluton2D = api?.Pluton2D;
+    if (!Pluton2D) throw new Error("Pluton2D is not available in fixture");
+
+    const app = document.querySelector("#app");
+    if (!(app instanceof HTMLElement)) {
+      throw new Error("Fixture root #app not found");
+    }
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "300");
+    svg.setAttribute("height", "200");
+    app.replaceChildren(svg);
+
+    const scene = new Pluton2D(svg, { value: 0 });
+    let drawCount = 0;
+
+    scene.draw(() => {
+      drawCount += 1;
+    });
+
+    const waitFrame = () =>
+      new Promise((resolve) => requestAnimationFrame(resolve));
+
+    // Wait for initial draw
+    await waitFrame();
+    await waitFrame();
+    const drawsAfterInit = drawCount;
+
+    // Rapidly mutate params 100 times synchronously
+    for (let i = 1; i <= 100; i++) {
+      scene.params.value = i;
+    }
+
+    // Wait for batched commit
+    await waitFrame();
+    await waitFrame();
+    const drawsAfterBurst = drawCount;
+
+    const finalValue = scene.params.value;
+    scene.dispose();
+
+    return {
+      drawsAfterInit,
+      drawsAfterBurst,
+      batchedDraws: drawsAfterBurst - drawsAfterInit,
+      finalValue,
+    };
+  });
+
+  expect(result.drawsAfterInit).toBeGreaterThanOrEqual(1);
+  // 100 mutations should result in at most a few draws, not 100
+  expect(result.batchedDraws).toBeLessThanOrEqual(3);
+  expect(result.finalValue).toBe(100);
+});
