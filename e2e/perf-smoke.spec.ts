@@ -23,7 +23,9 @@ test("sustained redraw loop completes within regression budget", async ({
     svg.setAttribute("height", "300");
     app.replaceChildren(svg);
 
-    const scene = new Pluton2D(svg, { width: 40 });
+    const scene = new Pluton2D(svg, {
+      params: { width: 40 }
+    });
     const group = scene.geometry.group();
 
     const targetDraws = 60;
@@ -90,7 +92,9 @@ test("large path count commits without regression", async ({ page }) => {
     app.replaceChildren(svg);
 
     const pathCount = 200;
-    const scene = new Pluton2D(svg, { offset: 0 });
+    const scene = new Pluton2D(svg, {
+      params: { offset: 0 }
+    });
     const group = scene.geometry.group();
 
     let drawCount = 0;

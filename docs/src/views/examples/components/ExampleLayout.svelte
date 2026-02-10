@@ -19,6 +19,8 @@
     controls,
     children,
     initialToggles = {},
+    mobileScale = 0.7,
+    tabletScale = 0.85,
   }: {
     initialParams: P;
     onSetup: (scene: Pluton2D<P>) => void;
@@ -26,6 +28,8 @@
     controls?: Snippet;
     children?: Snippet;
     initialToggles?: Partial<InitialToggles>;
+    mobileScale?: number;
+    tabletScale?: number;
   } = $props();
 
   const getInitialToggle = (key: keyof InitialToggles, fallback: boolean) =>
@@ -45,8 +49,41 @@
 
   onMount(() => {
     if (!svgEl) return;
-    scene = new Pluton2D(svgEl, initialParams);
+    scene = new Pluton2D(svgEl, { params: initialParams });
     onSetup(scene);
+
+    // Responsive scaling with matchMedia
+    const mobileQuery = window.matchMedia("(max-width: 640px)");
+    const tabletQuery = window.matchMedia(
+      "(min-width: 641px) and (max-width: 1024px)",
+    );
+
+    const updateViewScale = () => {
+      if (!scene) return;
+
+      let scale = 1.0; // desktop default
+      if (mobileQuery.matches) {
+        scale = mobileScale;
+      } else if (tabletQuery.matches) {
+        scale = tabletScale;
+      }
+
+      scene.setViewScale(scale);
+    };
+
+    updateViewScale();
+
+    // Listen for media query changes
+    const mobileListener = () => updateViewScale();
+    const tabletListener = () => updateViewScale();
+
+    mobileQuery.addEventListener("change", mobileListener);
+    tabletQuery.addEventListener("change", tabletListener);
+
+    return () => {
+      mobileQuery.removeEventListener("change", mobileListener);
+      tabletQuery.removeEventListener("change", tabletListener);
+    };
   });
 
   onDestroy(() => {
@@ -85,35 +122,19 @@
       <div class="controls-panel-title">Display</div>
       <div class="switch-group">
         <label class="switch-row">
-          <input
-            type="checkbox"
-            class="switch"
-            bind:checked={gridOn}
-          />
+          <input type="checkbox" class="switch" bind:checked={gridOn} />
           <span>Grid</span>
         </label>
         <label class="switch-row">
-          <input
-            type="checkbox"
-            class="switch"
-            bind:checked={axesOn}
-          />
+          <input type="checkbox" class="switch" bind:checked={axesOn} />
           <span>Axes</span>
         </label>
         <label class="switch-row">
-          <input
-            type="checkbox"
-            class="switch"
-            bind:checked={hatchOn}
-          />
+          <input type="checkbox" class="switch" bind:checked={hatchOn} />
           <span>Hatch</span>
         </label>
         <label class="switch-row">
-          <input
-            type="checkbox"
-            class="switch"
-            bind:checked={filterOn}
-          />
+          <input type="checkbox" class="switch" bind:checked={filterOn} />
           <span>Pencil</span>
         </label>
       </div>
@@ -123,19 +144,11 @@
       <div class="controls-panel-title">Camera</div>
       <div class="switch-group">
         <label class="switch-row">
-          <input
-            type="checkbox"
-            class="switch"
-            bind:checked={panOn}
-          />
+          <input type="checkbox" class="switch" bind:checked={panOn} />
           <span>Pan</span>
         </label>
         <label class="switch-row">
-          <input
-            type="checkbox"
-            class="switch"
-            bind:checked={zoomOn}
-          />
+          <input type="checkbox" class="switch" bind:checked={zoomOn} />
           <span>Zoom</span>
         </label>
       </div>
@@ -149,24 +162,26 @@
     --control-track: rgba(198, 222, 230, 0.2);
     --control-thumb: #edf3f5;
     --control-thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    display: grid;
-    grid-template-columns: 1fr auto;
+    display: flex;
     gap: 1.45rem;
     min-height: 0;
+    justify-content: center;
   }
 
   .example-canvas-area {
     flex: 1;
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     min-width: 0;
     min-height: 0;
     padding: 0.1rem 0 0.25rem;
+    max-width: 900px;
   }
 
   .example-canvas-area .demo-frame {
     aspect-ratio: 4 / 3;
-    width: 95%;
+    width: 100%;
+    max-width: 900px;
     height: 100%;
     flex: none;
     margin: 0 0;
@@ -197,6 +212,7 @@
     flex-direction: column;
     gap: 0.45rem;
     overflow-y: auto;
+    min-width: 0;
   }
 
   .controls-panel {
@@ -357,7 +373,10 @@
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
-    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      background 0.15s;
   }
 
   .btn-reset:hover {
@@ -409,42 +428,56 @@
     text-transform: uppercase;
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 720px) {
     .scene-layout {
       flex-direction: column;
       gap: 1rem;
-      overflow-y: auto;
     }
 
     .example-canvas-area {
-      min-height: 0;
+      width: 100%;
+      justify-content: center;
       flex: none;
+      max-width: none;
     }
 
     .example-canvas-area .demo-frame {
-      width: min(100%, 600px, calc((100svh - 280px) * 4 / 3));
-      max-height: calc(100svh - 280px);
+      width: 100%;
+      max-width: 650px;
     }
 
     .example-controls-area {
       width: 100%;
       flex-direction: row;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 0.75rem;
+      overflow-y: visible;
     }
 
     .controls-panel {
       flex: 1;
-      min-width: 200px;
+      min-width: 220px;
     }
   }
 
   @media (max-width: 768px) {
+    .scene-layout {
+      gap: 0.75rem;
+    }
+
     .example-canvas-area .demo-frame {
-      width: min(100%, 520px);
-      max-width: 520px;
-      max-height: none;
-      aspect-ratio: 4 / 3;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .example-controls-area {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .controls-panel {
+      width: 100%;
+      min-width: unset;
     }
   }
 </style>

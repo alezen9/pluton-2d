@@ -9,9 +9,11 @@ export class Camera {
   private panX = 0;
   private panY = 0;
   private scale = 1;
+  private scaleMultiplier = 1;
   private targetPanX = 0;
   private targetPanY = 0;
   private targetScale = 1;
+  private targetScaleMultiplier = 1;
 
   private readonly minScale = 1;
   private readonly maxScale = 20;
@@ -47,7 +49,31 @@ export class Camera {
   }
 
   state(): CameraState {
-    return { panX: this.panX, panY: this.panY, scale: this.scale };
+    return { panX: this.panX, panY: this.panY, scale: this.scale, multiplier: this.scaleMultiplier };
+  }
+
+  /**
+   * Expose current scale multiplier
+   */
+  get multiplier(): number {
+    return this.scaleMultiplier;
+  }
+
+  /**
+   * Sets the scale multiplier applied to camera transforms.
+   *
+   * This multiplies the camera's zoom scale, affecting the final visual scale
+   * without changing the camera's internal zoom level. Useful for responsive
+   * scaling (e.g., scale down on mobile) while preserving zoom/pan behavior.
+   *
+   * @param multiplier - Scale multiplier (0.1-10x). Default 1.0 (no effect).
+   *                     Values <1 zoom out, >1 zoom in.
+   * @example
+   * camera.setScaleMultiplier(0.75);  // Scale view to 75%
+   */
+  setScaleMultiplier(multiplier: number): void {
+    this.targetScaleMultiplier = Math.max(0.1, Math.min(10, multiplier));
+    this.requestFrame();
   }
 
   reset() {
@@ -69,21 +95,25 @@ export class Camera {
     const oldX = this.panX;
     const oldY = this.panY;
     const oldScale = this.scale;
+    const oldMultiplier = this.scaleMultiplier;
 
     this.panX = this.smoothStep(this.panX, this.targetPanX);
     this.panY = this.smoothStep(this.panY, this.targetPanY);
     this.scale = this.smoothStep(this.scale, this.targetScale);
+    this.scaleMultiplier = this.smoothStep(this.scaleMultiplier, this.targetScaleMultiplier);
 
     // atomic snapping: snap all values together to prevent glitches
     const allWithinEpsilon =
       Math.abs(this.targetPanX - this.panX) < epsilon &&
       Math.abs(this.targetPanY - this.panY) < epsilon &&
-      Math.abs(this.targetScale - this.scale) < epsilon;
+      Math.abs(this.targetScale - this.scale) < epsilon &&
+      Math.abs(this.targetScaleMultiplier - this.scaleMultiplier) < epsilon;
 
     if (allWithinEpsilon) {
       this.panX = this.targetPanX;
       this.panY = this.targetPanY;
       this.scale = this.targetScale;
+      this.scaleMultiplier = this.targetScaleMultiplier;
 
       if (
         this.isResetting &&
@@ -96,7 +126,7 @@ export class Camera {
     }
 
     const changed =
-      oldX !== this.panX || oldY !== this.panY || oldScale !== this.scale;
+      oldX !== this.panX || oldY !== this.panY || oldScale !== this.scale || oldMultiplier !== this.scaleMultiplier;
 
     if (changed) this.events.emit("camera:changed", this.state());
 

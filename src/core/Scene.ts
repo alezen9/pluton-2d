@@ -78,7 +78,7 @@ export class Scene {
     if (camera) {
       const tx = cx + camera.panX;
       const ty = cy + camera.panY;
-      const s = camera.scale;
+      const s = camera.scale * camera.multiplier;
       const cameraT = `translate(${tx}px, ${ty}px) scale(${s}, ${-s})`;
 
       if (cameraT !== this.lastCameraTransform) {

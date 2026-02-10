@@ -22,12 +22,14 @@ type SceneParams = {
 };
 
 const svgElement = document.querySelector("svg#truss") as SVGSVGElement;
-const scene = new Pluton2D<SceneParams>(svgElement, {
-  span: 840,
-  rise: 190,
-  panels: 8,
-  nodePlateRadius: 8,
-  camber: 18,
+const scene = new Pluton2D(svgElement, {
+  params: {
+    span: 840,
+    rise: 190,
+    panels: 8,
+    nodePlateRadius: 8,
+    camber: 18,
+  }
 });
 
 const geometry = scene.geometry.group();

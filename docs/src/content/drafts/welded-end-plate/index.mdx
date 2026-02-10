@@ -26,16 +26,18 @@ type SceneParams = {
 };
 
 const svgElement = document.querySelector("svg#welded-end-plate") as SVGSVGElement;
-const scene = new Pluton2D<SceneParams>(svgElement, {
-  beamDepth: 240,
-  flangeWidth: 160,
-  plateThickness: 20,
-  boltRows: 4,
-  boltPitch: 58,
-  boltGauge: 92,
-  boltDiameter: 20,
-  edgeDistance: 34,
-  weldSize: 10,
+const scene = new Pluton2D(svgElement, {
+  params: {
+    beamDepth: 240,
+    flangeWidth: 160,
+    plateThickness: 20,
+    boltRows: 4,
+    boltPitch: 58,
+    boltGauge: 92,
+    boltDiameter: 20,
+    edgeDistance: 34,
+    weldSize: 10,
+  }
 });
 
 const geometry = scene.geometry.group();

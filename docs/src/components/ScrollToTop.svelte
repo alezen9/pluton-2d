@@ -86,7 +86,7 @@
 <style>
   button {
     position: fixed;
-    right: 2em;
+    right: max(1.75rem, calc(50% - 840px + 1.75rem));
     bottom: 2em;
     width: 3em;
     height: 3em;

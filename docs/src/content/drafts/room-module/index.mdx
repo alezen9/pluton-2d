@@ -23,13 +23,15 @@ type SceneParams = {
 };
 
 const svgElement = document.querySelector("svg#room-module") as SVGSVGElement;
-const scene = new Pluton2D<SceneParams>(svgElement, {
-  roomWidth: 560,
-  roomDepth: 430,
-  wallThickness: 26,
-  doorWidth: 94,
-  windowWidth: 150,
-  windowOffset: 0,
+const scene = new Pluton2D(svgElement, {
+  params: {
+    roomWidth: 560,
+    roomDepth: 430,
+    wallThickness: 26,
+    doorWidth: 94,
+    windowWidth: 150,
+    windowOffset: 0,
+  }
 });
 
 const geometry = scene.geometry.group();

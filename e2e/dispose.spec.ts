@@ -23,7 +23,9 @@ test("dispose removes scene DOM scaffolding and stops further rendering", async 
     svg.setAttribute("height", "200");
     app.replaceChildren(svg);
 
-    const scene = new Pluton2D(svg, { width: 100 });
+    const scene = new Pluton2D(svg, {
+      params: { width: 100 }
+    });
     const geometry = scene.geometry.group();
     scene.draw((params: { width: number }) => {
       geometry.path().moveToAbs(0, 0).lineToAbs(params.width, 0);

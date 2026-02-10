@@ -1,47 +1,20 @@
 ---
 import ExamplesLayout from "./ExamplesLayout.astro";
 
-const { title, category, description } = Astro.props;
+const { title, description } = Astro.props;
 ---
 
 <ExamplesLayout {title}>
-  <div class="example-header">
-    <h1>{title}</h1>
-    <span class="demo-card-tag">{category}</span>
-  </div>
+  <h1>{title}</h1>
   <p class="example-desc">{description}</p>
   <slot />
 </ExamplesLayout>
 
 <style>
-  .example-header {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 0.35rem;
-    flex-shrink: 0;
-  }
-
-  .example-header h1 {
-    font-size: 1.4rem;
-    margin: 0;
-  }
-
   .example-desc {
     color: var(--text-muted);
     font-size: 0.88rem;
     margin-bottom: 1rem;
     flex-shrink: 0;
-  }
-
-  .demo-card-tag {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--accent);
-    font-weight: 500;
-    background: var(--accent-light);
-    padding: 3px 8px;
-    border-radius: 3px;
   }
 </style>

@@ -21,7 +21,9 @@ test("grid, axes, and filter toggles update scene presentation", async ({ page }
     svg.setAttribute("height", "200");
     app.replaceChildren(svg);
 
-    const scene = new Pluton2D(svg, { width: 100 });
+    const scene = new Pluton2D(svg, {
+      params: { width: 100 }
+    });
     scene.draw((params: { width: number }) => {
       const group = scene.geometry.group();
       group.path().moveToAbs(0, 0).lineToAbs(params.width, 0);

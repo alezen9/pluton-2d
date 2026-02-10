@@ -14,14 +14,16 @@ Pluton 2D is a library for technical drawing in SVG. It gives you clean geometry
 npm install pluton-2d
 ```
 
-Start by importing the stylesheet. It provides default styling for grid lines, axes, and dimensions. Then create a scene by passing an SVG element and your initial parameters. Your SVG element needs either CSS width/height or a viewBox attribute so Pluton can figure out the canvas dimensions:
+Import the stylesheet first. It provides default styling for the grid, axes, and dimensions. Then create a scene by passing an SVG element and your parameters. The SVG needs either CSS width/height or a viewBox attribute so Pluton knows the canvas size:
 
 ```typescript
 import "pluton-2d/style.css";
 import { Pluton2D } from "pluton-2d";
 
 const svg = document.querySelector("svg")!;
-const scene = new Pluton2D(svg, { width: 200, height: 100 });
+const scene = new Pluton2D(svg, {
+  params: { width: 200, height: 100 }
+});
 
 scene.enablePan(true);
 scene.enableZoom(true);
@@ -43,14 +45,14 @@ You'll want to create groups once, outside your draw callback. The reason is sim
 
 ### Reactive params
 
-Any parameters you pass to the constructor become reactive through a Proxy. When you mutate them, the scene redraws automatically. Redraws are throttled at 60 FPS, so you can update parameters as often as you like without worrying about performance:
+The `params` object becomes reactive through a Proxy. When you mutate properties, the scene redraws automatically. Redraws are throttled at 60 FPS, so you can update parameters as often as you like without worrying about performance:
 
 ```typescript
 scene.params.width = 300; // triggers redraw
 
 Object.assign(scene.params, { width: 250, height: 150 }); // also works
 
-// Don't reassign the whole object—the Proxy is on the original
+// Don't reassign the whole object. The Proxy is on the original
 // scene.params = { ... };  ← won't trigger redraws
 ```
 
@@ -67,11 +69,11 @@ Pluton uses a center-origin, Y-up coordinate system. This is the same convention
 - Positive Y → **up**
 - `lineTo(10, 20)` moves right 10, up 20
 
-The world layer flips Y with `scale(1, -1)` under the hood. Arc sweep flags are adjusted automatically, so if you pass `clockwise = true`, it renders clockwise on screen.
+Under the hood, the rendering layer flips Y-coordinates so your math-style coordinates map correctly to SVG. Arc directions are adjusted automatically. When you specify `clockwise = true`, it actually renders clockwise on screen.
 
 ## Static vs dynamic
 
-When you have geometry that doesn't change frame-to-frame (like a background grid, reference shapes, or fixed annotations), you can mark the group as static. Here's what happens: after the first commit, the engine skips all DOM writes for that group. This improves performance when you have a mix of static and animated content, since the engine only updates what actually needs updating:
+When you have geometry that doesn't change frame-to-frame (background grids, reference shapes, fixed annotations), mark the group as static. After the first commit, the engine skips all DOM writes for that group. This improves performance when you mix static and dynamic content, since the engine only updates what actually changed:
 
 ```typescript
 const bg = scene.geometry.group();
@@ -80,11 +82,11 @@ bg.setDrawUsage("static"); // commits once
 const fg = scene.geometry.group(); // dynamic by default
 
 scene.draw((p) => {
-  // Static—still call path() every frame, engine skips DOM write
+  // Static. Still call path() every frame, engine skips DOM write
   const bgPath = bg.path();
   bgPath.moveToAbs(-100, -100).lineTo(200, 0).lineTo(0, 200).close();
 
-  // Dynamic—DOM updates every frame
+  // Dynamic. DOM updates every frame
   const fgPath = fg.path();
   fgPath.moveToAbs(0, 0).lineTo(p.width, 0).lineTo(0, p.height).close();
 });
@@ -150,7 +152,7 @@ With fills enabled (default), each path uses whatever you specify in `path({ fil
 
 ### Pencil filter
 
-The pencil filter gives geometry a hand-drawn look, which works well for sketches or informal diagrams. You can tune the intensity at runtime. Keep in mind that the filter can be expensive on Safari during zoom, especially with large numbers of paths:
+The pencil filter gives geometry a hand-drawn look. Useful for sketches or informal diagrams. You can adjust the intensity at runtime. The filter can be expensive on Safari during zoom, especially with many paths:
 
 ```typescript
 scene.enableFilter(true);
@@ -174,6 +176,32 @@ scene.resetCamera();     // smooth animation back to origin
 ```
 
 Camera movement is smoothed with exponential easing, which makes navigation feel natural and responsive. `resetCamera()` animates instead of jumping, so the transition feels smooth.
+
+### Responsive scaling
+
+For mobile and tablet devices, you can scale the entire view down to give geometry more breathing room. This is different from camera zoom. It scales the output without changing your coordinate system or affecting pan/zoom behavior:
+
+```typescript
+// Using matchMedia for clean breakpoint handling
+const mobileQuery = window.matchMedia('(max-width: 640px)');
+const tabletQuery = window.matchMedia('(min-width: 641px) and (max-width: 1024px)');
+
+const updateScale = () => {
+  if (mobileQuery.matches) {
+    scene.setViewScale(0.7);   // mobile: 70% scale
+  } else if (tabletQuery.matches) {
+    scene.setViewScale(0.85);  // tablet: 85% scale
+  } else {
+    scene.setViewScale(1.0);   // desktop: full scale
+  }
+};
+
+updateScale();
+mobileQuery.addEventListener('change', updateScale);
+tabletQuery.addEventListener('change', updateScale);
+```
+
+The scale interpolates smoothly like pan and zoom. Camera state is preserved. If the user zoomed in 3×, they'll still be at 3× zoom after the view scale changes. The coordinate system stays the same, so `moveTo(100, 100)` still means the same world position regardless of view scale.
 
 ## When to use Pluton 2D
 

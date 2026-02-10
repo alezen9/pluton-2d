@@ -36,7 +36,9 @@ test("repeated create/dispose cycles remain stable and clean", async ({
       svg.setAttribute("height", "200");
       app.replaceChildren(svg);
 
-      const scene = new Pluton2D(svg, { width: 100 + i });
+      const scene = new Pluton2D(svg, {
+        params: { width: 100 + i }
+      });
       const group = scene.geometry.group();
       scene.draw((params: { width: number }) => {
         group.path().moveToAbs(0, 0).lineToAbs(params.width, 0);

@@ -7,6 +7,7 @@ import "../styles/markdown.css";
 import "pluton-2d/style.css";
 
 const { title = "Pluton 2D", currentPage = "/" } = Astro.props;
+const composedTitle = currentPage === "/" ? title : `Pluton 2D | ${title}`;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const enableClientRouter = import.meta.env.PROD;
 ---
@@ -16,7 +17,7 @@ const enableClientRouter = import.meta.env.PROD;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title} - Pluton 2D</title>
+    <title>{composedTitle}</title>
     <link rel="icon" href={`${base}/favicon.svg`} />
     {enableClientRouter && <ClientRouter />}
   </head>

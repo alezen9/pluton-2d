@@ -27,7 +27,9 @@
     const seen = new Set<string>();
 
     headings = [
-      ...document.querySelectorAll<HTMLHeadingElement>("#doc-content h2, #doc-content h3"),
+      ...document.querySelectorAll<HTMLHeadingElement>(
+        "#doc-content h2, #doc-content h3",
+      ),
     ];
 
     for (const heading of headings) {
@@ -149,10 +151,9 @@
 <style>
   .toc {
     position: fixed;
-    top: calc(64px + 0.9rem);
-    left: 0;
-    max-width: 300px;
-    padding-left: 2em;
+    top: calc(64px + 3em);
+    left: 2rem;
+    width: 300px;
     user-select: none;
   }
 
@@ -165,6 +166,7 @@
     font-weight: 400;
     margin: 0;
     color: var(--text-main);
+    line-height: 1.1;
   }
 
   ul {
@@ -189,7 +191,9 @@
     font-size: 0.8125rem;
     line-height: 1.42;
     padding: 0;
-    transition: color 0.18s, opacity 0.18s;
+    transition:
+      color 0.18s,
+      opacity 0.18s;
     opacity: 0.7;
   }
 

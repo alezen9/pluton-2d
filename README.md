@@ -38,7 +38,9 @@ import "pluton-2d/style.css";
 import { Pluton2D } from "pluton-2d";
 
 const svg = document.querySelector("svg")!;
-const scene = new Pluton2D(svg, { width: 240, height: 120 });
+const scene = new Pluton2D(svg, {
+  params: { width: 240, height: 120 }
+});
 
 scene.enablePan(true);
 scene.enableZoom(true);
@@ -115,14 +117,32 @@ The viewport layer applies `scale(1, -1)` to flip the Y-axis for SVG rendering. 
 Create an instance with an SVG element and initial params:
 
 ```ts
-const scene = new Pluton2D<{ width: number; height: number }>(svg, {
-  width: 240,
-  height: 120,
+const scene = new Pluton2D(svg, {
+  params: { width: 240, height: 120 }
 });
 ```
 
-Params can be any **flat** shape. The type is inferred from the initial value.
-Nested objects are not supported.
+Params can be any **flat** shape. Type inferred automatically from params object.
+Nested objects not supported.
+
+#### ViewBox (coordinate space)
+
+By default, viewport uses SVG's pixel dimensions. Set explicit coordinate space:
+
+```ts
+// With viewBox and params
+const scene = new Pluton2D(svg, {
+  params: { width: 240, height: 120 },
+  viewBox: { width: 200, height: 300 }
+});
+
+// Priority order:
+// 1. Constructor viewBox parameter (shown above)
+// 2. SVG viewBox attribute (if set on <svg>)
+// 3. SVG pixel dimensions (getBoundingClientRect)
+```
+
+The viewBox defines the **drawing coordinate system**, not pixel dimensions. A larger viewBox gives you more room for geometry without affecting visual scale.
 
 Set pencil filter intensity with a method, anytime:
 
@@ -295,6 +315,30 @@ scene.enablePan(true);    // middle-mouse or shift+left-click to pan
 scene.enableZoom(true);   // mouse wheel to zoom (1-20x scale)
 scene.resetCamera();      // return to initial view
 ```
+
+### Responsive view scaling
+
+Scale the entire view programmatically for responsive designs:
+
+```ts
+// Scale view to 75% on mobile
+if (window.innerWidth <= 768) {
+  scene.setViewScale(0.75);
+}
+
+// Reset to normal
+scene.setViewScale(1.0);
+```
+
+This scales the visual output without affecting:
+- Coordinate system (viewBox unchanged)
+- Zoom/pan behavior (still works normally)
+- Camera state (zoom level preserved)
+
+Useful for:
+- Mobile responsive design - give geometry more breathing room on small screens
+- User preference controls (zoom level UI)
+- Dynamic viewport adjustments
 
 ## Styling
 

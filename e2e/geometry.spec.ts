@@ -23,7 +23,9 @@ test("geometry reuses/removes path nodes and respects static draw usage", async 
     svg.setAttribute("height", "200");
     app.replaceChildren(svg);
 
-    const scene = new Pluton2D(svg, { count: 2, staticLen: 20, dynamicLen: 20 });
+    const scene = new Pluton2D(svg, {
+      params: { count: 2, staticLen: 20, dynamicLen: 20 }
+    });
 
     const reusableGroup = scene.geometry.group();
     const staticGroup = scene.geometry.group();

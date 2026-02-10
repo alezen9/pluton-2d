@@ -27,17 +27,19 @@ type SceneParams = {
 };
 
 const svgElement = document.querySelector("svg#base-plate") as SVGSVGElement;
-const scene = new Pluton2D<SceneParams>(svgElement, {
-  columnWidth: 120,
-  columnHeight: 220,
-  plateWidth: 230,
-  plateDepth: 180,
-  plateThickness: 24,
-  boltOffsetX: 72,
-  boltOffsetY: 52,
-  boltDiameter: 20,
-  cornerRadius: 14,
-  groutThickness: 14,
+const scene = new Pluton2D(svgElement, {
+  params: {
+    columnWidth: 120,
+    columnHeight: 220,
+    plateWidth: 230,
+    plateDepth: 180,
+    plateThickness: 24,
+    boltOffsetX: 72,
+    boltOffsetY: 52,
+    boltDiameter: 20,
+    cornerRadius: 14,
+    groutThickness: 14,
+  }
 });
 
 const geometry = scene.geometry.group();

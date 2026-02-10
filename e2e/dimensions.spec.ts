@@ -23,7 +23,9 @@ test("dimensions reuse text nodes, remove surplus text, and clear transform stat
     svg.setAttribute("height", "200");
     app.replaceChildren(svg);
 
-    const scene = new Pluton2D(svg, { mode: 0 });
+    const scene = new Pluton2D(svg, {
+      params: { mode: 0 }
+    });
     const group = scene.dimensions.group();
     group.translate(30, 40);
 

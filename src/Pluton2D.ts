@@ -11,7 +11,7 @@ import { Engine } from "./core/Engine";
  * @template P - parameter type for reactive drawing
  */
 export class Pluton2D<
-  P extends Record<string, unknown> = Record<string, unknown>,
+  P extends Record<string, unknown> = Record<string, never>,
 > {
   private context: ContextInternal;
   private events: EventBus;
@@ -24,11 +24,38 @@ export class Pluton2D<
   private paramsState: P;
 
   /**
-   * Create a new Pluton2D instance
-   * @param svg - SVG element to render into
-   * @param initialParams - initial reactive parameters
+   * Creates a new Pluton2D scene.
+   *
+   * @param svg - The SVG element to render into
+   * @param options - Configuration options
+   * @param options.params - Optional reactive parameters for drawing.
+   *                         Must be flat object (no nested objects).
+   *                         Mutations trigger automatic redraws.
+   * @param options.viewBox - Optional coordinate space dimensions.
+   *                          Defaults to SVG viewBox attribute or pixel dimensions.
+   *
+   * @example
+   * // With params and viewBox
+   * const scene = new Pluton2D(svg, {
+   *   params: { width: 240, height: 120 },
+   *   viewBox: { width: 500, height: 500 }
+   * });
+   *
+   * // Params only
+   * const scene = new Pluton2D(svg, {
+   *   params: { size: 100, count: 5 }
+   * });
+   *
+   * // No params (empty scene)
+   * const scene = new Pluton2D(svg, {});
    */
-  constructor(svg: SVGSVGElement, initialParams: P) {
+  constructor(
+    svg: SVGSVGElement,
+    options: {
+      params?: P;
+      viewBox?: { width: number; height: number };
+    } = {},
+  ) {
     this.events = new EventBus();
 
     svg.classList.add("pluton-root");
@@ -43,7 +70,9 @@ export class Pluton2D<
       `url(#${defs.hatchFill45Id})`,
     );
 
-    this.engine = new Engine<P>(this.events, initialParams);
+    const { params = {} as P, viewBox } = options;
+
+    this.engine = new Engine<P>(this.events, params);
     this.paramsState = this.engine.getParams();
 
     this.camera = new Camera(svg, this.events, () => this.engine.requestFrame());
@@ -53,7 +82,7 @@ export class Pluton2D<
 
     this.context = new ContextInternal(svg, defs, this.camera, () => {
       handleResize?.();
-    });
+    }, viewBox);
 
     defs.syncForViewport(this.context.viewport());
 
@@ -173,6 +202,25 @@ export class Pluton2D<
    */
   resetCamera() {
     this.camera.reset();
+  }
+
+  /**
+   * Sets the view scale multiplier for responsive scaling.
+   *
+   * Scales the entire view without affecting the coordinate system or
+   * camera zoom level. Useful for responsive design (e.g., scale down
+   * on mobile devices while preserving zoom/pan functionality).
+   *
+   * @param scale - Scale multiplier (0.1-10x). Values <1 zoom out, >1 zoom in.
+   * @example
+   * // Scale view to 75% on mobile
+   * scene.setViewScale(0.75);
+   *
+   * // Reset to normal scale
+   * scene.setViewScale(1.0);
+   */
+  setViewScale(scale: number): void {
+    this.camera.setScaleMultiplier(scale);
   }
 
   /**

@@ -23,7 +23,9 @@ test("params allow property mutation but block top-level reassignment", async ({
     svg.setAttribute("height", "200");
     app.replaceChildren(svg);
 
-    const scene = new Pluton2D(svg, { width: 100, height: 50 });
+    const scene = new Pluton2D(svg, {
+      params: { width: 100, height: 50 }
+    });
     let drawCount = 0;
     scene.draw(() => {
       drawCount += 1;
@@ -80,7 +82,9 @@ test("rapid param mutations are batched into fewer draws", async ({ page }) => {
     svg.setAttribute("height", "200");
     app.replaceChildren(svg);
 
-    const scene = new Pluton2D(svg, { value: 0 });
+    const scene = new Pluton2D(svg, {
+      params: { value: 0 }
+    });
     let drawCount = 0;
 
     scene.draw(() => {

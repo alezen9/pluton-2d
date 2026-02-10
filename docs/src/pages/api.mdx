@@ -13,15 +13,36 @@ Quick reference for the Pluton 2D public API: constructor, geometry, and dimensi
 ### Constructor
 
 ```typescript
-const scene = new Pluton2D(svg, { width: 240, height: 120 });
+const scene = new Pluton2D(svg, {
+  params: { width: 240, height: 120 }
+});
 ```
 
-| Param           | Description                                                         |
-| --------------- | ------------------------------------------------------------------- |
-| `svg`           | SVG element to render into. Needs CSS width/height or viewBox. |
-| `initialParams` | Flat object. Keys become reactive params. Nested objects throw at construction time.     |
+| Param             | Description                                                         |
+| ----------------- | ------------------------------------------------------------------- |
+| `svg`             | SVG element to render into. Needs CSS width/height or viewBox. |
+| `options.params`  | Optional flat object. Keys become reactive params. Nested objects throw at construction. Type inferred automatically. |
+| `options.viewBox` | Optional coordinate space dimensions. |
 
-The flat params constraint exists because the reactivity system uses a Proxy to watch for top-level mutations. Nested objects would require deep watching, which adds complexity and isn't needed for most use cases. If you need complex state, keep it outside `scene.params` and sync the flat values you need in your draw callback.
+Flat params only. Reactivity tracks top-level mutations via Proxy. Nested objects need deep watching (not supported). Keep complex state outside `scene.params`, sync flat values in draw callback.
+
+#### ViewBox (Coordinate Space)
+
+Set explicit drawing coordinate system independent of pixel dimensions:
+
+```typescript
+const scene = new Pluton2D(svg, {
+  params: { size: 100 },
+  viewBox: { width: 200, height: 300 }
+});
+```
+
+**Priority order:**
+1. Constructor `viewBox` parameter
+2. SVG `viewBox` attribute
+3. SVG pixel dimensions (getBoundingClientRect)
+
+A larger viewBox gives more room for geometry without affecting visual scale. For example, `viewBox: { width: 1000, height: 1000 }` provides a spacious coordinate space even if the SVG is only 500×500 pixels on screen.
 
 ### Properties
 
@@ -31,7 +52,7 @@ The flat params constraint exists because the reactivity system uses a Proxy to 
 | `geometry`   | Geometry layer. Call `.group()` to create groups. Groups persist across frames.            |
 | `dimensions` | Dimensions layer. Call `.group()` to create groups. Groups persist across frames.          |
 
-You'll typically create groups once at setup time, then request builders inside your draw callbacks. This pattern keeps the API clean and avoids recreating group elements every frame.
+Create groups once at setup, request builders inside draw callbacks. Avoids recreating elements every frame.
 
 ### Methods
 
@@ -53,18 +74,19 @@ scene.params = { width: 200, height: 100 }; // throws
 
 | Method                          | Description                                                                                                                                  |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enableFilter(bool)`            | Enable pencil-like SVG filter for hand-drawn look. Default: `false`. Can be expensive on Safari during zoom with many paths.                                                 |
-| `setFilterIntensity(number)`    | Set pencil displacement intensity (default: `1.25`). Higher values create more pronounced wobble. Can be called inside or outside draw callbacks.                                         |
-| `enableGrid(bool)`              | Show or hide graph-paper background. Useful for toggling visual context. Default: `true`.                                                                                           |
-| `enableAxes(bool)`              | Show or hide center axes. Helps with orientation and alignment during development. Default: `true`.                                                                                                      |
-| `enablePan(bool)`               | Enable pan (middle-mouse or shift+left-click). Useful when users need to explore large scenes. Default: `false`.                                                                             |
-| `enableZoom(bool)`              | Enable wheel zoom (1× to 20× scale). Clamped at both ends to prevent excessive zoom. Default: `false`.                                                                                          |
-| `enableFill(bool)`              | Toggle geometry fills globally. When enabled, per-path `fill` is used (or default hatch if not set). When disabled, all fills hidden. Useful for toggling between sketch and filled modes. |
-| `resetCamera()`                 | Animate camera back to origin with exponential easing. Smoother than instant reset.                                                                                      |
-| `addHatchFill(color, opacity?)` | Create hatch pattern for technical drawing style fills. Returns `url(#id)` string for use with `path({ fill })`. Hatches are parallel lines at 45 degrees.                                                                      |
-| `dispose()`                     | Clean up listeners, internal DOM, and defs. Call this when removing the scene to avoid memory leaks.                                                               |
+| `enableFilter(bool)`            | Enable pencil-style SVG filter. Default: `false`. Expensive on Safari with many paths during zoom. |
+| `setFilterIntensity(number)`    | Set pencil displacement intensity. Default: `1.25`. Higher = more wobble. |
+| `enableGrid(bool)`              | Show/hide graph-paper background. Default: `true`. |
+| `enableAxes(bool)`              | Show/hide center axes. Default: `true`. |
+| `enablePan(bool)`               | Enable pan (middle-mouse or shift+click). Default: `false`. |
+| `enableZoom(bool)`              | Enable wheel zoom (1×-20×). Default: `false`. |
+| `setViewScale(number)`          | Scale entire view (0.1-10×) for responsive design. Doesn't affect coordinate system or camera zoom. Smoothly interpolates. |
+| `enableFill(bool)`              | Toggle fills globally. When enabled: uses per-path `fill` or default hatch. When disabled: all fills hidden. |
+| `resetCamera()`                 | Animate camera to origin with exponential easing. |
+| `addHatchFill(color, opacity?)` | Create 45° hatch pattern. Returns `url(#id)` for use in `path({ fill })`. |
+| `dispose()`                     | Clean up listeners, DOM, defs. Prevents memory leaks. |
 
-If all draw callbacks unsubscribe, render commits stop unless input or camera activity requests frames. This keeps the engine idle when nothing is changing.
+Engine idles when all draw callbacks unsubscribe (unless camera/input active).
 
 ```typescript
 const tealFill = scene.addHatchFill("#0f766e");
@@ -73,30 +95,57 @@ geom.path({ fill: tealFill }).moveToAbs(...).lineTo(...).close();
 scene.setFilterIntensity(0.9);
 ```
 
+#### Responsive Scaling
+
+Scale the view programmatically for different screen sizes:
+
+```typescript
+// Mobile - scale down to give geometry breathing room
+if (window.innerWidth <= 640) {
+  scene.setViewScale(0.7);
+}
+
+// Tablet - moderate scaling
+else if (window.innerWidth <= 1024) {
+  scene.setViewScale(0.85);
+}
+
+// Desktop - full scale
+else {
+  scene.setViewScale(1.0);
+}
+```
+
+**Key points:**
+- Scales visual output only. Coordinate system unchanged
+- Zoom/pan still work normally
+- Camera state preserved (zoom level unaffected)
+- Smoothly interpolates like pan/zoom
+
 ## Geometry
 
 ### GeometryGroup
 
-Create geometry groups once, outside draw callbacks. Groups are persistent containers for paths. Inside your draw callback, request builders with `path()`. The engine recycles builders frame-to-frame, so you don't allocate new objects on every draw.
+Create groups once, outside draw callbacks. Groups persist across frames. Request builders with `path()` inside draw callbacks. Engine recycles them automatically.
 
 | Method               | Description                                                                                                           |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `path(options?)`     | Request or reuse a `PathBuilder`. Call inside draw callbacks. Supports `className`, `fill`, `stroke`, `fillRule`. Returns a builder you can chain commands on. |
-| `translate(x, y)`    | Offset the group in world space. Direct DOM write, no redraw triggered. Useful for positioning entire groups.                                                         |
-| `scale(x, y)`        | Scale the group. Direct DOM write, no redraw triggered. Useful for mirroring or scaling groups of geometry.                                                          |
-| `setDrawUsage(mode)` | Set to `"static"` to commit once, or `"dynamic"` (default) to commit every frame. Static groups skip DOM writes after first commit, improving performance for unchanging content.                                         |
-| `clear()`            | Remove all paths, reset state and transform. Useful when you need to rebuild geometry from scratch.                                         |
+| `path(options?)`     | Request `PathBuilder`. Supports `className`, `fill`, `stroke`, `fillRule`. Returns chainable builder. |
+| `translate(x, y)`    | Offset group in world space. Direct DOM write, no redraw. |
+| `scale(x, y)`        | Scale group. Direct DOM write, no redraw. |
+| `setDrawUsage(mode)` | `"static"` commits once, `"dynamic"` (default) every frame. Static skips DOM writes after first commit. |
+| `clear()`            | Remove all paths, reset state and transform. |
 
-In `"static"` mode, you still call `path()` in your draw callback. The engine tracks that the geometry hasn't changed and skips the DOM write after the first commit. This is faster than conditionally calling `path()` yourself.
+In static mode, still call `path()` every frame. Engine detects unchanged geometry and skips DOM writes after first commit.
 
 #### path(options) fields
 
 | Option      | Description                                                                                                                                          |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `className` | CSS class for the `<path>`. Useful for targeting specific paths with custom styles.                                                                                                                   |
-| `fill`      | CSS fill value (typically from `scene.addHatchFill(...)`, returns `url(#id)`). If omitted and fills enabled, built-in hatch used. Set to `"none"` for stroke-only paths. |
-| `stroke`    | CSS stroke value. Overrides default stroke color.                                                                                                                                    |
-| `fillRule`  | `"evenodd"` (default) or `"nonzero"`. Use `"evenodd"` for complex paths with cutouts, `"nonzero"` for simple filled shapes.                                                                                      |
+| `className` | CSS class for `<path>`. |
+| `fill`      | CSS fill value (from `addHatchFill()` or manual). Omit for default hatch. Use `"none"` for stroke-only. |
+| `stroke`    | CSS stroke value. Overrides default. |
+| `fillRule`  | `"evenodd"` (default) or `"nonzero"`. Use evenodd for cutouts, nonzero for simple fills. |
 
 ### PathBuilder
 
@@ -144,11 +193,11 @@ Smooth commands (`S/s`, `T/t`) depend on the previous curve segment. If no compa
 
 ### DimensionsGroup
 
-Create dimensions groups once, outside draw callbacks. Same pattern as geometry groups: create the group at setup time, then request builders inside your draw function.
+Create groups once, outside draw callbacks. Same pattern as geometry groups.
 
-Same base controls as `GeometryGroup`: `translate(x, y)`, `setDrawUsage(mode)`, `clear()`. When you call `clear()`, it resets translation to origin. Use `dimension(options?)` to request builders for creating dimension lines, arrows, and text.
+Methods: `translate(x, y)`, `setDrawUsage(mode)`, `clear()`, `dimension(options?)`. Clear resets translation to origin.
 
-### DimensionsBuilder — Positioning
+### DimensionsBuilder: Positioning
 
 ```typescript
 const dim = dims.dimension({ className: "optional-class" });
@@ -159,9 +208,9 @@ dim.lineTo(dx, dy); // relative line
 dim.lineToAbs(x, y); // absolute line
 ```
 
-These work the same as path commands: relative moves from current position, absolute moves to world coordinates. Use them to position dimension lines and create leaders.
+Relative moves from current position, absolute moves to world coordinates. Use for dimension lines and leaders.
 
-### DimensionsBuilder — Primitives
+### DimensionsBuilder: Primitives
 
 Angles in radians. `0` points right, `π/2` points up.
 
@@ -176,20 +225,20 @@ dim.close()                          // close path
 
 | Primitive     | Notes                                                                                                  |
 | ------------- | ------------------------------------------------------------------------------------------------------ |
-| `arc`         | Draws from `startAngle` to `endAngle` around current position. Direction (clockwise or counter-clockwise) is inferred from the angle order. Use for angular dimensions. |
-| `arrow`       | Open V-shaped arrow. Tip sits at current position, wings extend behind. Classic technical drawing style. |
-| `arrowFilled` | Filled triangle arrow. Rendered on a separate path layer so it appears solid. More modern look than open arrows. |
-| `tick`        | Architectural tick mark: two short crossed lines rotated by `angleRad`. Common in architectural drawings.                                           |
-| `centerMark`  | Crosshair with a filled center dot. Used for marking center points in technical drawings.                                    |
+| `arc`         | Arc from `startAngle` to `endAngle` around current position. Direction inferred from angle order. |
+| `arrow`       | Open V-arrow. Tip at current position, wings extend back. Classic style. |
+| `arrowFilled` | Filled triangle arrow on separate path layer. Modern style. |
+| `tick`        | Architectural tick: crossed lines rotated by `angleRad`. |
+| `centerMark`  | Crosshair with filled center dot. |
 
-### DimensionsBuilder — Text
+### DimensionsBuilder: Text
 
 ```typescript
 dim.textAt(dx, dy, text, align?, className?)
 dim.textAtAbs(x, y, text, align?, className?)
 ```
 
-**align:** `"start"` | `"middle"` | `"end"` — defaults to `"middle"`. Controls text anchor point.
-**className:** optional CSS class for the `<text>` element. Useful for custom text styling.
+**align:** `"start"` | `"middle"` | `"end"` (default: `"middle"`). Controls text anchor.
+**className:** Optional CSS class for `<text>`.
 
-Text is rendered in world space, so it follows the same Y-up coordinate system as geometry. The engine applies the correct transform so text appears upright on screen.
+Text rendered in world space (Y-up). Engine transforms it to appear upright on screen.

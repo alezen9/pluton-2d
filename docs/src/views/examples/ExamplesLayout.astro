@@ -14,40 +14,48 @@ const isActiveExampleLink = (href: string) =>
 ---
 
 <BaseLayout {title} currentPage="/examples">
-  <div class="examples-layout">
-    <aside class="examples-sidebar">
-      {
-        categorizedExampleNavigation.map((categoryGroup) => (
-          <div class="sidebar-category">
-            <div class="sidebar-category-label">{categoryGroup.label}</div>
-            <ul class="sidebar-links">
-              {categoryGroup.items.map((item) => (
-                <li>
-                  <a
-                    href={`${baseUrl}${item.path}`}
-                    class:list={{
-                      active: isActiveExampleLink(`${baseUrl}${item.path}`),
-                    }}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      }
-    </aside>
-    <div class="examples-main">
-      <slot />
+  <div class="examples-container">
+    <div class="examples-layout">
+      <aside class="examples-sidebar">
+        {
+          categorizedExampleNavigation.map((categoryGroup) => (
+            <div class="sidebar-category">
+              <div class="sidebar-category-label">{categoryGroup.label}</div>
+              <ul class="sidebar-links">
+                {categoryGroup.items.map((item) => (
+                  <li>
+                    <a
+                      href={`${baseUrl}${item.path}`}
+                      class:list={{
+                        active: isActiveExampleLink(`${baseUrl}${item.path}`),
+                      }}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </aside>
+      <div class="examples-main">
+        <slot />
+      </div>
     </div>
   </div>
 </BaseLayout>
 
 <style>
+  .examples-container {
+    max-width: 1680px;
+    margin: 0 auto;
+    height: calc(100svh - 64px);
+  }
+
   .examples-layout {
     display: flex;
-    height: calc(100svh - 64px);
+    height: 100%;
     position: relative;
     z-index: 1;
     overflow: hidden;
@@ -56,9 +64,7 @@ const isActiveExampleLink = (href: string) =>
   .examples-sidebar {
     width: 300px;
     flex-shrink: 0;
-    border-right: 1px solid var(--panel-border);
-    background: var(--panel-bg-solid);
-    padding: 1.2rem 0.72rem;
+    padding: 3rem 1rem;
     overflow-y: auto;
   }
 
@@ -67,10 +73,10 @@ const isActiveExampleLink = (href: string) =>
   }
 
   .examples-sidebar .sidebar-category-label {
-    font-size: 0.75rem;
+    font-size: 0.85em;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    font-weight: bold;
+    font-weight: 600;
     color: var(--text-muted);
     padding: 0 0.5rem;
     margin-bottom: 0.3rem;
@@ -116,7 +122,7 @@ const isActiveExampleLink = (href: string) =>
 
   .examples-main {
     flex: 1;
-    padding: 1.35rem 1.8rem;
+    padding: 2rem;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
