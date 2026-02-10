@@ -6,19 +6,15 @@ currentPage: /guide
 
 # Guide
 
-Everything you need to go from install to a clean, interactive scene.
+Pluton 2D is a library for technical drawing in SVG. It gives you clean geometry, dimensions, and stable rendering without fighting the DOM.
 
----
-
-## Getting started
-
-Install the package:
+## Install and setup
 
 ```bash
 npm install pluton-2d
 ```
 
-Import the stylesheet, create a scene, and make sure the SVG has CSS width/height or a viewBox:
+Start by importing the stylesheet. It provides default styling for grid lines, axes, and dimensions. Then create a scene by passing an SVG element and your initial parameters. Your SVG element needs either CSS width/height or a viewBox attribute so Pluton can figure out the canvas dimensions:
 
 ```typescript
 import "pluton-2d/style.css";
@@ -43,79 +39,64 @@ scene.draw((p) => {
 });
 ```
 
-Create groups once outside the draw callback. Builders requested inside are recycled, and the engine only writes changed attributes.
-
-If you are migrating from older versions:
-- `new Pluton2D(svg, params, { filterIntensity })` was removed.
-- Use `scene.setFilterIntensity(...)` after scene creation.
+You'll want to create groups once, outside your draw callback. The reason is simple: groups persist across frames, while builders get recycled. Create the group early, then request builders inside your draw function each time it runs. The engine only writes changed attributes to the DOM, so you don't pay for work that didn't happen.
 
 ### Reactive params
 
-Params are wrapped in a Proxy. Any mutation triggers redraw automatically, capped at 60 FPS.
+Any parameters you pass to the constructor become reactive through a Proxy. When you mutate them, the scene redraws automatically. Redraws are throttled at 60 FPS, so you can update parameters as often as you like without worrying about performance:
 
 ```typescript
-// Mutate a single param - triggers redraw
-scene.params.width = 300;
+scene.params.width = 300; // triggers redraw
 
-// Mutate several at once
-Object.assign(scene.params, { width: 250, height: 150 });
+Object.assign(scene.params, { width: 250, height: 150 }); // also works
 
-// Don't reassign the whole object - the Proxy is on the original
+// Don't reassign the whole object—the Proxy is on the original
 // scene.params = { ... };  ← won't trigger redraws
 ```
 
-> **Params must be flat.** Nested objects will throw at construction time. Only top-level property mutations trigger redraws.
+Parameters need to be a flat object. Nested objects will throw an error at construction time. The reason is simple: the reactivity system only tracks mutations at the top level. If you need to organize complex state, keep it outside `scene.params` and sync the flat values inside your draw callback.
 
-When you're done with a scene, call `scene.dispose()` to clean up event listeners and DOM elements.
-
----
+When you're done, call `scene.dispose()` to clean up listeners and DOM.
 
 ## Coordinate system
 
-Pluton uses **center origin with Y-axis pointing up** - math convention, not screen coordinates.
+Pluton uses a center-origin, Y-up coordinate system. This is the same convention you'd use in mathematics or engineering drawings, not typical screen coordinates where Y goes down. Here's what that looks like:
 
-- Origin is at the center of the viewport
+- Origin: center of viewport
 - Positive X → right
 - Positive Y → **up**
-- `lineTo(10, 20)` moves right 10 units, up 20 units
+- `lineTo(10, 20)` moves right 10, up 20
 
-The world layer applies `scale(1, -1)` to flip Y. Arc sweep flags are inverted at the SVG level - pass `clockwise = true` and the arc renders clockwise.
+The world layer flips Y with `scale(1, -1)` under the hood. Arc sweep flags are adjusted automatically, so if you pass `clockwise = true`, it renders clockwise on screen.
 
----
+## Static vs dynamic
 
-## Static vs dynamic groups
-
-For geometry that never changes, mark the group as static. The engine commits it once, then skips later DOM writes for that group.
+When you have geometry that doesn't change frame-to-frame (like a background grid, reference shapes, or fixed annotations), you can mark the group as static. Here's what happens: after the first commit, the engine skips all DOM writes for that group. This improves performance when you have a mix of static and animated content, since the engine only updates what actually needs updating:
 
 ```typescript
 const bg = scene.geometry.group();
-bg.setDrawUsage("static"); // commit runs once, then stops
+bg.setDrawUsage("static"); // commits once
 
 const fg = scene.geometry.group(); // dynamic by default
 
 scene.draw((p) => {
-  // Static - still call path() every frame, engine skips the DOM write
+  // Static—still call path() every frame, engine skips DOM write
   const bgPath = bg.path();
   bgPath.moveToAbs(-100, -100).lineTo(200, 0).lineTo(0, 200).close();
 
-  // Dynamic - DOM updates every frame
+  // Dynamic—DOM updates every frame
   const fgPath = fg.path();
   fgPath.moveToAbs(0, 0).lineTo(p.width, 0).lineTo(0, p.height).close();
 });
 ```
 
-- `commit()` runs once, sets an internal flag
-- Subsequent frames skip `commit()` for that group
-- `clear()` or `setDrawUsage("dynamic")` resets it
+After the first commit, static groups skip DOM writes. Calling `clear()` or `setDrawUsage("dynamic")` resets the flag if you need to change the geometry later.
 
-> **Static:** background elements, fixed annotations, reference shapes.
-> **Dynamic (default):** anything that reacts to params or user input.
-
----
+Use static for background grids, fixed annotations, or reference shapes. Use dynamic for anything that responds to params or user input.
 
 ## Styling
 
-All visual styling is driven by CSS custom properties on `.pluton-root`. Override any of them per-instance:
+All styling uses CSS custom properties on `.pluton-root`. This means you can override the defaults per-instance without touching JavaScript. Here are the available variables and their defaults:
 
 ```css
 .pluton-root {
@@ -142,96 +123,83 @@ All visual styling is driven by CSS custom properties on `.pluton-root`. Overrid
 
 ### Custom classes
 
-Pass `className` to `path()` or `dimension()` for fine-grained control:
+When you need more specific control than the CSS variables provide, you can pass `className` to `path()` or `dimension()`:
 
 ```typescript
-// Pass a class name when requesting a builder
 const path = geom.path({ className: "my-path" });
 
-// Style it in CSS
+// In CSS:
 // .pluton-root .pluton-geometry path.my-path { stroke: #e11d48; }
 ```
 
-`path()` also accepts `fill`, `stroke`, and `fillRule` when you need hatch fills, custom stroke color, or cutouts.
-Geometry groups also support `scale(x, y)`.
+`path()` also accepts `fill`, `stroke`, and `fillRule` when you need hatch fills, custom colors, or cutouts. Geometry groups support `scale(x, y)` and `translate(x, y)` for positioning.
 
 ### Hatch fill
 
-Create hatch fills with `addHatchFill(...)` and pass the returned pattern to `path({ fill })`:
+Hatching is a traditional drafting technique where parallel lines indicate filled areas. It's been used in technical drawings for decades to show different materials or filled regions. You can create hatch patterns with `addHatchFill(color, opacity?)`, which returns a fill ID. Pass that ID to `path({ fill })` to apply the pattern:
 
 ```typescript
-const blueFillId = scene.addHatchFill("#2563eb");
-const orangeFillId = scene.addHatchFill("#ea580c", 0.45);
+const blueFill = scene.addHatchFill("#2563eb");
+const orangeFill = scene.addHatchFill("#ea580c", 0.45);
 
-geom.path({ fill: blueFillId }).moveToAbs(...).lineTo(...).close();
-geom.path({ fill: orangeFillId, fillRule: "evenodd" }).moveToAbs(...).lineTo(...).close();
+geom.path({ fill: blueFill }).moveToAbs(...).lineTo(...).close();
+geom.path({ fill: orangeFill, fillRule: "evenodd" }).moveToAbs(...).close();
 ```
 
-With fills enabled (default), each geometry path uses this order:
-- If `path({ fill })` is set, that value is used.
-- Otherwise, it falls back to the built-in default hatch fill.
+With fills enabled (default), each path uses whatever you specify in `path({ fill })`, or falls back to the built-in default hatch. You can toggle all fills with `scene.enableFill(false)` to hide them, or `scene.enableFill(true)` to show them. For stroke-only geometry, set `fill: "none"` on the path or in CSS.
 
-Use `scene.enableFill(false)` to hide all geometry fills (including custom hatch fills), then `scene.enableFill(true)` to show them again.
-For stroke-only geometry, set `fill: "none"` on the path (or in CSS for that class).
+### Pencil filter
 
-### Pencil filter intensity
-
-Use `setFilterIntensity` to tune the filter at runtime:
+The pencil filter gives geometry a hand-drawn look, which works well for sketches or informal diagrams. You can tune the intensity at runtime. Keep in mind that the filter can be expensive on Safari during zoom, especially with large numbers of paths:
 
 ```typescript
 scene.enableFilter(true);
-const filterIntensity = 1.25; // default value
-scene.setFilterIntensity(filterIntensity);
+scene.setFilterIntensity(1.25); // default
 
-// can also be called inside draw callbacks
+// Can also call inside draw callbacks
 scene.draw(() => {
-  scene.setFilterIntensity(filterIntensity);
+  scene.setFilterIntensity(1.25);
 });
 ```
 
----
-
 ## Camera controls
 
-Pan and zoom are opt-in and can be reset at any time:
+Pan and zoom are opt-in. Enable them when you need interactive navigation:
 
 ```typescript
-scene.enablePan(true);   // middle-mouse drag, or shift + left-click drag
-scene.enableZoom(true);  // mouse wheel - scale range 1×-20×
+scene.enablePan(true);   // middle-mouse drag, or shift + left-click
+scene.enableZoom(true);  // mouse wheel, 1×-20× range
 
 scene.resetCamera();     // smooth animation back to origin
 ```
 
-> **Interpolation:** Camera movement is smoothed with exponential easing. `resetCamera()` animates back to the origin rather than jumping.
+Camera movement is smoothed with exponential easing, which makes navigation feel natural and responsive. `resetCamera()` animates instead of jumping, so the transition feels smooth.
 
----
+## When to use Pluton 2D
 
-## When to choose Pluton2D vs other tools
+Pluton was built for technical drawing: crisp SVG, hatching, dimensions, and low DOM churn. You can use it for other SVG work, but it's not trying to replace everything. Here's how to think about when it's a good fit.
 
-Pluton2D was built first for technical drawing workflows: crisp SVG output, hatching, and dimensions with low DOM churn.
-You can use it for broader SVG work too, but it is not trying to replace every rendering stack.
+### Good fit
 
-### Good fit for Pluton2D
-
-- Technical drawings, blueprints, and engineering diagrams
+- Technical drawings, blueprints, engineering diagrams
 - Annotation-heavy scenes (dimensions, ticks, callouts)
-- Workflows that benefit from inspectable/exportable SVG
+- Inspectable or exportable SVG workflows
 - Interactive scenes with moderate redraw frequency
 
-### Prefer charting libraries when
+### Charting libraries might be a better fit when
 
-- Your main goal is data visualization
-- You need chart-specific primitives and conventions out of the box
-- You need built-in scales, legends, and tooltips
+- Your goal is data visualization with standard chart types
+- You need chart primitives and conventions out of the box (scales, legends, tooltips)
+- You're working with time-series data, bar charts, or scatter plots
 
-### Prefer Canvas when
+### Canvas might be a better fit when
 
-- You need very high-frequency animation
-- You draw large numbers of moving primitives per frame
-- You hit SVG/DOM performance limits
+- You're working with high-frequency animation (think 60+ shapes moving per frame)
+- You have large numbers of moving primitives and hit SVG/DOM performance limits
+- You don't need inspectable, exportable SVG output
 
-### Prefer WebGL or WebGPU when
+### WebGL/WebGPU might be a better fit when
 
-- You need GPU-heavy rendering or advanced visual effects
-- You need shader-driven pipelines or post-processing
-- You need 3D or large-scale real-time rendering
+- You need GPU-driven rendering or advanced visual effects
+- You're building shader-driven pipelines or post-processing chains
+- You're working with 3D or large-scale real-time rendering

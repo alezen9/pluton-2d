@@ -159,12 +159,12 @@
   .title {
     position: sticky;
     top: 0;
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    font-weight: 600;
+    font-weight: 400;
     margin: 0;
-    color: var(--text-muted);
+    color: var(--text-main);
   }
 
   ul {
@@ -186,11 +186,11 @@
     display: block;
     color: var(--text-muted);
     text-decoration: none;
-    font-size: 0.8em;
+    font-size: 0.8125rem;
     line-height: 1.42;
     padding: 0;
     transition: color 0.18s, opacity 0.18s;
-    opacity: 0.4;
+    opacity: 0.7;
   }
 
   a:hover {
@@ -206,7 +206,7 @@
 
   .sub-item {
     padding-left: 0.78rem;
-    font-size: 0.73rem;
+    font-size: 0.75rem;
   }
 
   @media screen and (max-width: 1480px) {

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap");
 
 :root {
   --page-bg: #202a2e;
@@ -42,7 +42,9 @@ body {
   --page-grid-line-width: 1px;
   --page-grid-minor-color: rgba(198, 222, 230, 0.012);
   --page-grid-major-color: rgba(198, 222, 230, 0.02);
-  font-family: "Manrope", sans-serif;
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
   background-color: var(--page-bg);
   background-image:
     radial-gradient(
@@ -103,55 +105,116 @@ body::before {
     );
 }
 
+/* Typography Scale */
 h1,
 h2,
-h3 {
-  font-family: "Sora", sans-serif;
-  letter-spacing: -0.015em;
-  line-height: 1.24;
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--text-main);
-  font-weight: 400;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 h1 {
-  font-size: clamp(2.3rem, 4vw, 3.2rem);
+  font-size: 3.5rem; /* 56px */
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
 }
 
 h2 {
-  font-size: 1.5rem;
-  margin-top: 3.5rem;
-  margin-bottom: 1rem;
+  font-size: 2rem; /* 32px */
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-top: 5rem;
+  margin-bottom: 0.75rem;
 }
 
 h3 {
-  font-size: 1.1rem;
+  font-size: 1.5rem; /* 24px */
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  margin-top: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+h4 {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 400;
+  letter-spacing: -0.01em;
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
 }
 
+h5 {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 400;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+h6 {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
 p {
-  margin-bottom: 1rem;
+  margin: 0 0 1.25rem 0;
+  line-height: 1.6;
   color: var(--text-muted);
+  max-width: 70ch;
 }
 
 a {
   color: var(--accent);
   text-decoration: none;
+  transition: color 0.15s;
 }
 
 a:hover {
+  color: var(--accent-hover);
   text-decoration: underline;
+}
+
+strong,
+b {
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+em,
+i {
+  font-style: italic;
+}
+
+small {
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 ul,
 ol {
-  margin-bottom: 1rem;
+  margin: 0 0 1.25rem 0;
   padding-left: 1.5rem;
   color: var(--text-muted);
+  line-height: 1.6;
 }
 
 li {
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+li:last-child {
+  margin-bottom: 0;
 }
 
 code {

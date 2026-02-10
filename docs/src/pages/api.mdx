@@ -6,9 +6,7 @@ currentPage: /api
 
 # API Reference
 
-A practical reference for the Pluton 2D public API: constructor, geometry, and dimensions.
-
----
+Quick reference for the Pluton 2D public API: constructor, geometry, and dimensions.
 
 ## Pluton2D
 
@@ -20,34 +18,31 @@ const scene = new Pluton2D(svg, { width: 240, height: 120 });
 
 | Param           | Description                                                         |
 | --------------- | ------------------------------------------------------------------- |
-| `svg`           | SVG element to render into. It needs CSS width/height or a viewBox. |
-| `initialParams` | Flat object. Keys become reactive params. Nested objects throw.     |
+| `svg`           | SVG element to render into. Needs CSS width/height or viewBox. |
+| `initialParams` | Flat object. Keys become reactive params. Nested objects throw at construction time.     |
 
-Migration note:
-
-- `new Pluton2D(svg, params, { filterIntensity })` was removed.
-- Use `scene.setFilterIntensity(...)` instead.
+The flat params constraint exists because the reactivity system uses a Proxy to watch for top-level mutations. Nested objects would require deep watching, which adds complexity and isn't needed for most use cases. If you need complex state, keep it outside `scene.params` and sync the flat values you need in your draw callback.
 
 ### Properties
 
 | Property     | Description                                                      |
 | ------------ | ---------------------------------------------------------------- |
-| `params`     | Reactive parameter object. Mutate properties to trigger redraws. Top-level reassignment is not supported. |
-| `geometry`   | The geometry layer. Call `.group()` to create groups.            |
-| `dimensions` | The dimensions layer. Call `.group()` to create groups.          |
+| `params`     | Reactive params. Mutate properties to trigger redraws. Top-level reassignment not supported. |
+| `geometry`   | Geometry layer. Call `.group()` to create groups. Groups persist across frames.            |
+| `dimensions` | Dimensions layer. Call `.group()` to create groups. Groups persist across frames.          |
+
+You'll typically create groups once at setup time, then request builders inside your draw callbacks. This pattern keeps the API clean and avoids recreating group elements every frame.
 
 ### Methods
 
 ```typescript
 const unsubscribe = scene.draw((params) => {
-  // build geometry and dimensions here
+  // build geometry and dimensions
 });
 
-// later, if needed:
-unsubscribe();
+unsubscribe(); // stop this callback
 
-// or tear down everything:
-scene.dispose();
+scene.dispose(); // tear down everything
 ```
 
 ```typescript
@@ -58,60 +53,54 @@ scene.params = { width: 200, height: 100 }; // throws
 
 | Method                          | Description                                                                                                                                  |
 | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enableFilter(bool)`            | Enable the pencil-like SVG filter. Default: `false`. Can be expensive on Safari during zoom.                                                 |
-| `setFilterIntensity(number)`    | Set pencil displacement intensity (default: `1.25`). Can be called inside or outside draw callbacks.                                         |
-| `enableGrid(bool)`              | Show/hide graph-paper background. Default: `true`.                                                                                           |
-| `enableAxes(bool)`              | Show/hide center axes. Default: `true`.                                                                                                      |
-| `enablePan(bool)`               | Enable pan (middle-mouse or shift+left-click). Default: `false`.                                                                             |
-| `enableZoom(bool)`              | Enable wheel zoom (1×-20× scale). Default: `false`.                                                                                          |
-| `enableFill(bool)`              | Toggle geometry fills. Enabled: per-path `fill` is used, otherwise built-in default hatch fallback. Disabled: all geometry fills are hidden. |
-| `resetCamera()`                 | Smoothly animate camera back to origin.                                                                                                      |
-| `addHatchFill(color, opacity?)` | Create a hatch-fill pattern and return `url(#id)` for `path({ fill })`.                                                                      |
-| `dispose()`                     | Clean up listeners and internal DOM/defs created by the scene.                                                                               |
+| `enableFilter(bool)`            | Enable pencil-like SVG filter for hand-drawn look. Default: `false`. Can be expensive on Safari during zoom with many paths.                                                 |
+| `setFilterIntensity(number)`    | Set pencil displacement intensity (default: `1.25`). Higher values create more pronounced wobble. Can be called inside or outside draw callbacks.                                         |
+| `enableGrid(bool)`              | Show or hide graph-paper background. Useful for toggling visual context. Default: `true`.                                                                                           |
+| `enableAxes(bool)`              | Show or hide center axes. Helps with orientation and alignment during development. Default: `true`.                                                                                                      |
+| `enablePan(bool)`               | Enable pan (middle-mouse or shift+left-click). Useful when users need to explore large scenes. Default: `false`.                                                                             |
+| `enableZoom(bool)`              | Enable wheel zoom (1× to 20× scale). Clamped at both ends to prevent excessive zoom. Default: `false`.                                                                                          |
+| `enableFill(bool)`              | Toggle geometry fills globally. When enabled, per-path `fill` is used (or default hatch if not set). When disabled, all fills hidden. Useful for toggling between sketch and filled modes. |
+| `resetCamera()`                 | Animate camera back to origin with exponential easing. Smoother than instant reset.                                                                                      |
+| `addHatchFill(color, opacity?)` | Create hatch pattern for technical drawing style fills. Returns `url(#id)` string for use with `path({ fill })`. Hatches are parallel lines at 45 degrees.                                                                      |
+| `dispose()`                     | Clean up listeners, internal DOM, and defs. Call this when removing the scene to avoid memory leaks.                                                               |
 
-If all draw callbacks are unsubscribed, render commits stop unless input/camera activity requests frames.
+If all draw callbacks unsubscribe, render commits stop unless input or camera activity requests frames. This keeps the engine idle when nothing is changing.
 
 ```typescript
-const tealFillId = scene.addHatchFill("#0f766e");
-geom.path({ fill: tealFillId }).moveToAbs(...).lineTo(...).close();
+const tealFill = scene.addHatchFill("#0f766e");
+geom.path({ fill: tealFill }).moveToAbs(...).lineTo(...).close();
 
-const filterIntensity = 0.9;
-scene.setFilterIntensity(filterIntensity);
-scene.draw(() => {
-  scene.setFilterIntensity(filterIntensity);
-});
+scene.setFilterIntensity(0.9);
 ```
-
----
 
 ## Geometry
 
 ### GeometryGroup
 
-Create a geometry group once, outside draw callbacks.
+Create geometry groups once, outside draw callbacks. Groups are persistent containers for paths. Inside your draw callback, request builders with `path()`. The engine recycles builders frame-to-frame, so you don't allocate new objects on every draw.
 
 | Method               | Description                                                                                                           |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `path(options?)`     | Request or reuse a `PathBuilder`. Call inside draw callbacks. Supports `className`, `fill`, `stroke`, and `fillRule`. |
-| `translate(x, y)`    | Offset the whole group. Direct DOM write; no redraw required.                                                         |
-| `scale(x, y)`        | Scale the whole group. Direct DOM write; no redraw required.                                                          |
-| `setDrawUsage(mode)` | `"static"`: commit once then stop. `"dynamic"` (default): commit every frame.                                         |
-| `clear()`            | Remove all paths and reset group state, including transform back to identity.                                         |
+| `path(options?)`     | Request or reuse a `PathBuilder`. Call inside draw callbacks. Supports `className`, `fill`, `stroke`, `fillRule`. Returns a builder you can chain commands on. |
+| `translate(x, y)`    | Offset the group in world space. Direct DOM write, no redraw triggered. Useful for positioning entire groups.                                                         |
+| `scale(x, y)`        | Scale the group. Direct DOM write, no redraw triggered. Useful for mirroring or scaling groups of geometry.                                                          |
+| `setDrawUsage(mode)` | Set to `"static"` to commit once, or `"dynamic"` (default) to commit every frame. Static groups skip DOM writes after first commit, improving performance for unchanging content.                                         |
+| `clear()`            | Remove all paths, reset state and transform. Useful when you need to rebuild geometry from scratch.                                         |
 
-In `"static"` mode, keep calling `path()` in your draw callback; only post-first commit DOM writes are skipped.
+In `"static"` mode, you still call `path()` in your draw callback. The engine tracks that the geometry hasn't changed and skips the DOM write after the first commit. This is faster than conditionally calling `path()` yourself.
 
 #### path(options) fields
 
 | Option      | Description                                                                                                                                          |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `className` | CSS class applied to the `<path>`.                                                                                                                   |
-| `fill`      | CSS fill value (typically from `scene.addHatchFill(...)`, returns `url(#id)`). If omitted and fills are enabled, the built-in default hatch is used. |
-| `stroke`    | CSS stroke value.                                                                                                                                    |
-| `fillRule`  | `"evenodd"` (default) or `"nonzero"` for complex paths/cutouts.                                                                                      |
+| `className` | CSS class for the `<path>`. Useful for targeting specific paths with custom styles.                                                                                                                   |
+| `fill`      | CSS fill value (typically from `scene.addHatchFill(...)`, returns `url(#id)`). If omitted and fills enabled, built-in hatch used. Set to `"none"` for stroke-only paths. |
+| `stroke`    | CSS stroke value. Overrides default stroke color.                                                                                                                                    |
+| `fillRule`  | `"evenodd"` (default) or `"nonzero"`. Use `"evenodd"` for complex paths with cutouts, `"nonzero"` for simple filled shapes.                                                                                      |
 
 ### PathBuilder
 
-> **Chaining:** All methods return `this`.
+All methods return `this` for chaining. Relative commands move from the current position, absolute commands move to world coordinates.
 
 ```typescript
 const path = geom.path({ className: "optional-class" });
@@ -131,39 +120,35 @@ path.smoothQuadToAbs(x, y)                           // absolute smooth quadrati
 path.arcTo(dx, dy, r, clockwise?, largeArc?)    // relative arc
 path.arcToAbs(x, y, r, clockwise?, largeArc?)   // absolute arc
 path.close()                 // close path
-path.reset()                 // clear all commands
+path.reset()                 // clear commands
 ```
 
-#### Curve Types - Why and How
+#### Curve types
 
 | Command family                               | When to use                                                                                    |
 | -------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `cubicTo` / `cubicToAbs` (`C/c`)             | Most control for organic shapes. Use when you need independent entry and exit handles.         |
-| `smoothCubicTo` / `smoothCubicToAbs` (`S/s`) | Continue a cubic curve smoothly. The first handle is inferred from the previous cubic segment. |
-| `quadTo` / `quadToAbs` (`Q/q`)               | Simpler curves with one control point. Good for lightweight rounded forms.                     |
-| `smoothQuadTo` / `smoothQuadToAbs` (`T/t`)   | Continue a quadratic curve smoothly with inferred control point.                               |
+| `cubicTo` / `cubicToAbs` (`C/c`)             | Most control for organic shapes. You get two control points (entry and exit handles), which gives you full control over the curve shape.         |
+| `smoothCubicTo` / `smoothCubicToAbs` (`S/s`) | Continue a cubic curve smoothly. The first handle is inferred by mirroring the previous segment's exit handle. Useful for connected S-curves. |
+| `quadTo` / `quadToAbs` (`Q/q`)               | Simpler curves with one control point. Lighter weight than cubic, good for rounded corners and simple arcs.                     |
+| `smoothQuadTo` / `smoothQuadToAbs` (`T/t`)   | Continue a quadratic curve smoothly with inferred control point. Useful for smooth wave-like forms.                               |
 
-> Smooth commands (`S/s`, `T/t`) depend on the previous curve segment. If no compatible previous segment exists, SVG treats the inferred control point as the current point.
+Smooth commands (`S/s`, `T/t`) depend on the previous curve segment. If no compatible segment exists (like after a line or move), SVG treats the inferred control point as the current point, which produces a sharp corner.
 
 | Param       | Description                                                               |
 | ----------- | ------------------------------------------------------------------------- |
-| `clockwise` | Arc sweep direction. Default: `false`. Visually correct after the Y-flip. |
-| `largeArc`  | Whether the arc spans >180°. Default: `false`.                            |
-| `r ≤ 0`     | Falls back to a straight line (sharp corner).                             |
-
----
+| `clockwise` | Arc sweep direction in visual space (after Y-flip). Default: `false`. Pass `true` to sweep clockwise on screen. |
+| `largeArc`  | Whether the arc spans more than 180 degrees. Default: `false`. Use `true` for major arcs.                            |
+| `r ≤ 0`     | Falls back to straight line, creating a sharp corner instead of an arc.                             |
 
 ## Dimensions
 
 ### DimensionsGroup
 
-Create a dimensions group. Call once, outside draw callbacks.
+Create dimensions groups once, outside draw callbacks. Same pattern as geometry groups: create the group at setup time, then request builders inside your draw function.
 
-Same base controls as `GeometryGroup`: `translate(x, y)`, `setDrawUsage(mode)`, `clear()`.
-`clear()` resets translation back to origin for dimensions groups.
-Use `dimension(options?)` to request builders.
+Same base controls as `GeometryGroup`: `translate(x, y)`, `setDrawUsage(mode)`, `clear()`. When you call `clear()`, it resets translation to origin. Use `dimension(options?)` to request builders for creating dimension lines, arrows, and text.
 
-### DimensionsBuilder - Positioning
+### DimensionsBuilder — Positioning
 
 ```typescript
 const dim = dims.dimension({ className: "optional-class" });
@@ -174,9 +159,11 @@ dim.lineTo(dx, dy); // relative line
 dim.lineToAbs(x, y); // absolute line
 ```
 
-### DimensionsBuilder - Primitives
+These work the same as path commands: relative moves from current position, absolute moves to world coordinates. Use them to position dimension lines and create leaders.
 
-> **Angles are in radians.** `0` = right, `π/2` = up.
+### DimensionsBuilder — Primitives
+
+Angles in radians. `0` points right, `π/2` points up.
 
 ```typescript
 dim.arc(r, startAngle, endAngle)     // arc centered at current position
@@ -189,18 +176,20 @@ dim.close()                          // close path
 
 | Primitive     | Notes                                                                                                  |
 | ------------- | ------------------------------------------------------------------------------------------------------ |
-| `arc`         | Draws from `startAngle` to `endAngle` around current position. Direction is inferred from angle order. |
-| `arrow`       | Open V-arrow. Tip is at current position; wings extend behind.                                         |
-| `arrowFilled` | Filled triangle arrow. Rendered on a separate path layer.                                              |
-| `tick`        | Architectural tick: two crossed lines rotated by `angleRad`.                                           |
-| `centerMark`  | Crosshair plus filled center dot. Useful for center-point callouts.                                    |
+| `arc`         | Draws from `startAngle` to `endAngle` around current position. Direction (clockwise or counter-clockwise) is inferred from the angle order. Use for angular dimensions. |
+| `arrow`       | Open V-shaped arrow. Tip sits at current position, wings extend behind. Classic technical drawing style. |
+| `arrowFilled` | Filled triangle arrow. Rendered on a separate path layer so it appears solid. More modern look than open arrows. |
+| `tick`        | Architectural tick mark: two short crossed lines rotated by `angleRad`. Common in architectural drawings.                                           |
+| `centerMark`  | Crosshair with a filled center dot. Used for marking center points in technical drawings.                                    |
 
-### DimensionsBuilder - Text
+### DimensionsBuilder — Text
 
 ```typescript
 dim.textAt(dx, dy, text, align?, className?)
 dim.textAtAbs(x, y, text, align?, className?)
 ```
 
-> **align:** `"start"` | `"middle"` | `"end"` - defaults to `"middle"`.
-> **className:** optional CSS class applied to the `<text>` element.
+**align:** `"start"` | `"middle"` | `"end"` — defaults to `"middle"`. Controls text anchor point.
+**className:** optional CSS class for the `<text>` element. Useful for custom text styling.
+
+Text is rendered in world space, so it follows the same Y-up coordinate system as geometry. The engine applies the correct transform so text appears upright on screen.
