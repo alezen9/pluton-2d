@@ -6,18 +6,22 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const links = [
   { path: "/guide", label: "Guide" },
   { path: "/api", label: "API" },
-  { path: "/examples", label: "Examples" },
+  {
+    path: "/examples/getting-started/basic-shapes",
+    label: "Examples",
+    activePrefix: "/examples",
+  },
 ];
 ---
 
 <nav>
   <a href={`${base}/`} class="nav-brand">Pluton 2D</a>
   <ul class="nav-links">
-    {links.map(({ path, label }) => (
+    {links.map(({ path, label, activePrefix }) => (
       <li>
         <a
           href={`${base}${path}`}
-          class={currentPage === path || (path === "/examples" && currentPage.startsWith("/examples")) ? "active" : ""}
+          class={currentPage === path || (activePrefix && currentPage.startsWith(activePrefix)) ? "active" : ""}
         >
           {label}
         </a>

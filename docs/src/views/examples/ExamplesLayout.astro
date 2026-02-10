@@ -16,18 +16,6 @@ const isActiveExampleLink = (href: string) =>
 <BaseLayout {title} currentPage="/examples">
   <div class="examples-layout">
     <aside class="examples-sidebar">
-      <div class="sidebar-category">
-        <ul class="sidebar-links">
-          <li>
-            <a
-              href={`${baseUrl}/examples`}
-              class:list={{
-                active: isActiveExampleLink(`${baseUrl}/examples`),
-              }}>All Examples</a
-            >
-          </li>
-        </ul>
-      </div>
       {
         categorizedExampleNavigation.map((categoryGroup) => (
           <div class="sidebar-category">
