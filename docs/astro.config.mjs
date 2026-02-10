@@ -25,8 +25,6 @@ export default defineConfig({
         "pluton-2d/style.css": path.resolve(__dirname, "../src/style.css"),
         "pluton-2d": path.resolve(__dirname, "../src/index.ts"),
         "@components": path.resolve(__dirname, "src/components"),
-        "@examples": path.resolve(__dirname, "src/views/examples"),
-        "@home": path.resolve(__dirname, "src/views/home"),
         "@views": path.resolve(__dirname, "src/views"),
       },
     },

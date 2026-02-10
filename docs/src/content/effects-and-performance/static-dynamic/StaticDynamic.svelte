@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Pluton2D } from "pluton-2d";
-  import ExampleLayout from "@examples/components/ExampleLayout.svelte";
+  import ExampleLayout from "@views/examples/components/ExampleLayout.svelte";
+  import Legend from "@views/examples/components/Legend.svelte";
 
   type Params = { size: number };
   const SHAPE_HORIZONTAL_OFFSET = 100;
@@ -59,15 +60,11 @@
       </label>
       <span class="value">{size}</span>
     </div>
-    <div class="legend">
-      <span class="legend-item">
-        <span class="legend-swatch static"></span>
-        <span class="legend-label static">Static</span>
-      </span>
-      <span class="legend-item">
-        <span class="legend-swatch dynamic"></span>
-        <span class="legend-label dynamic">Dynamic</span>
-      </span>
-    </div>
+    <Legend
+      items={[
+        { label: "Static", color: "#f97316" },
+        { label: "Dynamic", color: "#0f766e" },
+      ]}
+    />
   {/snippet}
 </ExampleLayout>

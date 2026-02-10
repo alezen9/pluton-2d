@@ -2,7 +2,7 @@
 import BaseLayout from "../../layouts/Layout.astro";
 import { getExampleNavigation } from "./navigation";
 
-const { title = "Examples" } = Astro.props;
+const { title = "Examples", description } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
 const normalizeUrlPath = (urlPath: string) =>
   urlPath.length > 1 ? urlPath.replace(/\/+$/, "") : urlPath;
@@ -40,6 +40,8 @@ const isActiveExampleLink = (href: string) =>
         }
       </aside>
       <div class="examples-main">
+        <h1>{title}</h1>
+        {description && <p class="example-desc">{description}</p>}
         <slot />
       </div>
     </div>
@@ -48,6 +50,7 @@ const isActiveExampleLink = (href: string) =>
 
 <style>
   .examples-container {
+    --sidebar-width: 300px;
     max-width: 1680px;
     margin: 0 auto;
     height: calc(100svh - 64px);
@@ -62,14 +65,14 @@ const isActiveExampleLink = (href: string) =>
   }
 
   .examples-sidebar {
-    width: 300px;
+    width: var(--sidebar-width);
     flex-shrink: 0;
-    padding: 3rem 1rem;
+    padding: var(--space-12) var(--space-4);
     overflow-y: auto;
   }
 
   .examples-sidebar .sidebar-category {
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
   }
 
   .examples-sidebar .sidebar-category-label {
@@ -78,8 +81,8 @@ const isActiveExampleLink = (href: string) =>
     letter-spacing: 0.1em;
     font-weight: 600;
     color: var(--text-muted);
-    padding: 0 0.5rem;
-    margin-bottom: 0.3rem;
+    padding: 0 var(--space-2);
+    margin-bottom: var(--space-2);
   }
 
   .examples-sidebar .sidebar-links {
@@ -93,7 +96,7 @@ const isActiveExampleLink = (href: string) =>
 
   .examples-sidebar .sidebar-links a {
     display: block;
-    padding: 0.3rem 0.54rem;
+    padding: var(--space-2);
     border-radius: 4px;
     color: var(--text-muted);
     opacity: 0.75;
@@ -106,7 +109,7 @@ const isActiveExampleLink = (href: string) =>
   }
 
   .examples-sidebar .sidebar-category + .sidebar-category .sidebar-links {
-    padding-left: 1.25rem;
+    padding-left: var(--space-5);
   }
 
   .examples-sidebar .sidebar-links a:hover {
@@ -122,11 +125,18 @@ const isActiveExampleLink = (href: string) =>
 
   .examples-main {
     flex: 1;
-    padding: 2rem;
+    padding: var(--space-8);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     min-width: 0;
+  }
+
+  .example-desc {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin-bottom: var(--space-4);
+    flex-shrink: 0;
   }
 
   @media (max-width: 768px) {
@@ -142,9 +152,9 @@ const isActiveExampleLink = (href: string) =>
       height: auto;
       border-right: none;
       border-bottom: 1px solid var(--panel-border);
-      padding: 0.75rem 1rem;
+      padding: var(--space-3) var(--space-4);
       display: flex;
-      gap: 0.75rem;
+      gap: var(--space-3);
       overflow-x: auto;
       overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
@@ -166,13 +176,13 @@ const isActiveExampleLink = (href: string) =>
 
     .examples-sidebar .sidebar-links {
       flex-direction: row;
-      gap: 0.4rem;
+      gap: var(--space-2);
       padding-left: 0;
     }
 
     .examples-sidebar .sidebar-links a {
       white-space: nowrap;
-      padding: 0.3rem 0.66rem;
+      padding: var(--space-2);
       border: 1px solid var(--panel-border);
       font-size: 0.82rem;
     }
@@ -182,7 +192,7 @@ const isActiveExampleLink = (href: string) =>
     }
 
     .examples-main {
-      padding: 1rem;
+      padding: var(--space-4);
       overflow: visible;
     }
   }

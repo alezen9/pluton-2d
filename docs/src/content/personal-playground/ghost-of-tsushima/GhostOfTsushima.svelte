@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Pluton2D } from "pluton-2d";
-  import ExampleLayout from "@examples/components/ExampleLayout.svelte";
+  import ExampleLayout from "@views/examples/components/ExampleLayout.svelte";
 
   type Params = { radius: number };
 

@@ -7,8 +7,6 @@
       "pluton-2d": ["../src/index.ts"],
       "pluton-2d/*": ["../src/*"],
       "@components/*": ["src/components/*"],
-      "@examples/*": ["src/views/examples/*"],
-      "@home/*": ["src/views/home/*"],
       "@views/*": ["src/views/*"]
     }
   }
