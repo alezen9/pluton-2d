@@ -7,7 +7,9 @@ description: Get started with Pluton 2D, setup, coordinate system, geometry prim
 
 # Guide
 
-Pluton 2D is a library for technical drawing in SVG. It gives you clean geometry, dimensions, and stable rendering without fighting the DOM.
+Pluton 2D is a small library I built for technical drawing in SVG. It handles coordinate transforms, geometry builders, hatching, dimensions, and a render loop that only writes to the DOM when something changed. I'm sharing it in case you need something similar.
+
+This guide walks through concepts, patterns, and the reasoning behind them. If you're looking for method signatures and parameter tables, check the [API reference](/api).
 
 ## Install and setup
 
@@ -15,7 +17,7 @@ Pluton 2D is a library for technical drawing in SVG. It gives you clean geometry
 npm install pluton-2d
 ```
 
-Import the stylesheet first. It provides default styling for the grid, axes, and dimensions. Then create a scene by passing an SVG element and your parameters. The SVG needs either CSS width/height or a viewBox attribute so Pluton knows the canvas size:
+Import the stylesheet first. It provides defaults for the grid, axes, and dimensions. Then create a scene by passing an SVG element and your parameters. The SVG needs CSS width/height or a `viewBox` so Pluton knows the canvas size:
 
 ```typescript
 import "pluton-2d/style.css";
@@ -42,11 +44,13 @@ scene.draw((p) => {
 });
 ```
 
-You'll want to create groups once, outside your draw callback. The reason is simple: groups persist across frames, while builders get recycled. Create the group early, then request builders inside your draw function each time it runs. The engine only writes changed attributes to the DOM, so you don't pay for work that didn't happen.
+Notice that `geom` is created _outside_ the draw callback. This matters. Groups persist across frames and own the actual SVG elements. Builders (what you get from `geom.path()`) are temporary handles you grab each frame to describe what to draw. If you created the group inside `draw`, you'd get a new SVG group every frame and leak DOM nodes.
+
+The engine diffs attributes. If your draw callback produces the same output as last frame, nothing gets written to the DOM.
 
 ### Reactive params
 
-The `params` object becomes reactive through a Proxy. When you mutate properties, the scene redraws automatically. Redraws are throttled at 60 FPS, so you can update parameters as often as you like without worrying about performance:
+The `params` object is wrapped in a Proxy. Mutate a property, the scene redraws. Redraws are capped at 60 FPS:
 
 ```typescript
 scene.params.width = 300; // triggers redraw
@@ -57,24 +61,24 @@ Object.assign(scene.params, { width: 250, height: 150 }); // also works
 // scene.params = { ... };  ← won't trigger redraws
 ```
 
-Parameters need to be a flat object. Nested objects will throw an error at construction time. The reason is simple: the reactivity system only tracks mutations at the top level. If you need to organize complex state, keep it outside `scene.params` and sync the flat values inside your draw callback.
+Parameters must be a flat object. Nested objects throw at construction time. I went with a flat Proxy because deep reactivity adds complexity for little gain here. You're feeding numbers into a draw loop, not managing app state. If you need complex state, keep it outside `scene.params` and sync the flat values in your draw callback.
 
 When you're done, call `scene.dispose()` to clean up listeners and DOM.
 
 ## Coordinate system
 
-Pluton uses a center-origin, Y-up coordinate system. This is the same convention you'd use in mathematics or engineering drawings, not typical screen coordinates where Y goes down. Here's what that looks like:
+Pluton uses a center-origin, Y-up coordinate system. Same convention as math or engineering drawings, not screen coordinates where Y goes down.
 
 - Origin: center of viewport
 - Positive X → right
 - Positive Y → **up**
 - `lineTo(10, 20)` moves right 10, up 20
 
-Under the hood, the rendering layer flips Y-coordinates so your math-style coordinates map correctly to SVG. Arc directions are adjusted automatically. When you specify `clockwise = true`, it actually renders clockwise on screen.
+Why Y-up? I kept getting signs wrong with Y-down, arcs curving the wrong way, dimension text upside down. The rendering layer flips Y-coordinates so your math maps correctly to SVG. Arc directions are adjusted too, so `clockwise = true` actually looks clockwise on screen.
 
 ## Static vs dynamic
 
-When you have geometry that doesn't change frame-to-frame (background grids, reference shapes, fixed annotations), mark the group as static. After the first commit, the engine skips all DOM writes for that group. This improves performance when you mix static and dynamic content, since the engine only updates what actually changed:
+If you have geometry that doesn't change (background grids, reference shapes, fixed annotations), you can mark the group as static:
 
 ```typescript
 const bg = scene.geometry.group();
@@ -93,13 +97,13 @@ scene.draw((p) => {
 });
 ```
 
-After the first commit, static groups skip DOM writes. Calling `clear()` or `setDrawUsage("dynamic")` resets the flag if you need to change the geometry later.
+After the first render, the engine skips all DOM writes for static groups. You still call `path()` each frame (the engine expects the same structure), but it short-circuits before touching the DOM. Helps when you have a complex background behind a few moving parts.
 
-Use static for background grids, fixed annotations, or reference shapes. Use dynamic for anything that responds to params or user input.
+Call `clear()` or `setDrawUsage("dynamic")` to reset the flag if you need to update static geometry later.
 
 ## Styling
 
-All styling uses CSS custom properties on `.pluton-root`. This means you can override the defaults per-instance without touching JavaScript. Here are the available variables and their defaults:
+All styling uses CSS custom properties on `.pluton-root`. You can override defaults per-instance without touching JavaScript:
 
 ```css
 .pluton-root {
@@ -126,7 +130,7 @@ All styling uses CSS custom properties on `.pluton-root`. This means you can ove
 
 ### Custom classes
 
-When you need more specific control than the CSS variables provide, you can pass `className` to `path()` or `dimension()`:
+When CSS variables aren't enough, pass `className` to `path()` or `dimension()`:
 
 ```typescript
 const path = geom.path({ className: "my-path" });
@@ -135,11 +139,11 @@ const path = geom.path({ className: "my-path" });
 // .pluton-root .pluton-geometry path.my-path { stroke: #e11d48; }
 ```
 
-`path()` also accepts `fill`, `stroke`, and `fillRule` when you need hatch fills, custom colors, or cutouts. Geometry groups support `scale(x, y)` and `translate(x, y)` for positioning.
+`path()` also accepts `fill`, `stroke`, and `fillRule` for hatch fills, custom colors, or cutouts. Geometry groups support `scale(x, y)` and `translate(x, y)` for positioning.
 
 ### Hatch fill
 
-Hatching is a traditional drafting technique where parallel lines indicate filled areas. It's been used in technical drawings for decades to show different materials or filled regions. You can create hatch patterns with `addHatchFill(color, opacity?)`, which returns a fill ID. Pass that ID to `path({ fill })` to apply the pattern:
+`addHatchFill(color, opacity?)` returns a fill ID you pass to `path({ fill })`:
 
 ```typescript
 const blueFill = scene.addHatchFill("#2563eb");
@@ -149,11 +153,11 @@ geom.path({ fill: blueFill }).moveToAbs(...).lineTo(...).close();
 geom.path({ fill: orangeFill, fillRule: "evenodd" }).moveToAbs(...).close();
 ```
 
-With fills enabled (default), each path uses whatever you specify in `path({ fill })`, or falls back to the built-in default hatch. You can toggle all fills with `scene.enableFill(false)` to hide them, or `scene.enableFill(true)` to show them. For stroke-only geometry, set `fill: "none"` on the path or in CSS.
+Each path uses whatever fill you specify, or falls back to the built-in default hatch. Toggle all fills with `scene.enableFill(false)` to hide them, `scene.enableFill(true)` to show them. For stroke-only geometry, set `fill: "none"` on the path or in CSS.
 
 ### Pencil filter
 
-The pencil filter gives geometry a hand-drawn look. Useful for sketches or informal diagrams. You can adjust the intensity at runtime. The filter can be expensive on Safari during zoom, especially with many paths:
+Gives geometry a hand-drawn look. You can adjust intensity at runtime:
 
 ```typescript
 scene.enableFilter(true);
@@ -165,9 +169,11 @@ scene.draw(() => {
 });
 ```
 
+Heads up: Safari has trouble with this filter during zoom, especially with many paths. If you see weird artifacts on WebKit, try lowering the intensity or disabling the filter while zooming.
+
 ## Camera controls
 
-Pan and zoom are opt-in. Enable them when you need interactive navigation:
+Pan and zoom are opt-in:
 
 ```typescript
 scene.enablePan(true); // middle-mouse drag, or shift + left-click
@@ -176,11 +182,11 @@ scene.enableZoom(true); // mouse wheel, 1×-20× range
 scene.resetCamera(); // smooth animation back to origin
 ```
 
-Camera movement is smoothed with exponential easing, which makes navigation feel natural and responsive. `resetCamera()` animates instead of jumping, so the transition feels smooth.
+Camera movement uses exponential easing so it doesn't overshoot. `resetCamera()` animates back to origin instead of jumping.
 
 ### Responsive scaling
 
-For mobile and tablet devices, you can scale the entire view down to give geometry more breathing room. This is different from camera zoom. It scales the output without changing your coordinate system or affecting pan/zoom behavior:
+On mobile and tablet, you can scale the entire view down to give geometry more room. This is different from camera zoom. It scales the output without changing your coordinate system or pan/zoom behavior:
 
 ```typescript
 // Using matchMedia for clean breakpoint handling
@@ -204,11 +210,11 @@ mobileQuery.addEventListener("change", updateScale);
 tabletQuery.addEventListener("change", updateScale);
 ```
 
-The scale interpolates smoothly like pan and zoom. Camera state is preserved. If the user zoomed in 3×, they'll still be at 3× zoom after the view scale changes. The coordinate system stays the same, so `moveTo(100, 100)` still means the same world position regardless of view scale.
+The scale interpolates smoothly like pan and zoom. Camera state is preserved. If the user zoomed in 3×, they stay at 3× after the view scale changes. `moveTo(100, 100)` still means the same world position no matter what scale you set.
 
 ## When to use Pluton 2D
 
-Pluton was built for technical drawing: crisp SVG, hatching, dimensions, and low DOM churn. You can use it for other SVG work, but it's not trying to replace everything. Here's how to think about when it's a good fit.
+I built Pluton for technical drawing. It does SVG, hatching, dimensions, and tries to keep DOM churn low. It's not trying to replace everything. Here's roughly where it fits.
 
 ### Good fit
 
@@ -220,14 +226,14 @@ Pluton was built for technical drawing: crisp SVG, hatching, dimensions, and low
 ### Charting libraries might be a better fit when
 
 - Your goal is data visualization with standard chart types
-- You need chart primitives and conventions out of the box (scales, legends, tooltips)
+- You need chart primitives out of the box (scales, legends, tooltips)
 - You're working with time-series data, bar charts, or scatter plots
 
 ### Canvas might be a better fit when
 
-- You're working with high-frequency animation (think 60+ shapes moving per frame)
-- You have large numbers of moving primitives and hit SVG/DOM performance limits
-- You don't need inspectable, exportable SVG output
+- You're doing high-frequency animation (60+ shapes moving per frame)
+- You have lots of moving primitives and hit SVG/DOM limits
+- You don't need inspectable, exportable SVG
 
 ### WebGL/WebGPU might be a better fit when
 

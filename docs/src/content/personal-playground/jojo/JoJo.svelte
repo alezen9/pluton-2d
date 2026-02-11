@@ -87,7 +87,7 @@
         .textAtAbs(
           0,
           200,
-          `"私の名は吉良吉影、年齢33歳" — Yoshikage Kira`,
+          `"私の名は吉良吉影、年齢33歳" - Yoshikage Kira`,
           "middle",
           "title",
         );

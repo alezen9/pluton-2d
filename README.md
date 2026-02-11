@@ -1,8 +1,22 @@
 # pluton-2d
 
-![suuuuuprrrrr](https://img.shields.io/badge/suuuuuprrrrr-ff3366?style=flat)
+<br />
 
-I built this for a specific need in another project-crisp vector output for technical drawings with minimal DOM churn. It's SVG-based, so lines stay sharp at any zoom, and it includes built-in helpers for grids, dimensions, and drafting annotations. Named after Pluton, the battleship from One Piece (blueprints worth keeping). I'm sharing it in case you have a similar need.
+<figure style="width: 75%; margin: auto;">
+  <img
+    src="https://pluton-2d.aleksandargjoreski.dev/franky-pluton.webp"
+    alt="Franky Pluton blueprints - Enies Lobby"
+  />
+</figure>
+
+<br />
+<br />
+<br />
+
+I started working on this library for my own workflow, I needed a simple technical drawing tool based on SVG for crisp output and low DOM churn. The result provides built-in helpers for grids, dimensions, hatching, and camera controls without hiding
+the SVG/DOM model. It fits my need pretty well for now, sharing it in case someone else needs the same kind of tooling :)
+
+<br />
 
 - [What you get](#what-you-get)
 - [Getting started](#getting-started)
@@ -16,14 +30,22 @@ I built this for a specific need in another project-crisp vector output for tech
 - [Troubleshooting](#troubleshooting)
 - [SSR](#ssr)
 
+<br />
+<br />
+<br />
+
 ## What you get
 
-- **SVG-first rendering:** crisp lines at any zoom level, easy DOM inspection, and straightforward SVG export.
-- **Drafting helpers included:** grid, axes, hatch fill, and dimensions are built in, so you can focus on geometry.
-- **Low-churn rendering:** builders are reused and only changed attributes are written to the DOM.
-- **Reactive params:** mutate params directly and redraws are scheduled automatically.
-- **Simple camera controls:** pan/zoom are opt-in and can be reset any time.
-- **CSS theming:** visuals are driven by CSS variables on the SVG root.
+- **SVG-first rendering** &rarr; inspectable DOM and sharp output at any zoom
+- **Drafting helpers** &rarr; built-in grid, axes, dimensions, and hatch fill
+- **Low DOM churn** &rarr; reused builders with change-only attribute writes
+- **Reactive params** &rarr; mutate params and redraws are scheduled automatically
+- **Opt-in camera** &rarr; pan/zoom only when enabled, reset anytime
+- **CSS-driven styling** &rarr; control visuals through CSS variables on the root SVG
+
+<br />
+<br />
+<br />
 
 ## Getting started
 
@@ -39,7 +61,7 @@ import { Pluton2D } from "pluton-2d";
 
 const svg = document.querySelector("svg")!;
 const scene = new Pluton2D(svg, {
-  params: { width: 240, height: 120 }
+  params: { width: 240, height: 120 },
 });
 
 scene.enablePan(true);
@@ -47,6 +69,7 @@ scene.enableZoom(true);
 
 const geom = scene.geometry.group();
 
+// drawing a rectangle
 scene.draw((p) => {
   const path = geom.path();
   path
@@ -58,291 +81,241 @@ scene.draw((p) => {
 });
 ```
 
+<br />
+
 Mutating params triggers redraws automatically:
 
 ```ts
-// Single property
 scene.params.width = 150;
-
-// Multiple properties
+// or
 Object.assign(scene.params, { width: 200, height: 100 });
 ```
 
-Top-level params reassignment is intentionally not supported:
+<br />
+
+🚨 **Constraints: params must be flat, and top-level reassignment is not supported.**
 
 ```ts
 scene.params = { width: 200, height: 100 }; // throws
 ```
 
-Draw callbacks run every frame when params change. The engine handles scheduling at 60 FPS.
+<br />
+<br />
+<br />
 
 ## How rendering works
 
-Understanding the render cycle helps when scenes get more complex:
+1. **Reactive params** &rarr; Param mutation calls `scheduleRender()`
+2. **Frame-capped loop (60 FPS)** &rarr; `beginRecord()` resets active indexes, draw callbacks run, then `commit()` applies changes
+3. **Group reuse** &rarr; Create groups once, request builders every frame
 
-1. **Reactive params**
-   Any mutation triggers `scheduleRender()`, which queues a frame-limited update.
-
-2. **Render cycle (capped at 60 FPS)**
-   `beginRecord()` resets active indexes, draw callbacks run, then `commit()` applies changes.
-
-3. **Group reuse**
-   Create groups once outside draw callbacks, then request builders inside draw callbacks:
+<br />
 
 ```ts
-const g = scene.geometry.group();  // create once
+const g = scene.geometry.group();
 
 scene.draw(() => {
-  const path = g.path();  // request builder every frame
+  const path = g.path();
   path.moveToAbs(0, 0).lineTo(10, 10);
 });
 ```
 
-Builders are reused internally through active-index tracking. Elements are only created when needed, and attributes update only when values change.
+<br />
+
+Builders are pooled internally. Elements are created only when needed, and attributes are written only when changed.
+
+<br />
+<br />
+<br />
 
 ## Coordinate system
 
-Pluton uses a **center origin with Y-axis pointing up** (math convention, not screen coordinates).
+Pluton uses a **center origin with Y-up coordinates**.
 
-- Origin is at the center of the viewport
+- Origin is the center of the viewport
 - Positive X is right, positive Y is **up**
-- Example: `lineTo(10, 20)` moves right 10 units, up 20 units
+- `lineTo(10, 20)` moves right 10 units and up 20 units
 
-The viewport layer applies `scale(1, -1)` to flip the Y-axis for SVG rendering. This matters when placing dimensions and text-use the dimension helpers to ensure correct orientation.
+The viewport layer applies `scale(1, -1)` for SVG rendering. Use dimension helpers when placing text/annotations so orientation stays correct.
+
+<br />
+<br />
+<br />
 
 ## API
 
-### Construction
+This section is the practical surface for day-to-day usage. For exhaustive method-by-method docs, see [API Reference](https://pluton-2d.aleksandargjoreski.dev/api/).
 
-Create an instance with an SVG element and initial params:
+<br />
+
+### Construction
 
 ```ts
 const scene = new Pluton2D(svg, {
-  params: { width: 240, height: 120 }
+  params: { width: 240, height: 120 },
 });
 ```
 
-Params can be any **flat** shape. Type inferred automatically from params object.
-Nested objects not supported.
+`params` can be any flat shape (type inferred from the object). Nested objects are not supported.
+
+<br />
 
 #### ViewBox (coordinate space)
 
-By default, viewport uses SVG's pixel dimensions. Set explicit coordinate space:
+Set an explicit drawing coordinate system:
 
 ```ts
-// With viewBox and params
 const scene = new Pluton2D(svg, {
   params: { width: 240, height: 120 },
-  viewBox: { width: 200, height: 300 }
+  viewBox: { width: 200, height: 300 },
 });
-
-// Priority order:
-// 1. Constructor viewBox parameter (shown above)
-// 2. SVG viewBox attribute (if set on <svg>)
-// 3. SVG pixel dimensions (getBoundingClientRect)
 ```
 
-The viewBox defines the **drawing coordinate system**, not pixel dimensions. A larger viewBox gives you more room for geometry without affecting visual scale.
+Viewport priority order:
 
-Set pencil filter intensity with a method, anytime:
-
-```ts
-scene.setFilterIntensity(1.5);
-```
+1. Constructor `viewBox`
+2. SVG `viewBox` attribute
+3. SVG pixel size (`getBoundingClientRect`)
 
 Migration note:
 
-- Old constructor options like `new Pluton2D(svg, params, { filterIntensity })` were removed.
-- Use `scene.setFilterIntensity(...)` instead.
+- `new Pluton2D(svg, params, { filterIntensity })` was removed
+- Use `scene.setFilterIntensity(...)`
+
+<br />
 
 ### Draw loop
 
-Register a callback that runs on each render:
-
 ```ts
 const unsubscribe = scene.draw((params) => {
-  // build paths here
+  // build geometry and dimensions
 });
 
-// later, if needed
-unsubscribe();
+unsubscribe(); // optional
+scene.dispose(); // required when tearing down the scene
 ```
 
-Unsubscribing is optional. When you're done with a scene, call `dispose()` to clean up event listeners and stop rendering.
-If all draw callbacks are removed, pending renders stop unless another camera/input tick requests frames.
+If all draw callbacks are removed, pending renders stop unless camera/input requests frames.
 
-```ts
-scene.dispose();
-```
+<br />
 
 ### Controls
 
-Controls are explicit and opt-in:
-
 ```ts
-scene.enableFilter(true);     // pencil-like filter (default: false)
-scene.setFilterIntensity(1.5); // set pencil displacement intensity (default: 1.25)
-scene.enableFill(true);       // show/hide geometry fills (default: visible)
-scene.enableGrid(true);       // background grid (default: true)
-scene.enableAxes(true);       // center axes (default: true)
+scene.enableFilter(true); // default: false
+scene.setFilterIntensity(1.5); // default: 1.25
+scene.enableFill(true); // default: true
+scene.enableGrid(true); // default: true
+scene.enableAxes(true); // default: true
 ```
 
-Filters can be expensive on Safari during zoom-disable them if you see lag.
+Safari caveat: SVG filters can be expensive during zoom.
 
-You can set filter intensity both outside and inside draw callbacks:
-
-```ts
-const filterIntensity = 0.9;
-scene.setFilterIntensity(filterIntensity);
-
-scene.draw(() => {
-  scene.setFilterIntensity(filterIntensity);
-});
-```
+<br />
 
 ### Geometry
 
-Geometry groups manage SVG paths and handle reuse. Create groups outside draw callbacks, request builders inside.
+Create groups outside draw callbacks, request builders inside draw callbacks:
 
 ```ts
 const g = scene.geometry.group();
 
 scene.draw((p) => {
-  const path = g.path({ className: "my-shape" });
-  path.moveToAbs(0, 0).lineTo(40, 0).lineTo(0, 40).close();
+  g.path({ className: "my-shape" })
+    .moveToAbs(0, 0)
+    .lineTo(p.width, 0)
+    .lineTo(0, p.height)
+    .close();
 });
 ```
 
-#### Geometry group methods
+Most-used group methods:
 
 ```ts
-group.translate(x, y)           // offset entire group
-group.scale(x, y)               // scale entire group
-group.setDrawUsage(mode)        // "static" or "dynamic" (default: "dynamic")
-group.clear()                   // remove all paths and reset transform to identity
+group.translate(x, y)
+group.scale(x, y)
+group.setDrawUsage("static" | "dynamic") // default: "dynamic"
+group.clear()
 ```
 
-#### Path options
+Most-used path methods:
 
 ```ts
-g.path({
-  className: "my-shape",
-  fill: "url(#pattern-id)",
-  stroke: "#0f766e",
-  fillRule: "evenodd",
-});
+path.moveToAbs(x, y)
+path.lineTo(dx, dy)
+path.lineToAbs(x, y)
+path.arcTo(dx, dy, r, clockwise?, largeArc?)
+path.cubicTo(c1dx, c1dy, c2dx, c2dy, dx, dy)
+path.close()
 ```
 
-#### PathBuilder methods
-
-```ts
-path.moveTo(dx, dy)                              // relative move (m)
-path.moveToAbs(x, y)                             // absolute move (M)
-path.lineTo(dx, dy)                              // relative line (l)
-path.lineToAbs(x, y)                             // absolute line (L)
-path.cubicTo(c1dx, c1dy, c2dx, c2dy, dx, dy)     // relative cubic Bezier (c)
-path.cubicToAbs(c1x, c1y, c2x, c2y, x, y)       // absolute cubic Bezier (C)
-path.smoothCubicTo(c2dx, c2dy, dx, dy)          // relative smooth cubic (s)
-path.smoothCubicToAbs(c2x, c2y, x, y)           // absolute smooth cubic (S)
-path.quadTo(c1dx, c1dy, dx, dy)                 // relative quadratic Bezier (q)
-path.quadToAbs(c1x, c1y, x, y)                  // absolute quadratic Bezier (Q)
-path.smoothQuadTo(dx, dy)                       // relative smooth quadratic (t)
-path.smoothQuadToAbs(x, y)                      // absolute smooth quadratic (T)
-path.arcTo(dx, dy, r, clockwise?, largeArc?)     // relative arc (a)
-path.arcToAbs(x, y, r, clockwise?, largeArc?)   // absolute arc (A)
-path.close()                                     // close path (z)
-path.reset()                                     // clear builder
-```
-
-Use `cubic*` when you need maximum curve control, `smoothCubic*` for continuous cubic chains, `quad*` for lighter one-handle curves, and `smoothQuad*` to continue quadratic chains smoothly.
+<br />
 
 ### Dimensions
 
-Dimensions are a separate layer with helpers for annotations, arrows, ticks, and labels. Create groups outside draw callbacks, request builders inside.
+Dimensions are a separate layer for annotation primitives:
 
 ```ts
 const d = scene.dimensions.group();
 
 scene.draw(() => {
-  const dim = d.dimension();
-  dim.moveToAbs(-40, 0).tick(0).lineTo(80, 0).tick(0).textAt(0, -10, "80");
+  d.dimension()
+    .moveToAbs(-40, 0)
+    .tick(0)
+    .lineTo(80, 0)
+    .tick(0)
+    .textAt(0, -10, "80");
 });
 ```
 
-#### Dimensions group methods
+Most-used dimension methods:
 
 ```ts
-group.translate(x, y)           // offset entire group
-group.setDrawUsage(mode)        // "static" or "dynamic" (default: "dynamic")
-group.clear()                   // remove all dimensions and reset transform to origin
+dim.moveToAbs(x, y)
+dim.lineTo(dx, dy)
+dim.arc(r, startAngle, endAngle)
+dim.arrow(angleRad, size?)
+dim.tick(angleRad, size?)
+dim.textAt(dx, dy, text, align?, className?)
 ```
 
-#### DimensionBuilder positioning
+Text align: `"start" | "middle" | "end"` (default: `"middle"`).
 
-```ts
-dim.moveTo(dx, dy)              // relative move
-dim.moveToAbs(x, y)             // absolute move
-dim.lineTo(dx, dy)              // relative line
-dim.lineToAbs(x, y)             // absolute line
-```
-
-#### DimensionBuilder primitives
-
-```ts
-dim.arc(r, startAngle, endAngle)      // arc centered at current point
-dim.arrow(angleRad, size?)            // open arrow (default size: 8)
-dim.arrowFilled(angleRad, size?)      // filled arrow (default size: 8)
-dim.tick(angleRad, size?)             // architectural tick (default size: 15)
-dim.centerMark(size?)                 // crosshair with center dot
-dim.close()                           // close path
-```
-
-#### DimensionBuilder text
-
-```ts
-dim.textAt(dx, dy, text, align?, className?)     // relative text placement
-dim.textAtAbs(x, y, text, align?, className?)    // absolute text placement
-```
-
-Text align can be `"start"`, `"middle"`, or `"end"` (default: `"middle"`).
+<br />
+<br />
+<br />
 
 ## Camera controls
 
-Pan and zoom are opt-in and can be reset at any time:
+Pan/zoom are opt-in and can be reset anytime:
 
 ```ts
-scene.enablePan(true);    // middle-mouse or shift+left-click to pan
-scene.enableZoom(true);   // mouse wheel to zoom (1-20x scale)
-scene.resetCamera();      // return to initial view
+scene.enablePan(true); // middle-mouse or shift+left-click
+scene.enableZoom(true); // mouse wheel, 1x-20x range
+scene.resetCamera();
 ```
+
+<br />
 
 ### Responsive view scaling
 
-Scale the entire view programmatically for responsive designs:
+Use `setViewScale(...)` to scale visual output without changing coordinate space or camera zoom state:
 
 ```ts
-// Scale view to 75% on mobile
 if (window.innerWidth <= 768) {
   scene.setViewScale(0.75);
+} else {
+  scene.setViewScale(1.0);
 }
-
-// Reset to normal
-scene.setViewScale(1.0);
 ```
 
-This scales the visual output without affecting:
-- Coordinate system (viewBox unchanged)
-- Zoom/pan behavior (still works normally)
-- Camera state (zoom level preserved)
-
-Useful for:
-- Mobile responsive design - give geometry more breathing room on small screens
-- User preference controls (zoom level UI)
-- Dynamic viewport adjustments
+<br />
+<br />
+<br />
 
 ## Styling
 
-All visual styling is controlled by CSS variables on `.pluton-root`. You can customize per-instance:
+All styling is controlled by CSS variables on `.pluton-root`:
 
 ```css
 .pluton-root {
@@ -372,108 +345,103 @@ All visual styling is controlled by CSS variables on `.pluton-root`. You can cus
 }
 ```
 
-### Custom classes
+<br />
 
-Pass custom classes to paths and dimensions for fine-grained control:
+### Custom classes
 
 ```ts
 g.path({ className: "my-custom-path" });
 d.dimension({ className: "highlighted-dim" });
 ```
 
+<br />
+
 ### Hatch fill
 
-With fills enabled (default), each geometry path follows this order:
+Fill resolution order when fills are enabled (`scene.enableFill(true)`, default):
 
 - if `path({ fill })` is set, that value is used
-- otherwise, it falls back to the built-in default hatch fill
-
-Use `enableFill(...)` as a visibility toggle:
-
-```ts
-scene.enableFill(false); // hide all geometry fills
-scene.enableFill(true);  // show all geometry fills
-```
-
-Create custom hatch fills with `addHatchFill(...)` and apply them per path:
+- otherwise, default hatch fill is used
 
 ```ts
 const blueFillId = scene.addHatchFill("#2563eb", 0.35);
 g.path({ fill: blueFillId });
 ```
 
-For stroke-only paths, set `fill: "none"` in path options or via your CSS class.
+Use `fill: "none"` for stroke-only geometry.
+
+<br />
+<br />
+<br />
 
 ## Performance
 
 ### Prefer one draw callback
 
-One callback keeps ordering explicit and easier to reason about. Multiple callbacks are supported and run in registration order.
+One callback keeps ordering explicit. Multiple callbacks are supported and run in registration order.
+
+<br />
 
 ### Mark static groups
 
-For geometry that never changes, mark the group as static:
+Use static groups for geometry that does not change:
 
 ```ts
 const staticGroup = scene.geometry.group();
-staticGroup.setDrawUsage("static");  // mark as static outside draw callback
+staticGroup.setDrawUsage("static");
 
 const dynamicGroup = scene.geometry.group();
 
 scene.draw((p) => {
-  // Static group - always call path(), engine skips commit
-  const staticPath = staticGroup.path();
-  staticPath.moveToAbs(0, 0).lineTo(100, 0).lineTo(0, 100).close();
-
-  // Dynamic group - updates every frame
-  const dynamicPath = dynamicGroup.path();
-  dynamicPath.moveToAbs(0, 0).lineTo(p.width, 0).lineTo(0, p.height).close();
+  staticGroup.path().moveToAbs(0, 0).lineTo(100, 0).lineTo(0, 100).close();
+  dynamicGroup.path().moveToAbs(0, 0).lineTo(p.width, 0).lineTo(0, p.height).close();
 });
 ```
 
-#### How it works
+Static groups still run through draw callbacks, but commits are skipped after the first commit.
 
-- Set `setDrawUsage("static")` before rendering starts.
-- Draw callbacks still run normally, and you still call `path()` every frame.
-- The engine skips `commit()` for static groups after the first commit.
-- No extra flags or branching needed in draw logic.
-
-#### Choosing static or dynamic
-
-- **Static:** background elements, fixed annotations, unchanging reference shapes
-- **Dynamic (default):** anything reactive to params or user input
+<br />
 
 ### Safari filter performance
 
-SVG filters can be expensive during zoom on Safari. Disable them if you notice lag:
+If zoom feels laggy on Safari, disable the filter:
 
 ```ts
 scene.enableFilter(false);
 ```
 
+<br />
+<br />
+<br />
+
 ## When to use
 
-I built Pluton2D for my own workflow: technical drawing with crisp SVG output, dimensions, hatching, and predictable redraw behavior.
-It can be used beyond that, but it is not meant to replace every rendering or visualization tool.
+Pluton2D is optimized for technical drawing workflows: crisp SVG, dimensions, hatching, and predictable redraw behavior.
 
 ### Good fit for Pluton2D
 
-- Technical drawings, blueprints, and engineering diagrams
-- CAD-like annotations (dimensions, ticks, callouts)
-- Cases where inspectable/exportable SVG matters
+- Technical drawings, blueprints, engineering diagrams
+- Annotation-heavy scenes (dimensions, ticks, callouts)
+- Workflows where inspectable/exportable SVG matters
 - Interactive scenes with moderate redraw frequency
+
+<br />
 
 ### Prefer charting libraries when
 
 - Your primary goal is data visualization
-- You want chart primitives, scales, legends, and tooltips out of the box
-- You want chart-specific ecosystem tooling
+- You need chart primitives, scales, legends, and tooltips out of the box
+- You need chart-specific ecosystem tooling
+
+<br />
 
 ### Prefer Canvas when
 
-- You need very high-frequency animation
+- You need high-frequency animation
 - You render many moving primitives every frame
 - SVG/DOM updates become the bottleneck
+
+<br />
 
 ### Prefer WebGL or WebGPU when
 
@@ -481,34 +449,49 @@ It can be used beyond that, but it is not meant to replace every rendering or vi
 - You need shader pipelines or post-processing
 - You need 3D or high-end real-time rendering
 
+<br />
+<br />
+<br />
+
 ## Troubleshooting
 
 ### SVG is blank
 
 - Check CSS import: `import "pluton-2d/style.css"`
-- Ensure SVG has size: set CSS width/height or use a viewBox
+- Ensure the SVG has size (CSS width/height or `viewBox`)
+
+<br />
 
 ### Y-axis feels inverted
 
-- Library uses Y-up (math coords), not Y-down (screen coords)
-- `lineTo(0, 10)` moves UP, not down
+- Pluton uses Y-up coordinates, not screen-style Y-down
+- `lineTo(0, 10)` moves up
+
+<br />
 
 ### Params changes don't trigger redraw
 
 - Mutate params: `scene.params.width = 100` ✓
 - Top-level params object is immutable: `scene.params = { ... }` ✗
-- Params must be flat - nested objects throw at construction
+- Params must be flat; nested objects throw at construction
+
+<br />
 
 ### Dimensions not visible
 
-- Check layer is created: `scene.dimensions.group()`
-- Verify draw callback is registered
-- Check stroke color CSS variable: `--pluton-dim-color`
+- Check layer creation: `scene.dimensions.group()`
+- Verify draw callback registration
+- Check CSS variable: `--pluton-dim-color`
+
+<br />
 
 ### Performance issues during zoom (Safari)
 
 - Disable pencil filter: `scene.enableFilter(false)`
-- SVG filters can be expensive at high zoom levels
+
+<br />
+<br />
+<br />
 
 ## SSR
 
