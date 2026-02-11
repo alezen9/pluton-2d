@@ -140,6 +140,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+
   publish:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.release_tag_name != '' && needs.changes.outputs.lib_changed == 'true'
     runs-on: ubuntu-latest

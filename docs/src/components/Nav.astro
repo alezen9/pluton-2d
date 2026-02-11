@@ -1,5 +1,6 @@
 ---
 import Search from "./Search.svelte";
+import { version } from "@root/package.json";
 
 const { currentPage = "/" } = Astro.props;
 
@@ -18,7 +19,9 @@ const links = [
 
 <nav>
   <div class="nav-container">
-    <a href={`${base}/`} class="nav-brand">Pluton 2D<span class="nav-version">v{__LIB_VERSION__}</span></a>
+    <a href={`${base}/`} class="nav-brand"
+      >Pluton 2D<span class="nav-version">v{version}</span></a
+    >
     <ul class="nav-links">
       {
         links.map(({ path, label, activePrefix }) => (

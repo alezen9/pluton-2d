@@ -3,7 +3,7 @@
   "version": "0.1.8",
   "description": "Abstraction over HTML SVG for easy blueprint drawing.",
   "repository": {
-    "url": "https://github.com/alezen9/pluton-2d"
+    "url": "https://pluton-2d.aleksandargjoreski.dev"
   },
   "type": "module",
   "main": "dist/index.js",
