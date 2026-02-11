@@ -4,8 +4,12 @@ import mdx from "@astrojs/mdx";
 import pagefind from "astro-pagefind";
 import path from "path";
 import { fileURLToPath } from "url";
+import { readFileSync } from "fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const { version } = JSON.parse(
+  readFileSync(path.resolve(__dirname, "../package.json"), "utf-8"),
+);
 
 export default defineConfig({
   site: "https://alezen9.github.io",
@@ -21,6 +25,9 @@ export default defineConfig({
     },
   },
   vite: {
+    define: {
+      __LIB_VERSION__: JSON.stringify(version),
+    },
     resolve: {
       alias: {
         "pluton-2d/style.css": path.resolve(__dirname, "../src/style.css"),
