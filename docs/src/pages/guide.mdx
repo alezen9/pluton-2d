@@ -2,6 +2,7 @@
 layout: ../layouts/MarkdownLayout.astro
 title: Guide
 currentPage: /guide
+description: Get started with Pluton 2D, setup, coordinate system, geometry primitives, dimensions, and rendering.
 ---
 
 # Guide
@@ -22,7 +23,7 @@ import { Pluton2D } from "pluton-2d";
 
 const svg = document.querySelector("svg")!;
 const scene = new Pluton2D(svg, {
-  params: { width: 200, height: 100 }
+  params: { width: 200, height: 100 },
 });
 
 scene.enablePan(true);
@@ -169,10 +170,10 @@ scene.draw(() => {
 Pan and zoom are opt-in. Enable them when you need interactive navigation:
 
 ```typescript
-scene.enablePan(true);   // middle-mouse drag, or shift + left-click
-scene.enableZoom(true);  // mouse wheel, 1×-20× range
+scene.enablePan(true); // middle-mouse drag, or shift + left-click
+scene.enableZoom(true); // mouse wheel, 1×-20× range
 
-scene.resetCamera();     // smooth animation back to origin
+scene.resetCamera(); // smooth animation back to origin
 ```
 
 Camera movement is smoothed with exponential easing, which makes navigation feel natural and responsive. `resetCamera()` animates instead of jumping, so the transition feels smooth.
@@ -183,22 +184,24 @@ For mobile and tablet devices, you can scale the entire view down to give geomet
 
 ```typescript
 // Using matchMedia for clean breakpoint handling
-const mobileQuery = window.matchMedia('(max-width: 640px)');
-const tabletQuery = window.matchMedia('(min-width: 641px) and (max-width: 1024px)');
+const mobileQuery = window.matchMedia("(max-width: 640px)");
+const tabletQuery = window.matchMedia(
+  "(min-width: 641px) and (max-width: 1024px)",
+);
 
 const updateScale = () => {
   if (mobileQuery.matches) {
-    scene.setViewScale(0.7);   // mobile: 70% scale
+    scene.setViewScale(0.7); // mobile: 70% scale
   } else if (tabletQuery.matches) {
-    scene.setViewScale(0.85);  // tablet: 85% scale
+    scene.setViewScale(0.85); // tablet: 85% scale
   } else {
-    scene.setViewScale(1.0);   // desktop: full scale
+    scene.setViewScale(1.0); // desktop: full scale
   }
 };
 
 updateScale();
-mobileQuery.addEventListener('change', updateScale);
-tabletQuery.addEventListener('change', updateScale);
+mobileQuery.addEventListener("change", updateScale);
+tabletQuery.addEventListener("change", updateScale);
 ```
 
 The scale interpolates smoothly like pan and zoom. Camera state is preserved. If the user zoomed in 3×, they'll still be at 3× zoom after the view scale changes. The coordinate system stays the same, so `moveTo(100, 100)` still means the same world position regardless of view scale.

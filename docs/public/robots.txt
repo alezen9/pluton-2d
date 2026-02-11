@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pluton-2d.aleksandargjoreski.dev/sitemap-index.xml

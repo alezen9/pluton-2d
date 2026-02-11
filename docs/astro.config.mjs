@@ -2,6 +2,7 @@ import { defineConfig } from "astro/config";
 import svelte from "@astrojs/svelte";
 import mdx from "@astrojs/mdx";
 import pagefind from "astro-pagefind";
+import sitemap from "@astrojs/sitemap";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -11,7 +12,7 @@ export default defineConfig({
   site: "https://pluton-2d.aleksandargjoreski.dev",
   base: "/",
   devToolbar: { enabled: false },
-  integrations: [svelte(), mdx(), pagefind()],
+  integrations: [svelte(), mdx(), pagefind(), sitemap()],
   markdown: {
     shikiConfig: {
       themes: {

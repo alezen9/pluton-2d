@@ -2,8 +2,10 @@
   "name": "pluton-2d",
   "version": "0.1.8",
   "description": "Abstraction over HTML SVG for easy blueprint drawing.",
+  "homepage": "https://pluton-2d.aleksandargjoreski.dev",
   "repository": {
-    "url": "https://pluton-2d.aleksandargjoreski.dev"
+    "type": "git",
+    "url": "https://github.com/alezen9/pluton-2d"
   },
   "type": "module",
   "main": "dist/index.js",
@@ -26,7 +28,15 @@
     "2d",
     "blueprint",
     "diagram",
-    "engineering"
+    "engineering",
+    "pluton-2d",
+    "pluton",
+    "svg-drawing",
+    "javascript",
+    "typescript",
+    "geometry",
+    "cad",
+    "vector-graphics"
   ],
   "author": "Aleksandar Gjoreski",
   "license": "MIT",

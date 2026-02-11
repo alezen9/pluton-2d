@@ -2,6 +2,7 @@
 layout: ../layouts/MarkdownLayout.astro
 title: API Reference
 currentPage: /api
+description: Full API reference for Pluton 2D, constructor options, geometry methods, and dimension helpers.
 ---
 
 # API Reference
@@ -14,15 +15,15 @@ Quick reference for the Pluton 2D public API: constructor, geometry, and dimensi
 
 ```typescript
 const scene = new Pluton2D(svg, {
-  params: { width: 240, height: 120 }
+  params: { width: 240, height: 120 },
 });
 ```
 
-| Param             | Description                                                         |
-| ----------------- | ------------------------------------------------------------------- |
-| `svg`             | SVG element to render into. Needs CSS width/height or viewBox. |
+| Param             | Description                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `svg`             | SVG element to render into. Needs CSS width/height or viewBox.                                                        |
 | `options.params`  | Optional flat object. Keys become reactive params. Nested objects throw at construction. Type inferred automatically. |
-| `options.viewBox` | Optional coordinate space dimensions. |
+| `options.viewBox` | Optional coordinate space dimensions.                                                                                 |
 
 Flat params only. Reactivity tracks top-level mutations via Proxy. Nested objects need deep watching (not supported). Keep complex state outside `scene.params`, sync flat values in draw callback.
 
@@ -33,11 +34,12 @@ Set explicit drawing coordinate system independent of pixel dimensions:
 ```typescript
 const scene = new Pluton2D(svg, {
   params: { size: 100 },
-  viewBox: { width: 200, height: 300 }
+  viewBox: { width: 200, height: 300 },
 });
 ```
 
 **Priority order:**
+
 1. Constructor `viewBox` parameter
 2. SVG `viewBox` attribute
 3. SVG pixel dimensions (getBoundingClientRect)
@@ -46,11 +48,11 @@ A larger viewBox gives more room for geometry without affecting visual scale. Fo
 
 ### Properties
 
-| Property     | Description                                                      |
-| ------------ | ---------------------------------------------------------------- |
+| Property     | Description                                                                                  |
+| ------------ | -------------------------------------------------------------------------------------------- |
 | `params`     | Reactive params. Mutate properties to trigger redraws. Top-level reassignment not supported. |
-| `geometry`   | Geometry layer. Call `.group()` to create groups. Groups persist across frames.            |
-| `dimensions` | Dimensions layer. Call `.group()` to create groups. Groups persist across frames.          |
+| `geometry`   | Geometry layer. Call `.group()` to create groups. Groups persist across frames.              |
+| `dimensions` | Dimensions layer. Call `.group()` to create groups. Groups persist across frames.            |
 
 Create groups once at setup, request builders inside draw callbacks. Avoids recreating elements every frame.
 
@@ -72,19 +74,19 @@ Object.assign(scene.params, { width: 200, height: 100 }); // supported
 scene.params = { width: 200, height: 100 }; // throws
 ```
 
-| Method                          | Description                                                                                                                                  |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enableFilter(bool)`            | Enable pencil-style SVG filter. Default: `false`. Expensive on Safari with many paths during zoom. |
-| `setFilterIntensity(number)`    | Set pencil displacement intensity. Default: `1.25`. Higher = more wobble. |
-| `enableGrid(bool)`              | Show/hide graph-paper background. Default: `true`. |
-| `enableAxes(bool)`              | Show/hide center axes. Default: `true`. |
-| `enablePan(bool)`               | Enable pan (middle-mouse or shift+click). Default: `false`. |
-| `enableZoom(bool)`              | Enable wheel zoom (1×-20×). Default: `false`. |
+| Method                          | Description                                                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `enableFilter(bool)`            | Enable pencil-style SVG filter. Default: `false`. Expensive on Safari with many paths during zoom.                         |
+| `setFilterIntensity(number)`    | Set pencil displacement intensity. Default: `1.25`. Higher = more wobble.                                                  |
+| `enableGrid(bool)`              | Show/hide graph-paper background. Default: `true`.                                                                         |
+| `enableAxes(bool)`              | Show/hide center axes. Default: `true`.                                                                                    |
+| `enablePan(bool)`               | Enable pan (middle-mouse or shift+click). Default: `false`.                                                                |
+| `enableZoom(bool)`              | Enable wheel zoom (1×-20×). Default: `false`.                                                                              |
 | `setViewScale(number)`          | Scale entire view (0.1-10×) for responsive design. Doesn't affect coordinate system or camera zoom. Smoothly interpolates. |
-| `enableFill(bool)`              | Toggle fills globally. When enabled: uses per-path `fill` or default hatch. When disabled: all fills hidden. |
-| `resetCamera()`                 | Animate camera to origin with exponential easing. |
-| `addHatchFill(color, opacity?)` | Create 45° hatch pattern. Returns `url(#id)` for use in `path({ fill })`. |
-| `dispose()`                     | Clean up listeners, DOM, defs. Prevents memory leaks. |
+| `enableFill(bool)`              | Toggle fills globally. When enabled: uses per-path `fill` or default hatch. When disabled: all fills hidden.               |
+| `resetCamera()`                 | Animate camera to origin with exponential easing.                                                                          |
+| `addHatchFill(color, opacity?)` | Create 45° hatch pattern. Returns `url(#id)` for use in `path({ fill })`.                                                  |
+| `dispose()`                     | Clean up listeners, DOM, defs. Prevents memory leaks.                                                                      |
 
 Engine idles when all draw callbacks unsubscribe (unless camera/input active).
 
@@ -117,6 +119,7 @@ else {
 ```
 
 **Key points:**
+
 - Scales visual output only. Coordinate system unchanged
 - Zoom/pan still work normally
 - Camera state preserved (zoom level unaffected)
@@ -128,24 +131,24 @@ else {
 
 Create groups once, outside draw callbacks. Groups persist across frames. Request builders with `path()` inside draw callbacks. Engine recycles them automatically.
 
-| Method               | Description                                                                                                           |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `path(options?)`     | Request `PathBuilder`. Supports `className`, `fill`, `stroke`, `fillRule`. Returns chainable builder. |
-| `translate(x, y)`    | Offset group in world space. Direct DOM write, no redraw. |
-| `scale(x, y)`        | Scale group. Direct DOM write, no redraw. |
+| Method               | Description                                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------- |
+| `path(options?)`     | Request `PathBuilder`. Supports `className`, `fill`, `stroke`, `fillRule`. Returns chainable builder.   |
+| `translate(x, y)`    | Offset group in world space. Direct DOM write, no redraw.                                               |
+| `scale(x, y)`        | Scale group. Direct DOM write, no redraw.                                                               |
 | `setDrawUsage(mode)` | `"static"` commits once, `"dynamic"` (default) every frame. Static skips DOM writes after first commit. |
-| `clear()`            | Remove all paths, reset state and transform. |
+| `clear()`            | Remove all paths, reset state and transform.                                                            |
 
 In static mode, still call `path()` every frame. Engine detects unchanged geometry and skips DOM writes after first commit.
 
 #### path(options) fields
 
-| Option      | Description                                                                                                                                          |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `className` | CSS class for `<path>`. |
+| Option      | Description                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------- |
+| `className` | CSS class for `<path>`.                                                                                 |
 | `fill`      | CSS fill value (from `addHatchFill()` or manual). Omit for default hatch. Use `"none"` for stroke-only. |
-| `stroke`    | CSS stroke value. Overrides default. |
-| `fillRule`  | `"evenodd"` (default) or `"nonzero"`. Use evenodd for cutouts, nonzero for simple fills. |
+| `stroke`    | CSS stroke value. Overrides default.                                                                    |
+| `fillRule`  | `"evenodd"` (default) or `"nonzero"`. Use evenodd for cutouts, nonzero for simple fills.                |
 
 ### PathBuilder
 
@@ -174,20 +177,20 @@ path.reset()                 // clear commands
 
 #### Curve types
 
-| Command family                               | When to use                                                                                    |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `cubicTo` / `cubicToAbs` (`C/c`)             | Most control for organic shapes. You get two control points (entry and exit handles), which gives you full control over the curve shape.         |
+| Command family                               | When to use                                                                                                                                   |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cubicTo` / `cubicToAbs` (`C/c`)             | Most control for organic shapes. You get two control points (entry and exit handles), which gives you full control over the curve shape.      |
 | `smoothCubicTo` / `smoothCubicToAbs` (`S/s`) | Continue a cubic curve smoothly. The first handle is inferred by mirroring the previous segment's exit handle. Useful for connected S-curves. |
-| `quadTo` / `quadToAbs` (`Q/q`)               | Simpler curves with one control point. Lighter weight than cubic, good for rounded corners and simple arcs.                     |
-| `smoothQuadTo` / `smoothQuadToAbs` (`T/t`)   | Continue a quadratic curve smoothly with inferred control point. Useful for smooth wave-like forms.                               |
+| `quadTo` / `quadToAbs` (`Q/q`)               | Simpler curves with one control point. Lighter weight than cubic, good for rounded corners and simple arcs.                                   |
+| `smoothQuadTo` / `smoothQuadToAbs` (`T/t`)   | Continue a quadratic curve smoothly with inferred control point. Useful for smooth wave-like forms.                                           |
 
 Smooth commands (`S/s`, `T/t`) depend on the previous curve segment. If no compatible segment exists (like after a line or move), SVG treats the inferred control point as the current point, which produces a sharp corner.
 
-| Param       | Description                                                               |
-| ----------- | ------------------------------------------------------------------------- |
+| Param       | Description                                                                                                     |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
 | `clockwise` | Arc sweep direction in visual space (after Y-flip). Default: `false`. Pass `true` to sweep clockwise on screen. |
-| `largeArc`  | Whether the arc spans more than 180 degrees. Default: `false`. Use `true` for major arcs.                            |
-| `r ≤ 0`     | Falls back to straight line, creating a sharp corner instead of an arc.                             |
+| `largeArc`  | Whether the arc spans more than 180 degrees. Default: `false`. Use `true` for major arcs.                       |
+| `r ≤ 0`     | Falls back to straight line, creating a sharp corner instead of an arc.                                         |
 
 ## Dimensions
 
@@ -223,13 +226,13 @@ dim.centerMark(size?)                // crosshair with center dot (default size:
 dim.close()                          // close path
 ```
 
-| Primitive     | Notes                                                                                                  |
-| ------------- | ------------------------------------------------------------------------------------------------------ |
+| Primitive     | Notes                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------- |
 | `arc`         | Arc from `startAngle` to `endAngle` around current position. Direction inferred from angle order. |
-| `arrow`       | Open V-arrow. Tip at current position, wings extend back. Classic style. |
-| `arrowFilled` | Filled triangle arrow on separate path layer. Modern style. |
-| `tick`        | Architectural tick: crossed lines rotated by `angleRad`. |
-| `centerMark`  | Crosshair with filled center dot. |
+| `arrow`       | Open V-arrow. Tip at current position, wings extend back. Classic style.                          |
+| `arrowFilled` | Filled triangle arrow on separate path layer. Modern style.                                       |
+| `tick`        | Architectural tick: crossed lines rotated by `angleRad`.                                          |
+| `centerMark`  | Crosshair with filled center dot.                                                                 |
 
 ### DimensionsBuilder: Text
 
