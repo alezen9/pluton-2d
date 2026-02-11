@@ -19,6 +19,7 @@ const zExample = z.object({
   title: z.string(),
   category: z.enum(exampleCategoryOrder),
   description: z.string(),
+  ogImageSrc: z.string().optional(),
 });
 
 const examples = defineCollection({

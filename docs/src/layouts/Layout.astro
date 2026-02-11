@@ -1,5 +1,6 @@
 ---
 import ClientRouter from "astro/components/ClientRouter.astro";
+import BaseHead from "../components/BaseHead.astro";
 import Nav from "../components/Nav.astro";
 import ScrollToTop from "../components/ScrollToTop.svelte";
 import "../styles/global.css";
@@ -12,9 +13,9 @@ const {
   title = "Pluton 2D",
   currentPage = "/",
   description = defaultDescription,
+  imageSrc,
 } = Astro.props;
 const composedTitle = currentPage === "/" ? title : `Pluton 2D | ${title}`;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const enableClientRouter = import.meta.env.PROD;
 ---
@@ -24,13 +25,7 @@ const enableClientRouter = import.meta.env.PROD;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{composedTitle}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalURL} />
-    <meta property="og:title" content={composedTitle} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonicalURL} />
+    <BaseHead title={composedTitle} description={description} imageSrc={imageSrc} />
     <link rel="icon" href={`${base}/favicon.svg`} />
     {enableClientRouter && <ClientRouter />}
   </head>

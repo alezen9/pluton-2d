@@ -3,10 +3,10 @@ import Layout from "./Layout.astro";
 import TableOfContents from "../components/TableOfContents.svelte";
 
 const { frontmatter } = Astro.props;
-const { title = "Pluton 2D", currentPage = "/", description } = frontmatter;
+const { title = "Pluton 2D", currentPage = "/", description, imageSrc } = frontmatter;
 ---
 
-<Layout {title} {currentPage} {description}>
+<Layout {title} {currentPage} {description} {imageSrc}>
   <TableOfContents client:only="svelte" />
   <div class="wrapper">
     <article id="doc-content">

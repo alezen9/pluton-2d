@@ -2,7 +2,7 @@
 import BaseLayout from "../../layouts/Layout.astro";
 import { getExampleNavigation } from "./navigation";
 
-const { title = "Examples", description } = Astro.props;
+const { title = "Examples", description, ogImageSrc } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
 const normalizeUrlPath = (urlPath: string) =>
   urlPath.length > 1 ? urlPath.replace(/\/+$/, "") : urlPath;
@@ -13,7 +13,7 @@ const isActiveExampleLink = (href: string) =>
   normalizeUrlPath(href) === currentUrlPath;
 ---
 
-<BaseLayout {title} currentPage="/examples">
+<BaseLayout {title} currentPage="/examples" imageSrc={ogImageSrc}>
   <div class="examples-container">
     <div class="examples-layout">
       <aside class="examples-sidebar">
