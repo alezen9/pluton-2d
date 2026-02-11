@@ -55,41 +55,50 @@
   });
 </script>
 
-<button bind:this={btn} aria-label="scroll-to-top" onclick={onClick}>
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    stroke="currentColor"
-    stroke-width="2.4"
-  >
-    <path d="M12 4L6 10M12 4L18 10M12 4L12 14.5M12 20V17.5"></path>
-  </svg>
-
-  <svg class="progress" viewBox="0 0 36 36" aria-hidden="true">
-    <circle
-      bind:this={ring}
-      class="scroll-progress"
-      cx="18"
-      cy="18"
-      r="16"
+<div class="wrapper">
+  <button bind:this={btn} aria-label="scroll-to-top" onclick={onClick}>
+    <svg
+      viewBox="0 0 24 24"
       fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      stroke-linecap="round"
+      stroke-linejoin="round"
       stroke="currentColor"
       stroke-width="2.4"
-      transform="rotate(-90 18 18)"
-    />
-  </svg>
-</button>
+    >
+      <path d="M12 4L6 10M12 4L18 10M12 4L12 14.5M12 20V17.5"></path>
+    </svg>
+
+    <svg class="progress" viewBox="0 0 36 36" aria-hidden="true">
+      <circle
+        bind:this={ring}
+        class="scroll-progress"
+        cx="18"
+        cy="18"
+        r="16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.4"
+        transform="rotate(-90 18 18)"
+      />
+    </svg>
+  </button>
+</div>
 
 <style>
+  .wrapper {
+    position: absolute;
+    height: 100%;
+    top: 0;
+    right: 0;
+    padding-right: 2rem;
+  }
   button {
-    position: fixed;
-    right: max(1.75rem, calc(50% - 840px + 1.75rem));
-    bottom: 2em;
-    width: 3em;
-    height: 3em;
+    --size: 2.5rem;
+    position: sticky;
+    top: calc(100vh - 1rem - var(--size));
+    width: var(--size);
+    height: var(--size);
     border-radius: 50%;
     border: none;
     cursor: pointer;

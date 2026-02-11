@@ -7,24 +7,15 @@ const { title = "Pluton 2D", currentPage = "/", description } = frontmatter;
 ---
 
 <Layout {title} {currentPage} {description}>
-  <div class="page-layout">
-    <TableOfContents client:only="svelte" />
-    <div class="wrapper">
-      <article id="doc-content">
-        <slot />
-      </article>
-    </div>
+  <TableOfContents client:only="svelte" />
+  <div class="wrapper">
+    <article id="doc-content">
+      <slot />
+    </article>
   </div>
 </Layout>
 
 <style>
-  .page-layout {
-    position: relative;
-    max-width: 1680px;
-    margin: 0 auto;
-    min-height: 100dvh;
-  }
-
   .wrapper {
     box-sizing: border-box;
     width: 100%;

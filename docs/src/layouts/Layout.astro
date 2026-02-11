@@ -6,8 +6,13 @@ import "../styles/global.css";
 import "../styles/markdown.css";
 import "pluton-2d/style.css";
 
-const defaultDescription = "SVG-first JavaScript library for technical drawings, blueprints, and engineering diagrams";
-const { title = "Pluton 2D", currentPage = "/", description = defaultDescription } = Astro.props;
+const defaultDescription =
+  "SVG-first JavaScript library for technical drawings, blueprints, and engineering diagrams";
+const {
+  title = "Pluton 2D",
+  currentPage = "/",
+  description = defaultDescription,
+} = Astro.props;
 const composedTitle = currentPage === "/" ? title : `Pluton 2D | ${title}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -31,9 +36,18 @@ const enableClientRouter = import.meta.env.PROD;
   </head>
   <body>
     <Nav currentPage={currentPage} />
-    <ScrollToTop client:only="svelte" />
     <main>
       <slot />
+      <ScrollToTop client:only="svelte" />
     </main>
   </body>
 </html>
+
+<style>
+  main {
+    position: relative;
+    max-width: 1680px;
+    margin: 0 auto;
+    min-height: 100dvh;
+  }
+</style>

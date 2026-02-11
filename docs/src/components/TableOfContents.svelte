@@ -132,27 +132,35 @@
 </script>
 
 {#if items.length > 0}
-  <nav class="toc" aria-label="Table of contents">
-    <p class="title">Overview</p>
-    <ul transition:fade>
-      {#each items as item}
-        <li>
-          <a
-            href={`#${item.id}`}
-            class:active={item.id === activeId}
-            class:sub-item={item.level === 3}>{item.text}</a
-          >
-        </li>
-      {/each}
-    </ul>
-  </nav>
+  <div class="wrapper">
+    <nav class="toc" aria-label="Table of contents">
+      <p class="title">Overview</p>
+      <ul transition:fade>
+        {#each items as item}
+          <li>
+            <a
+              href={`#${item.id}`}
+              class:active={item.id === activeId}
+              class:sub-item={item.level === 3}>{item.text}</a
+            >
+          </li>
+        {/each}
+      </ul>
+    </nav>
+  </div>
 {/if}
 
 <style>
+  .wrapper {
+    position: absolute;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
   .toc {
-    position: fixed;
+    position: sticky;
     top: calc(64px + 3em);
-    left: 2rem;
+    padding-left: 2rem;
     width: 300px;
     user-select: none;
   }
