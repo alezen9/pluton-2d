@@ -8,7 +8,9 @@ imageSrc: /og-images/api-reference.jpg
 
 # API Reference
 
-Method signatures, parameters, and behavior. For explanations and usage patterns, see the [guide](/guide).
+> For explanations and usage patterns, see the [guide](/guide).
+
+Method signatures, parameters, and behavior.
 
 ## Pluton2D
 
@@ -17,230 +19,261 @@ Method signatures, parameters, and behavior. For explanations and usage patterns
 ```typescript
 const scene = new Pluton2D(svg, {
   params: { width: 240, height: 120 },
+  viewBox: { width: 500, height: 500 },
 });
 ```
 
-| Param             | Description                                                                                                          |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `svg`             | SVG element to render into. Needs CSS width/height or viewBox                                                        |
-| `options.params`  | Optional flat object. Keys become reactive params. Nested objects throw at construction. Type inferred automatically |
-| `options.viewBox` | Optional coordinate space dimensions                                                                                 |
+| Param             | Type                | Description                                                                             |
+| ----------------- | ------------------- | --------------------------------------------------------------------------------------- |
+| `svg`             | `SVGSVGElement`     | SVG element to render into. Needs CSS width/height or viewBox                           |
+| `options.params`  | `object`            | Optional flat object. Keys become reactive params. Nested objects throw at construction |
+| `options.viewBox` | `{ width, height }` | Optional coordinate space dimensions                                                    |
 
 Params must be flat. Reactivity tracks top-level mutations via Proxy. Keep complex state outside `scene.params` and sync flat values in your draw callback.
 
-#### ViewBox (Coordinate Space)
-
-Sets the drawing coordinate system independent of pixel dimensions:
-
-```typescript
-const scene = new Pluton2D(svg, {
-  params: { size: 100 },
-  viewBox: { width: 200, height: 300 },
-});
-```
-
-**Priority order:**
+**ViewBox priority order:**
 
 1. Constructor `viewBox` parameter
 2. SVG `viewBox` attribute
-3. SVG pixel dimensions (getBoundingClientRect)
+3. SVG pixel dimensions (`getBoundingClientRect`)
 
 A larger viewBox gives more coordinate space without affecting visual scale. `viewBox: { width: 1000, height: 1000 }` on a 500x500px SVG means 1 unit = 0.5 pixels.
 
 ### Properties
 
-| Property     | Description                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------------- |
-| `params`     | Reactive params. Mutate properties to trigger redraws. Top-level reassignment not supported |
-| `geometry`   | Geometry layer. Call `.group()` to create groups. Groups persist across frames              |
-| `dimensions` | Dimensions layer. Call `.group()` to create groups. Groups persist across frames            |
+| Property     | Type              | Description                                                                          |
+| ------------ | ----------------- | ------------------------------------------------------------------------------------ |
+| `params`     | `P`               | Reactive params. Mutate properties to trigger redraws. Top-level reassignment throws |
+| `geometry`   | `GeometryLayer`   | Geometry layer. Call `.group()` to create groups                                     |
+| `dimensions` | `DimensionsLayer` | Dimensions layer. Call `.group()` to create groups                                   |
 
-Create groups once at setup, grab builders inside draw callbacks.
+Create groups once at setup, grab builders inside draw callbacks. Groups persist across frames.
 
 ### Methods
 
-```typescript
-const unsubscribe = scene.draw((params) => {
-  // build geometry and dimensions
-});
+#### Drawing
 
-unsubscribe(); // stop this callback
-
-scene.dispose(); // tear down everything
-```
-
-```typescript
-scene.params.width = 150; // supported
-Object.assign(scene.params, { width: 200, height: 100 }); // supported
-scene.params = { width: 200, height: 100 }; // throws
-```
-
-| Method                          | Description                                                                                               |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `enableFilter(bool)`            | Enable pencil-style SVG filter. Default: `false`. Can be slow on Safari with many paths during zoom       |
-| `setFilterIntensity(number)`    | Pencil displacement intensity. Default: `1.25`. Higher = more wobble                                      |
-| `enableGrid(bool)`              | Show/hide graph-paper background. Default: `true`                                                         |
-| `enableAxes(bool)`              | Show/hide center axes. Default: `true`                                                                    |
-| `enablePan(bool)`               | Enable pan (middle-mouse or shift+click). Default: `false`                                                |
-| `enableZoom(bool)`              | Enable wheel zoom (1x-20x). Default: `false`                                                              |
-| `setViewScale(number)`          | Scale entire view (0.1-10x) for responsive layouts. Doesn't change the coordinate system or camera state  |
-| `enableFill(bool)`              | Toggle fills globally. When enabled: uses per-path `fill` or default hatch. When disabled: all fills hidden |
-| `resetCamera()`                 | Animate camera back to origin                                                                             |
-| `addHatchFill(color, opacity?)` | Create 45 degree hatch pattern. Returns `url(#id)` for use in `path({ fill })`                            |
-| `dispose()`                     | Clean up listeners, DOM, defs                                                                             |
+| Method | Signature                                       | Description                                          |
+| ------ | ----------------------------------------------- | ---------------------------------------------------- |
+| `draw` | `(callback: (params: P) => void) => () => void` | Register draw callback. Returns unsubscribe function |
 
 Engine idles when all draw callbacks unsubscribe (unless camera/input is active).
 
-```typescript
-const tealFill = scene.addHatchFill("#0f766e");
-geom.path({ fill: tealFill }).moveToAbs(...).lineTo(...).close();
+#### Toggles
 
-scene.setFilterIntensity(0.9);
+| Method         | Signature                    | Default | Description                                                                |
+| -------------- | ---------------------------- | ------- | -------------------------------------------------------------------------- |
+| `enableFilter` | `(enabled: boolean) => void` | `false` | Pencil-style SVG filter. Can be slow on Safari with many paths during zoom |
+| `enableGrid`   | `(enabled: boolean) => void` | `true`  | Show/hide graph-paper background                                           |
+| `enableAxes`   | `(enabled: boolean) => void` | `true`  | Show/hide center axes                                                      |
+| `enableFill`   | `(enabled: boolean) => void` | `true`  | Toggle fills globally. When disabled, all fills hidden                     |
+| `enablePan`    | `(enabled: boolean) => void` | `false` | Enable pan (middle-mouse or shift+click)                                   |
+| `enableZoom`   | `(enabled: boolean) => void` | `false` | Enable wheel zoom (1x-20x)                                                 |
+
+#### Filter
+
+| Method               | Signature                     | Default | Description                                         |
+| -------------------- | ----------------------------- | ------- | --------------------------------------------------- |
+| `setFilterIntensity` | `(intensity: number) => void` | `1.25`  | Pencil displacement intensity. Higher = more wobble |
+
+#### Camera
+
+| Method         | Signature                 | Description                                                                                                                         |
+| -------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `resetCamera`  | `() => void`              | Animate camera back to origin                                                                                                       |
+| `setViewScale` | `(scale: number) => void` | Scale entire view (0.1x-10x) for responsive layouts. Doesn't change coordinate system or camera state. Transitions are interpolated |
+
+#### Fills
+
+| Method         | Signature                                     | Description                                                                    |
+| -------------- | --------------------------------------------- | ------------------------------------------------------------------------------ |
+| `addHatchFill` | `(color: string, opacity?: number) => string` | Create 45-degree hatch pattern. Returns `url(#id)` for use in `path({ fill })` |
+
+#### Lifecycle
+
+| Method    | Signature    | Description                   |
+| --------- | ------------ | ----------------------------- |
+| `dispose` | `() => void` | Clean up listeners, DOM, defs |
+
+## GeometryGroup
+
+### Creating a group
+
+```typescript
+const geometryGroup = scene.geometry.group();
 ```
 
-#### Responsive Scaling
+Create groups once at setup, outside draw callbacks. Groups persist across frames. Grab builders with `path()` inside draw callbacks.
 
-Scale the view for different screen sizes:
+### Methods
 
-```typescript
-// Mobile - scale down to give geometry more room
-if (window.innerWidth <= 640) {
-  scene.setViewScale(0.7);
-}
-
-// Tablet
-else if (window.innerWidth <= 1024) {
-  scene.setViewScale(0.85);
-}
-
-// Desktop - full scale
-else {
-  scene.setViewScale(1.0);
-}
-```
-
-- Scales visual output only, coordinate system stays the same
-- Zoom/pan still work normally
-- Camera state preserved (zoom level unaffected)
-- Transitions are interpolated
-
-## Geometry
-
-### GeometryGroup
-
-Create groups once, outside draw callbacks. Groups persist across frames. Grab builders with `path()` inside draw callbacks.
-
-| Method               | Description                                                                                            |
-| -------------------- | ------------------------------------------------------------------------------------------------------ |
-| `path(options?)`     | Request `PathBuilder`. Supports `className`, `fill`, `stroke`, `fillRule`. Returns chainable builder   |
-| `translate(x, y)`    | Offset group in world space. Direct DOM write, no redraw                                               |
-| `scale(x, y)`        | Scale group. Direct DOM write, no redraw                                                               |
-| `setDrawUsage(mode)` | `"static"` commits once, `"dynamic"` (default) every frame. Static skips DOM writes after first commit |
-| `clear()`            | Remove all paths, reset state and transform                                                            |
+| Method         | Signature                                | Description                                                |
+| -------------- | ---------------------------------------- | ---------------------------------------------------------- |
+| `path`         | `(options?: PathOptions) => PathBuilder` | Returns a chainable PathBuilder for this frame             |
+| `translate`    | `(x: number, y: number) => void`         | Offset group in world space. Direct DOM write, no redraw   |
+| `scale`        | `(x: number, y: number) => void`         | Scale group. Direct DOM write, no redraw                   |
+| `setDrawUsage` | `(mode: "static" \| "dynamic") => void`  | `"static"` commits once, `"dynamic"` (default) every frame |
+| `visible`      | `(visible: boolean) => void`             | Show/hide the group                                        |
+| `clear`        | `() => void`                             | Remove all paths, reset state and transform                |
 
 In static mode, still call `path()` every frame. The engine detects unchanged geometry and skips DOM writes after the first commit.
 
-#### path(options) fields
+### PathOptions
 
-| Option      | Description                                                                                            |
-| ----------- | ------------------------------------------------------------------------------------------------------ |
-| `className` | CSS class for `<path>`                                                                                 |
-| `fill`      | CSS fill value (from `addHatchFill()` or manual). Omit for default hatch. Use `"none"` for stroke-only |
-| `stroke`    | CSS stroke value. Overrides default                                                                    |
-| `fillRule`  | `"evenodd"` (default) or `"nonzero"`. Use evenodd for cutouts, nonzero for simple fills                |
+| Option      | Type                     | Default       | Description                                                                    |
+| ----------- | ------------------------ | ------------- | ------------------------------------------------------------------------------ |
+| `className` | `string`                 | —             | CSS class for `<path>`                                                         |
+| `fill`      | `string`                 | default hatch | CSS fill value (from `addHatchFill()` or manual). Use `"none"` for stroke-only |
+| `stroke`    | `string`                 | —             | CSS stroke value. Overrides default                                            |
+| `fillRule`  | `"evenodd" \| "nonzero"` | `"evenodd"`   | Use evenodd for cutouts, nonzero for simple fills                              |
 
-### PathBuilder
+## PathBuilder
 
-All methods return `this` for chaining. Relative commands move from current position, absolute commands move to world coordinates.
+All methods return `this` for chaining unless noted otherwise. Relative commands move from the current position, absolute commands move to world coordinates.
+
+### Movement
+
+| Method      | Signature                  | Description   |
+| ----------- | -------------------------- | ------------- |
+| `moveTo`    | `(dx: number, dy: number) => PathBuilder` | Relative move |
+| `moveToAbs` | `(x: number, y: number) => PathBuilder`   | Absolute move |
+
+### Lines
+
+| Method      | Signature                                  | Description   |
+| ----------- | ------------------------------------------ | ------------- |
+| `lineTo`    | `(dx: number, dy: number) => PathBuilder` | Relative line |
+| `lineToAbs` | `(x: number, y: number) => PathBuilder`   | Absolute line |
+
+### Arcs
+
+| Method     | Signature                                                                      | Description  |
+| ---------- | ------------------------------------------------------------------------------ | ------------ |
+| `arcTo`    | `(dx: number, dy: number, r: number, clockwise?: boolean, largeArc?: boolean) => PathBuilder` | Relative arc |
+| `arcToAbs` | `(x: number, y: number, r: number, clockwise?: boolean, largeArc?: boolean) => PathBuilder`   | Absolute arc |
+
+| Param       | Default | Description                                                                           |
+| ----------- | ------- | ------------------------------------------------------------------------------------- |
+| `clockwise` | `false` | Arc sweep direction in visual space (after Y-flip). `true` sweeps clockwise on screen |
+| `largeArc`  | `false` | Whether the arc spans more than 180 degrees                                           |
+| `r <= 0`    | —       | Falls back to a straight line                                                         |
+
+### Cubic Bezier
+
+| Method             | Signature                          | Description                                                      |
+| ------------------ | ---------------------------------- | ---------------------------------------------------------------- |
+| `cubicTo`          | `(c1dx, c1dy, c2dx, c2dy, dx, dy) => PathBuilder` | Relative cubic. Two control points (entry and exit handles)      |
+| `cubicToAbs`       | `(c1x, c1y, c2x, c2y, x, y) => PathBuilder`       | Absolute cubic                                                   |
+| `smoothCubicTo`    | `(c2dx, c2dy, dx, dy) => PathBuilder`             | Relative smooth cubic. First handle mirrors previous exit handle |
+| `smoothCubicToAbs` | `(c2x, c2y, x, y) => PathBuilder`                 | Absolute smooth cubic                                            |
+
+### Quadratic Bezier
+
+| Method            | Signature              | Description                                                             |
+| ----------------- | ---------------------- | ----------------------------------------------------------------------- |
+| `quadTo`          | `(c1dx, c1dy, dx, dy) => PathBuilder` | Relative quadratic. One control point                                   |
+| `quadToAbs`       | `(c1x, c1y, x, y) => PathBuilder`     | Absolute quadratic                                                      |
+| `smoothQuadTo`    | `(dx, dy) => PathBuilder`             | Relative smooth quadratic. Control point inferred from previous segment |
+| `smoothQuadToAbs` | `(x, y) => PathBuilder`               | Absolute smooth quadratic                                               |
+
+Smooth commands (`S/s`, `T/t`) depend on the previous curve segment. If there's no compatible previous segment (like after a line or move), SVG treats the inferred control point as the current point, giving a sharp corner instead.
+
+### Utility
+
+| Method     | Signature        | Description                                                  |
+| ---------- | ---------------- | ------------------------------------------------------------ |
+| `close`    | `() => PathBuilder` | Close the path                                               |
+| `reset`    | `() => void`     | Clear all commands. **Not chainable**                        |
+| `toString` | `() => string`   | Returns the SVG path `d` attribute string. **Not chainable** |
+
+## DimensionsGroup
+
+### Creating a group
 
 ```typescript
-const path = geom.path({ className: "optional-class" });
-
-path.moveTo(dx, dy)          // relative move
-path.moveToAbs(x, y)         // absolute move
-path.lineTo(dx, dy)          // relative line
-path.lineToAbs(x, y)         // absolute line
-path.cubicTo(c1dx, c1dy, c2dx, c2dy, dx, dy)         // relative cubic Bezier
-path.cubicToAbs(c1x, c1y, c2x, c2y, x, y)            // absolute cubic Bezier
-path.smoothCubicTo(c2dx, c2dy, dx, dy)               // relative smooth cubic
-path.smoothCubicToAbs(c2x, c2y, x, y)                // absolute smooth cubic
-path.quadTo(c1dx, c1dy, dx, dy)                      // relative quadratic Bezier
-path.quadToAbs(c1x, c1y, x, y)                       // absolute quadratic Bezier
-path.smoothQuadTo(dx, dy)                            // relative smooth quadratic
-path.smoothQuadToAbs(x, y)                           // absolute smooth quadratic
-path.arcTo(dx, dy, r, clockwise?, largeArc?)    // relative arc
-path.arcToAbs(x, y, r, clockwise?, largeArc?)   // absolute arc
-path.close()                 // close path
-path.reset()                 // clear commands
+const dimensionsGroup = scene.dimensions.group();
 ```
-
-#### Curve types
-
-| Command family                               | When to use                                                                                                         |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `cubicTo` / `cubicToAbs` (`C/c`)             | Two control points (entry and exit handles). Most flexible curve type                                               |
-| `smoothCubicTo` / `smoothCubicToAbs` (`S/s`) | Continues a cubic smoothly. First handle mirrors the previous segment's exit handle. Good for connected S-curves    |
-| `quadTo` / `quadToAbs` (`Q/q`)               | One control point. Simpler than cubic, good for rounded corners and simple arcs                                     |
-| `smoothQuadTo` / `smoothQuadToAbs` (`T/t`)   | Continues a quadratic smoothly with inferred control point. Good for wave-like forms                                |
-
-Smooth commands (`S/s`, `T/t`) depend on the previous curve segment. If there's no compatible previous segment (like after a line or move), SVG treats the inferred control point as the current point, which gives you a sharp corner instead.
-
-| Param       | Description                                                                                                    |
-| ----------- | -------------------------------------------------------------------------------------------------------------- |
-| `clockwise` | Arc sweep direction in visual space (after Y-flip). Default: `false`. Pass `true` to sweep clockwise on screen |
-| `largeArc`  | Whether the arc spans more than 180 degrees. Default: `false`. Use `true` for major arcs                       |
-| `r ≤ 0`     | Falls back to straight line instead of an arc                                                                  |
-
-## Dimensions
-
-### DimensionsGroup
 
 Same pattern as geometry groups. Create once, outside draw callbacks.
 
-Methods: `translate(x, y)`, `setDrawUsage(mode)`, `clear()`, `dimension(options?)`. Clear resets translation to origin.
+### Methods
 
-### DimensionsBuilder: Positioning
+| Method         | Signature                                           | Description                                                |
+| -------------- | --------------------------------------------------- | ---------------------------------------------------------- |
+| `dimension`    | `(options?: DimensionOptions) => DimensionsBuilder` | Returns a chainable DimensionsBuilder for this frame       |
+| `translate`    | `(x: number, y: number) => void`                    | Offset group in world space. Direct DOM write, no redraw   |
+| `setDrawUsage` | `(mode: "static" \| "dynamic") => void`             | `"static"` commits once, `"dynamic"` (default) every frame |
+| `visible`      | `(visible: boolean) => void`                        | Show/hide the group                                        |
+| `clear`        | `() => void`                                        | Remove all dimensions, reset state and transform           |
 
-```typescript
-const dim = dims.dimension({ className: "optional-class" });
+### DimensionOptions
 
-dim.moveTo(dx, dy); // relative move
-dim.moveToAbs(x, y); // absolute move
-dim.lineTo(dx, dy); // relative line
-dim.lineToAbs(x, y); // absolute line
-```
+| Option      | Type     | Description                      |
+| ----------- | -------- | -------------------------------- |
+| `className` | `string` | CSS class for dimension elements |
 
-Relative moves from current position, absolute moves to world coordinates.
+## DimensionsBuilder
 
-### DimensionsBuilder: Primitives
+All methods return `this` for chaining unless noted otherwise. Angles in radians. `0` points right, `π/2` points up.
 
-Angles in radians. `0` points right, `π/2` points up.
+### Positioning
 
-```typescript
-dim.arc(r, startAngle, endAngle)     // arc centered at current position
-dim.arrow(angleRad, size?)           // open arrow (default size: 8)
-dim.arrowFilled(angleRad, size?)     // filled arrow (default size: 8)
-dim.tick(angleRad, size?)            // architectural tick (default size: 15)
-dim.centerMark(size?)                // crosshair with center dot (default size: 10)
-dim.close()                          // close path
-```
+| Method      | Signature                  | Description   |
+| ----------- | -------------------------- | ------------- |
+| `moveTo`    | `(dx: number, dy: number) => DimensionsBuilder` | Relative move |
+| `moveToAbs` | `(x: number, y: number) => DimensionsBuilder`   | Absolute move |
+| `lineTo`    | `(dx: number, dy: number) => DimensionsBuilder` | Relative line |
+| `lineToAbs` | `(x: number, y: number) => DimensionsBuilder`   | Absolute line |
 
-| Primitive     | Notes                                                                                            |
-| ------------- | ------------------------------------------------------------------------------------------------ |
-| `arc`         | Arc from `startAngle` to `endAngle` around current position. Direction inferred from angle order |
-| `arrow`       | Open V-arrow. Tip at current position, wings extend back                                         |
-| `arrowFilled` | Filled triangle arrow on separate path layer                                                     |
-| `tick`        | Crossed lines rotated by `angleRad`                                                              |
-| `centerMark`  | Crosshair with filled center dot                                                                 |
+### Markers
 
-### DimensionsBuilder: Text
+| Method        | Signature                                                | Default size | Description                                              |
+| ------------- | -------------------------------------------------------- | ------------ | -------------------------------------------------------- |
+| `arrow`       | `(angleRad: number, size?: number) => DimensionsBuilder` | `8`          | Open V-arrow. Tip at current position, wings extend back |
+| `arrowFilled` | `(angleRad: number, size?: number) => DimensionsBuilder` | `8`          | Filled triangle arrow on separate path layer             |
+| `tick`        | `(angleRad: number, size?: number) => DimensionsBuilder` | `15`         | Architectural tick (crossed lines rotated by `angleRad`) |
+| `centerMark`  | `(size?: number) => DimensionsBuilder`                   | `10`         | Crosshair with filled center dot                         |
 
-```typescript
-dim.textAt(dx, dy, text, align?, className?)
-dim.textAtAbs(x, y, text, align?, className?)
-```
+### Arc
 
-**align:** `"start"` | `"middle"` | `"end"` (default: `"middle"`). Controls text anchor.
-**className:** Optional CSS class for `<text>`.
+| Method | Signature                                                            | Description                                                           |
+| ------ | -------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `arc`  | `(r: number, startAngle: number, endAngle: number) => DimensionsBuilder` | Arc centered at current position. Direction inferred from angle order |
+
+### Text
+
+| Method      | Signature                                                                                     | Description             |
+| ----------- | --------------------------------------------------------------------------------------------- | ----------------------- |
+| `textAt`    | `(dx: number, dy: number, text: string, align?: string, className?: string) => DimensionsBuilder` | Relative text placement |
+| `textAtAbs` | `(x: number, y: number, text: string, align?: string, className?: string) => DimensionsBuilder`   | Absolute text placement |
+
+`align`: `"start"` | `"middle"` (default) | `"end"`. Controls text anchor.
 
 Text is rendered in world space (Y-up). The engine transforms it to appear upright on screen.
+
+### Utility
+
+| Method  | Signature    | Description              |
+| ------- | ------------ | ------------------------ |
+| `close` | `() => DimensionsBuilder` | Close the dimension path |
+
+## CSS Variables
+
+Override these on `.pluton-root` to customize appearance.
+
+| Variable                         | Default                 | Description                   |
+| -------------------------------- | ----------------------- | ----------------------------- |
+| `--pluton-grid-minor-stroke`     | `rgba(0, 0, 0, 0.025)`  | Minor grid line color         |
+| `--pluton-grid-major-stroke`     | `rgba(0, 0, 0, 0.12)`   | Major grid line color         |
+| `--pluton-grid-stroke-width`     | `0.5`                   | Grid line width               |
+| `--pluton-axis-color`            | `rgba(0, 0, 0, 0.2)`    | Center axis color             |
+| `--pluton-axis-stroke-width`     | `1`                     | Axis line width               |
+| `--pluton-axis-dash`             | `5 5`                   | Axis dash pattern             |
+| `--pluton-geometry-stroke`       | `rgba(0, 0, 0, 0.7)`    | Default geometry stroke color |
+| `--pluton-geometry-stroke-width` | `1`                     | Geometry stroke width         |
+| `--pluton-hatch-color`           | `rgba(0, 39, 50, 0.14)` | Default hatch fill color      |
+| `--pluton-dim-color`             | `rgba(0, 0, 0, 0.75)`   | Dimension line/marker color   |
+| `--pluton-dim-stroke-width`      | `1`                     | Dimension stroke width        |
+| `--pluton-dim-text-color`        | `rgba(0, 0, 0, 0.75)`   | Dimension text color          |
+| `--pluton-dim-font-size`         | `12px`                  | Dimension text size           |
+| `--pluton-dim-font-family`       | `system-ui, sans-serif` | Dimension text font           |

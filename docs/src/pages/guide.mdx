@@ -8,6 +8,8 @@ imageSrc: /og-images/guide.jpg
 
 # Guide
 
+> If you prefer reading method signatures over prose, the [API reference](/api) has you covered.
+
 While working on a different side project I had the need to draw reactive small blueprints and technical drawings. First
 thing I thought of, of course, was SVG: it's math-based so it's crisp at any zoom level, it's powerful, and is CPU-driven so
 I didn't have to scaffold a whole GPU setup.
@@ -27,8 +29,8 @@ The biggest realization though, that happened almost at the same time, was that 
 and all these different tags, all I needed was `<path>`. Turns out the SVG 2 spec itself defines every basic shape as
 mathematically equivalent to a path, they're wrappers on `<path>` all the way down.
 
-I created a very basic class that exposed primitives like `moveTo`, `lineTo` and `arcTo` and things started to get more
-very interesting. At this point I was hooked in.
+I created a very basic class that exposed primitives like `moveTo`, `lineTo` and `arcTo` and things started to get very
+interesting. At this point I was hooked in.
 
 The potential was pretty obvious to me so I decided to create an npm library out of this project, with proper care and polish
 in every aspect because if I needed it someone else might need it too :)
@@ -36,9 +38,7 @@ in every aspect because if I needed it someone else might need it too :)
 There were many iterations over the weeks but the core design didnt change (almost) at all: an engine with scheduled rendering
 and batching, event-based communication between systems, a path and dimensions builders, hatching, a "camera" system to handle
 scale and pan, graph paper background and a filter for an imperfect look. I kept refining it, always keeping simplicity,
-readability, and no hidden magic as core values.
-
-> If you prefer reading method signatures over prose, the [API reference](/api) has you covered.
+readability, and no hidden magic as priorities.
 
 ## Let's draw a rectangle
 
@@ -107,14 +107,14 @@ Since everything is path-based, a circle is (usually) two half-circle arcs stitc
 
 ```typescript
 scene.draw((p) => {
-  cont { radius } = p
+  const { radius } = p;
   const circle = geometryGroup.path();
 
   circle
     .moveToAbs(-radius, 0)
     .arcTo(radius * 2, 0, radius, true) // draw the upper semi-circle clockwise
     .arcTo(-radius * 2, 0, radius, true) // draw the lower semi-circle clockwise
-    .close(); // optional, the circles is basically close, this finalizes the path
+    .close(); // optional, the circle is basically closed, this finalizes the path
 });
 ```
 
@@ -129,19 +129,19 @@ kind of do it with one as well:
 
 ```typescript
 scene.draw((p) => {
-  cont { radius } = p
+  const { radius } = p;
   const circle = geometryGroup.path();
 
   circle
     .moveToAbs(-radius, 0)
-    .arcTo(0, -Number.EPSILON, radius, true, true) // draw a large arc from wher we are to almost where we are, clockwise
+    .arcTo(0, -Number.EPSILON, radius, true, true) // draw a large arc from where we are to almost where we are, clockwise
     .close();
 });
 ```
 
-`arcTo(dx, dy, r, clockwise, largeArc)` the last param in this api simply tells the arc that it will exceed 180 degrees.
+`arcTo(dx, dy, r, clockwise, largeArc)` the last param in this API simply tells the arc that it will exceed 180 degrees.
 
-My personally advice is to use at least two arcs because it's much more robust, don't be lazy :)
+My personal advice is to use at least two arcs because it's much more robust, don't be lazy :)
 
 ## Something more complex
 

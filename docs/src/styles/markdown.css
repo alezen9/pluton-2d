@@ -110,3 +110,9 @@ table td:first-child code {
 #doc-content hr {
   display: none;
 }
+
+@media screen and (max-width: 1024px) {
+  pre::after {
+    display: none;
+  }
+}

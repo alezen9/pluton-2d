@@ -179,7 +179,7 @@
 
   ul {
     margin-top: 1em;
-    max-height: 75vh;
+    max-height: calc(100vh - 64px - 3rem);
     overflow-y: auto;
     padding: 0;
     list-style: none;
