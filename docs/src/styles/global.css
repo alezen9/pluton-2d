@@ -45,7 +45,6 @@
 
 html {
   scroll-behavior: smooth;
-  overscroll-behavior-y: none;
 }
 
 body {
@@ -100,7 +99,6 @@ body {
   min-height: 100vh;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
-  overscroll-behavior-y: none;
 }
 
 body::before {

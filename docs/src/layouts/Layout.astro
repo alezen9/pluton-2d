@@ -25,7 +25,11 @@ const enableClientRouter = import.meta.env.PROD;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <BaseHead title={composedTitle} description={description} imageSrc={imageSrc} />
+    <BaseHead
+      title={composedTitle}
+      description={description}
+      imageSrc={imageSrc}
+    />
     <link rel="icon" href={`${base}/favicon.svg`} />
     {enableClientRouter && <ClientRouter />}
   </head>
@@ -43,6 +47,6 @@ const enableClientRouter = import.meta.env.PROD;
     position: relative;
     max-width: 1680px;
     margin: 0 auto;
-    min-height: 100dvh;
+    min-height: calc(100dvh - 64px);
   }
 </style>
