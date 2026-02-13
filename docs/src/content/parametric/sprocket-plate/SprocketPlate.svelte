@@ -143,22 +143,22 @@
         .tick(-Math.PI / 2)
         .textAt(
           -12,
-          -boltCircleRadius,
+          -boltCircleRadius - 12,
           `${Math.round(boltCircleRadius * 2)} mm PCD`,
           "end",
           "sprocket-dim",
         )
 
         // BORE
-        .moveToAbs(-outerRadius - 82, -p.boreRadius)
+        .moveToAbs(outerRadius + 44, -p.boreRadius)
         .tick(Math.PI / 2)
         .lineTo(0, p.boreRadius * 2)
         .tick(-Math.PI / 2)
         .textAt(
-          -12,
-          -p.boreRadius,
+          12,
+          -p.boreRadius + 12,
           `${Math.round(p.boreRadius * 2)} mm BORE`,
-          "end",
+          "start",
           "sprocket-dim",
         );
 
