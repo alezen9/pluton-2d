@@ -1,9 +1,12 @@
 ---
-interface Props {
+type Props = {
   title?: string;
   description?: string;
   imageSrc?: string;
-}
+};
+
+const CF_TOKEN = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+const isProd = import.meta.env.PROD;
 
 const { title, description, imageSrc } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -12,6 +15,17 @@ const absoluteImageUrl = imageSrc
   : undefined;
 ---
 
+<!-- Cloudflare Web Analytics -->{
+  isProd && CF_TOKEN && (
+    <script
+      is:inline
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={JSON.stringify({ token: CF_TOKEN })}
+    />
+  )
+}
+<!-- End Cloudflare Web Analytics --><!-- Global Metadata -->
 {title && <title>{title}</title>}
 {description && <meta name="description" content={description} />}
 <link rel="canonical" href={canonicalURL} />
@@ -20,7 +34,10 @@ const absoluteImageUrl = imageSrc
 {description && <meta property="og:description" content={description} />}
 <meta property="og:url" content={canonicalURL} />
 {absoluteImageUrl && <meta property="og:image" content={absoluteImageUrl} />}
-<meta name="twitter:card" content={absoluteImageUrl ? "summary_large_image" : "summary"} />
+<meta
+  name="twitter:card"
+  content={absoluteImageUrl ? "summary_large_image" : "summary"}
+/>
 {title && <meta name="twitter:title" content={title} />}
 {description && <meta name="twitter:description" content={description} />}
 {absoluteImageUrl && <meta name="twitter:image" content={absoluteImageUrl} />}

@@ -87,6 +87,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [changes, build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.docs_changed == 'true'
+    env:
+      PUBLIC_CF_BEACON_TOKEN: ${{ secrets.PUBLIC_CF_BEACON_TOKEN }}
     permissions:
       contents: read
       pages: write
