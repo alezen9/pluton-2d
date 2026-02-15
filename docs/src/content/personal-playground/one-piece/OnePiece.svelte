@@ -178,18 +178,3 @@
     </div>
   {/snippet}
 </ExampleLayout>
-
-<!-- <style>
-  :global(svg) {
-    background-color: rgba(0, 0, 0, 0.85);
-  }
-
-  :global(.pluton-root) {
-    --pluton-grid-minor-stroke: rgba(213, 213, 213, 0.025);
-    --pluton-grid-major-stroke: rgba(255, 255, 255, 0.12);
-    --pluton-grid-stroke-width: 0.5;
-    --pluton-axis-color: rgba(172, 172, 172, 0.2);
-    --pluton-dim-color: rgba(204, 204, 204, 0.75);
-    --pluton-dim-text-color: rgba(204, 204, 204, 0.75);
-  }
-</style> -->
