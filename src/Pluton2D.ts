@@ -136,8 +136,8 @@ export class Pluton2D<
 
   /**
    * Enable or disable the hand-drawn pencil filter effect
+   * Initial state is disabled.
    * @param enabled - whether the filter is active
-   * @defaultValue false
    */
   enableFilter(enabled: boolean) {
     this.scene.enableFilter(enabled);
@@ -153,8 +153,8 @@ export class Pluton2D<
 
   /**
    * Enable or disable the built-in graph-paper background
+   * Initial state is visible.
    * @param enabled - whether the graph-paper is visible
-   * @defaultValue true
    */
   enableGrid(enabled: boolean) {
     this.scene.enableGrid(enabled);
@@ -162,8 +162,8 @@ export class Pluton2D<
 
   /**
    * Enable or disable the built-in axes
+   * Initial state is visible.
    * @param enabled - whether the axes are visible
-   * @defaultValue true
    */
   enableAxes(enabled: boolean) {
     this.scene.enableAxes(enabled);
@@ -171,8 +171,8 @@ export class Pluton2D<
 
   /**
    * Enable or disable camera panning
+   * Initial state is disabled.
    * @param enabled - whether pan input is active
-   * @defaultValue false
    */
   enablePan(enabled: boolean) {
     this.camera.enablePan(enabled);
@@ -180,8 +180,8 @@ export class Pluton2D<
 
   /**
    * Enable or disable camera zooming
+   * Initial state is disabled.
    * @param enabled - whether zoom input is active
-   * @defaultValue false
    */
   enableZoom(enabled: boolean) {
     this.camera.enableZoom(enabled);
@@ -189,8 +189,8 @@ export class Pluton2D<
 
   /**
    * Enable or disable geometry fills (solid and hatch)
+   * Initial state is visible.
    * @param enabled - whether geometry fills are visible
-   * @defaultValue true
    */
   enableFill(enabled: boolean) {
     if (enabled) this.context.svg.classList.remove("pluton-no-fill");

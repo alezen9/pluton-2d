@@ -278,8 +278,7 @@ export class DimensionsBuilder {
 
   /**
    * Draw a center mark (crosshair with center dot) at current position
-   * @param size - total size of the crosshair
-   * @defaultValue 10
+   * @param size - total size of the crosshair, defaults to `10`
    * @returns this builder for chaining
    */
   centerMark(size = 10) {
@@ -334,8 +333,7 @@ export class DimensionsBuilder {
    * @param dx - horizontal offset from current position
    * @param dy - vertical offset from current position
    * @param text - text content to display
-   * @param align - text alignment (maps to SVG text-anchor: start, middle, end)
-   * @defaultValue "middle"
+   * @param align - text alignment (maps to SVG text-anchor: start, middle, end), defaults to `"middle"`
    * @param className - optional class name for the text element
    * @returns this builder for chaining
    */
@@ -361,8 +359,7 @@ export class DimensionsBuilder {
    * @param x - absolute x coordinate
    * @param y - absolute y coordinate
    * @param text - text content to display
-   * @param align - text alignment (maps to SVG text-anchor: start, middle, end)
-   * @defaultValue "middle"
+   * @param align - text alignment (maps to SVG text-anchor: start, middle, end), defaults to `"middle"`
    * @param className - optional class name for the text element
    * @returns this builder for chaining
    */

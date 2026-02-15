@@ -154,10 +154,8 @@ export class PathBuilder {
    * @param dx - horizontal offset to end point
    * @param dy - vertical offset to end point
    * @param r - arc radius
-   * @param clockwise - whether the arc sweeps clockwise
-   * @defaultValue false
-   * @param largeArc - whether to take the arc > 180°
-   * @defaultValue false
+   * @param clockwise - whether the arc sweeps clockwise, defaults to `false`
+   * @param largeArc - whether to take the arc > 180°, defaults to `false`
    * @returns this builder for chaining
    */
   arcTo(dx: number, dy: number, r: number, clockwise = false, largeArc = false) {
@@ -178,10 +176,8 @@ export class PathBuilder {
    * @param x - absolute x coordinate of end point
    * @param y - absolute y coordinate of end point
    * @param r - arc radius
-   * @param clockwise - whether the arc sweeps clockwise
-   * @defaultValue false
-   * @param largeArc - whether to take the arc > 180°
-   * @defaultValue false
+   * @param clockwise - whether the arc sweeps clockwise, defaults to `false`
+   * @param largeArc - whether to take the arc > 180°, defaults to `false`
    * @returns this builder for chaining
    */
   arcToAbs(x: number, y: number, r: number, clockwise = false, largeArc = false) {

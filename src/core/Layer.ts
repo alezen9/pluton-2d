@@ -9,14 +9,14 @@ export type BaseGroup = {
   translate: (x: number, y: number) => void;
   /**
    * Set draw usage for this group
+   * New groups start with `"dynamic"` usage.
    * @param usage - controls whether commits run for this group
-   * @defaultValue "dynamic"
    */
   setDrawUsage: (usage: "static" | "dynamic") => void;
   /**
    * Set visibility of this group
+   * New groups start as visible.
    * @param visible - whether the group is visible
-   * @defaultValue true
    */
   visible: (visible: boolean) => void;
   /**
