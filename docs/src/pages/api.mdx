@@ -95,6 +95,27 @@ Engine idles when all draw callbacks unsubscribe (unless camera/input is active)
 | --------- | ------------ | ----------------------------- |
 | `dispose` | `() => void` | Clean up listeners, DOM, defs |
 
+## Utilities
+
+### snapshotSvg
+
+```typescript
+import { snapshotSvg } from "pluton-2d";
+
+const svgText = snapshotSvg(svgElement);
+```
+
+| Param            | Type            | Description                                        |
+| ---------------- | --------------- | -------------------------------------------------- |
+| `svg`            | `SVGSVGElement` | Source SVG element to snapshot                     |
+| `options.width`  | `number`        | Optional output width. Defaults to rendered width  |
+| `options.height` | `number`        | Optional output height. Defaults to rendered height |
+| `options.background` | `string`     | Optional background fill color for injected base rect |
+
+Returns a standalone SVG XML string with inlined computed styles and normalized local paint references (`url(#id)`).
+
+Use the returned string to create a Blob and download/upload as needed.
+
 ## GeometryGroup
 
 ### Creating a group

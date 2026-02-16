@@ -1,12 +1,15 @@
 <script lang="ts">
-  import type { Pluton2D } from "pluton-2d";
+  import { onMount } from "svelte";
+  import { snapshotSvg, type Pluton2D } from "pluton-2d";
   import type { InitialToggles } from "../types";
 
   let {
     scene,
+    svgEl,
     initialToggles = {},
   }: {
     scene: Pluton2D<any> | null;
+    svgEl?: SVGSVGElement | undefined;
     initialToggles?: Partial<InitialToggles>;
   } = $props();
 
@@ -19,8 +22,73 @@
   let axesOn = $state(getInitialToggle("axesOn", true));
   let hatchOn = $state(getInitialToggle("hatchOn", true));
   let filterOn = $state(getInitialToggle("filterOn", false));
+  let showExportButton = $state(import.meta.env.DEV);
 
   const resetCamera = () => scene?.resetCamera();
+
+  const hasExportUrlFlag = (): boolean => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).get("export") === "true";
+  };
+
+  const getFilenameBase = (): string => {
+    return (
+      window.location.pathname.split("/").filter(Boolean).at(-1) ?? "scene"
+    );
+  };
+
+  const getTimestamp = (): string => {
+    return new Date().toISOString().replace(/[:.]/g, "-");
+  };
+
+  const getExportBackground = (): string | undefined => {
+    if (!svgEl) return undefined;
+    const frame = svgEl.closest(".demo-frame");
+    if (!(frame instanceof HTMLElement)) return undefined;
+
+    const style = window.getComputedStyle(frame);
+    const canvasBg = style.getPropertyValue("--canvas-bg").trim();
+    if (canvasBg) return canvasBg;
+
+    const backgroundColor = style.backgroundColor.trim();
+    if (
+      !backgroundColor ||
+      backgroundColor === "transparent" ||
+      backgroundColor === "rgba(0, 0, 0, 0)"
+    ) {
+      return undefined;
+    }
+
+    return backgroundColor;
+  };
+
+  const exportSvgSnapshot = () => {
+    if (!svgEl) return;
+
+    try {
+      const xmlString = snapshotSvg(svgEl, {
+        background: getExportBackground(),
+      });
+      const blob = new Blob([xmlString], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = `${getFilenameBase()}-${getTimestamp()}.svg`;
+      anchor.style.display = "none";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+    } catch (error) {
+      console.error("Failed to export SVG snapshot:", error);
+    }
+  };
+
+  onMount(() => {
+    showExportButton = import.meta.env.DEV || hasExportUrlFlag();
+  });
 
   $effect(() => {
     if (!scene) return;
@@ -67,7 +135,19 @@
       <span>Zoom</span>
     </label>
   </div>
-  <button class="btn-reset" onclick={resetCamera}>Reset Camera</button>
+  <button class="btn-reset" type="button" onclick={resetCamera}
+    >Reset Camera</button
+  >
+  {#if showExportButton}
+    <button
+      class="btn-reset btn-export"
+      type="button"
+      onclick={exportSvgSnapshot}
+      disabled={!svgEl}
+    >
+      Export SVG
+    </button>
+  {/if}
 </div>
 
 <style>
@@ -167,5 +247,23 @@
     border-color: var(--accent);
     color: var(--accent);
     background: var(--accent-light);
+  }
+
+  .btn-reset:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: var(--panel-border);
+    color: var(--text-muted);
+    background: transparent;
+  }
+
+  .btn-reset:disabled:hover {
+    border-color: var(--panel-border);
+    color: var(--text-muted);
+    background: transparent;
+  }
+
+  .btn-export {
+    margin-top: var(--space-2);
   }
 </style>

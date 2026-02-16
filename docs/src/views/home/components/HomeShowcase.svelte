@@ -9,7 +9,7 @@
     close: () => PathLike;
   };
 
-  let svgEl: SVGSVGElement | undefined = $state();
+  let svgEl: SVGSVGElement | undefined;
   let scene: Pluton2D<Record<string, never>> | null = null;
 
   const drawClosedPath = (path: PathLike, points: Point[]) => {

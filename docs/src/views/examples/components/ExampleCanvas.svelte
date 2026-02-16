@@ -11,6 +11,7 @@
     mobileScale = 0.7,
     tabletScale = 0.85,
     scene = $bindable(),
+    svgEl = $bindable(),
   }: {
     initialParams: P;
     onSetup: (scene: Pluton2D<P>) => void;
@@ -18,9 +19,8 @@
     mobileScale?: number;
     tabletScale?: number;
     scene?: Pluton2D<P> | null;
+    svgEl?: SVGSVGElement | undefined;
   } = $props();
-
-  let svgEl: SVGSVGElement | undefined = $state();
 
   onMount(() => {
     if (!svgEl) return;

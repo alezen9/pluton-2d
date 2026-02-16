@@ -18,7 +18,7 @@
   }: {
     initialParams: P;
     onSetup: (scene: Pluton2D<P>) => void;
-    drawing?: Snippet<[Pluton2D<P> | null]>;
+    drawing?: Snippet<[Pluton2D<P> | null | undefined]>;
     controls?: Snippet;
     children?: Snippet;
     initialToggles?: Partial<InitialToggles>;
@@ -27,6 +27,7 @@
   } = $props();
 
   let scene = $state<Pluton2D<P> | null>(null);
+  let svgEl = $state<SVGSVGElement | undefined>(undefined);
 </script>
 
 <div class="scene-layout">
@@ -37,11 +38,12 @@
     {mobileScale}
     {tabletScale}
     bind:scene
+    bind:svgEl
   />
 
   <div class="example-controls-area">
     <ExampleControls {controls} {children} />
-    <ExampleDisplayToggles {scene} {initialToggles} />
+    <ExampleDisplayToggles {scene} {svgEl} {initialToggles} />
   </div>
 </div>
 
