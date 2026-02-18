@@ -117,3 +117,100 @@ test("geometry reuses/removes path nodes and respects static draw usage", async 
   expect(result.staticUnchanged).toBe(true);
   expect(result.dynamicChanged).toBe(true);
 });
+
+test("geometry and dimensions group translations stay aligned under viewBox scaling", async ({
+  page,
+}) => {
+  await openFixturePage(page);
+
+  const result = await page.evaluate(async () => {
+    const api = (window as Window & {
+      plutonE2E?: { Pluton2D?: new (...args: any[]) => any };
+    }).plutonE2E;
+    const Pluton2D = api?.Pluton2D;
+    if (!Pluton2D) throw new Error("Pluton2D is not available in fixture");
+
+    const app = document.querySelector("#app");
+    if (!(app instanceof HTMLElement)) {
+      throw new Error("Fixture root #app not found");
+    }
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "300");
+    svg.setAttribute("height", "150");
+    svg.setAttribute("viewBox", "0 0 600 300");
+    app.replaceChildren(svg);
+
+    const scene = new Pluton2D(svg, {});
+    const geometryGroup = scene.geometry.group();
+    const dimensionsGroup = scene.dimensions.group();
+
+    scene.draw(() => {
+      geometryGroup.path().moveToAbs(0, 0).lineToAbs(40, 0);
+      dimensionsGroup.dimension().moveToAbs(0, 0).lineTo(40, 0);
+    });
+
+    const waitFor = async (check: () => boolean, timeoutMs = 2000) => {
+      const start = performance.now();
+      while (performance.now() - start < timeoutMs) {
+        if (check()) return true;
+        await new Promise((resolve) => setTimeout(resolve, 16));
+      }
+      return false;
+    };
+
+    const ready = await waitFor(() => {
+      return Boolean(
+        svg.querySelector(".pluton-geometry .pluton-geometry-path") &&
+          svg.querySelector(".pluton-dimensions .pluton-dim-stroke"),
+      );
+    });
+    if (!ready) throw new Error("Scene did not render in time for transform test");
+
+    geometryGroup.translate(120, 30);
+    dimensionsGroup.translate(120, 30);
+
+    const geometryGroupEl = svg.querySelector(
+      ".pluton-geometry > .pluton-geometry-group",
+    ) as SVGGElement | null;
+    const dimensionsGroupEl = svg.querySelector(
+      ".pluton-dimensions > g",
+    ) as SVGGElement | null;
+    if (!(geometryGroupEl instanceof SVGGElement) || !(dimensionsGroupEl instanceof SVGGElement)) {
+      throw new Error("Group roots not found");
+    }
+
+    const geometryTransformAttr = geometryGroupEl.getAttribute("transform");
+    const dimensionsTransformAttr = dimensionsGroupEl.getAttribute("transform");
+    const geometryStyleTransform = geometryGroupEl.style.transform;
+    const dimensionsStyleTransform = dimensionsGroupEl.style.transform;
+
+    const geometryCtm = geometryGroupEl.getCTM();
+    const dimensionsCtm = dimensionsGroupEl.getCTM();
+
+    scene.dispose();
+
+    return {
+      geometryTransformAttr,
+      dimensionsTransformAttr,
+      geometryStyleTransform,
+      dimensionsStyleTransform,
+      geometryE: geometryCtm?.e ?? null,
+      geometryF: geometryCtm?.f ?? null,
+      dimensionsE: dimensionsCtm?.e ?? null,
+      dimensionsF: dimensionsCtm?.f ?? null,
+    };
+  });
+
+  expect(result.geometryTransformAttr).toBe("translate(120, 30) scale(1, 1)");
+  expect(result.dimensionsTransformAttr).toBe("translate(120, 30)");
+  expect(result.geometryStyleTransform).toBe("");
+  expect(result.dimensionsStyleTransform).toBe("");
+
+  expect(result.geometryE).not.toBeNull();
+  expect(result.geometryF).not.toBeNull();
+  expect(result.dimensionsE).not.toBeNull();
+  expect(result.dimensionsF).not.toBeNull();
+  expect(Math.abs((result.geometryE as number) - (result.dimensionsE as number))).toBeLessThan(0.001);
+  expect(Math.abs((result.geometryF as number) - (result.dimensionsF as number))).toBeLessThan(0.001);
+});

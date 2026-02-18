@@ -1,5 +1,9 @@
 function normalizePaintUrl(value: string): string {
-  return value.replace(/url\((['"]?)(?:[^)"']*?)#([^)'"\\s]+)\1\)/g, "url(#$2)");
+  const decodedQuotes = value.replaceAll("&quot;", "\"");
+  return decodedQuotes.replace(
+    /url\((['"]?)(?:[^)"']*?)#([^\s)"']+)\1\)/g,
+    "url(#$2)",
+  );
 }
 
 function formatDimension(value: number): string {
@@ -83,6 +87,18 @@ function copyComputedStyles(sourceSvg: SVGSVGElement, targetSvg: SVGSVGElement):
       const value = computed.getPropertyValue(prop).trim();
       if (!value) continue;
       targetNode.style.setProperty(prop, normalizePaintUrl(value));
+    }
+
+    // Some engines may omit SVG `filter` from the enumerable property list.
+    // Force-copy it so class-based filters survive in standalone snapshots.
+    const filterValue = computed.getPropertyValue("filter").trim();
+    if (filterValue && filterValue !== "none") {
+      targetNode.style.setProperty("filter", normalizePaintUrl(filterValue));
+    }
+
+    const sourceFilterAttr = sourceNode.getAttribute("filter");
+    if (sourceFilterAttr) {
+      targetNode.setAttribute("filter", normalizePaintUrl(sourceFilterAttr));
     }
 
     const styleAttr = targetNode.getAttribute("style");

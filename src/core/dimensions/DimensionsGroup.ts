@@ -164,7 +164,10 @@ export class DimensionsGroupInternal implements DimensionsGroup {
       e.builder.reset();
 
       if (className !== e.lastClass) {
-        e.path.setAttribute("class", `pluton-dim-stroke ${className}`);
+        e.path.setAttribute(
+          "class",
+          `pluton-dim-stroke ${className}`,
+        );
         e.filledPath.setAttribute("class", `pluton-dim-filled ${className}`);
         e.lastClass = className;
       }
@@ -176,7 +179,10 @@ export class DimensionsGroupInternal implements DimensionsGroup {
     this.g.appendChild(root);
 
     const path = document.createElementNS(SVG_NS, "path");
-    path.setAttribute("class", `pluton-dim-stroke ${className}`);
+    path.setAttribute(
+      "class",
+      `pluton-dim-stroke ${className}`,
+    );
     root.appendChild(path);
 
     const filledPath = document.createElementNS(SVG_NS, "path");

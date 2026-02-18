@@ -320,10 +320,12 @@ scene.draw(() => {
 When fills are enabled (default), paths without an explicit `fill` option get the default hatch. Use `fill: "none"` for
 stroke-only geometry.
 
-### Pencil filter
+### Filters
 
-`scene.enableFilter(true)` applies an SVG displacement filter that gives geometry a hand-drawn look.
-`scene.setFilterIntensity(value)` controls how strong the effect is.
+`scene.enableFilter(true)` applies a hand-drawn filter to geometry and dimensions.
+It combines:
+- displacement wobble (`setDisplacementScale`, `setDisplacementFrequency`, `setDisplacementOctaves`)
+- an incomplete-line mask (`setMaskFrequency`, `setMaskOctaves`, `setMaskScale`, `enableMask`) applied per geometry group; dimension strokes are also masked
 
 > On Safari, this filter can be expensive during zoom interactions. If frame rate drops, reduce intensity or disable the
 > filter while navigating.
@@ -331,8 +333,14 @@ stroke-only geometry.
 ## Scene controls
 
 ```typescript
-scene.enableFilter(true); // pencil/noise effect, default: false
-scene.setFilterIntensity(1.5); // default: 1.25
+scene.enableFilter(true); // hand-drawn filter, default: false
+scene.setDisplacementScale(2.75); // default: 2.75
+scene.setDisplacementFrequency(0.1); // default: 0.1
+scene.setDisplacementOctaves(1); // default: 1
+scene.setMaskFrequency(0.03); // mask frequency, default: 0.03
+scene.setMaskOctaves(1); // default: 1
+scene.setMaskScale(1.6); // mask density, default: 1.6
+scene.enableMask(false); // default: false
 scene.enableFill(true); // hatch fills, default: true
 scene.enableGrid(true); // background grid, default: true
 scene.enableAxes(true); // origin axes, default: true

@@ -47,16 +47,32 @@
   shape-rendering: crispEdges;
 }
 
-.pluton-root .pluton-geometry path {
+.pluton-root .pluton-geometry .pluton-geometry-path {
   fill: var(--hatch-fill-value, var(--pluton-default-hatch-fill, none));
-  fill-rule: evenodd;
   stroke: var(--stroke-value, var(--pluton-geometry-stroke));
   stroke-width: var(--pluton-geometry-stroke-width);
+  fill-rule: evenodd;
   shape-rendering: crispEdges;
 }
 
-.pluton-root.pluton-no-fill .pluton-geometry path {
+.pluton-root.pluton-no-fill .pluton-geometry .pluton-geometry-path {
   fill: none;
+}
+
+.pluton-root .pluton-geometry,
+.pluton-root .pluton-dimensions {
+  transform: translateZ(0);
+  will-change: filter;
+}
+
+.pluton-root.pluton-mask-on .pluton-geometry .pluton-geometry-group {
+  filter: url(#pluton-filter-mask);
+  will-change: filter;
+}
+
+.pluton-root.pluton-mask-on .pluton-dimensions .pluton-dim-stroke {
+  filter: url(#pluton-filter-mask);
+  will-change: filter;
 }
 
 .pluton-root .pluton-dimensions .pluton-dim-stroke {

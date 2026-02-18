@@ -48,8 +48,8 @@ export class DefsRegistry {
     return this.gradients.graphPaperMaskId;
   }
 
-  get pencilFilterId() {
-    return this.filters.pencilFilterId;
+  get displacementFilterId() {
+    return this.filters.displacementFilterId;
   }
 
   /**
@@ -62,11 +62,27 @@ export class DefsRegistry {
     return this.patterns.createColoredHatch(color, opacity);
   }
 
-  /**
-   * Set the pencil filter intensity
-   * @param intensity - displacement intensity, clamped to 0+
-   */
-  setPencilIntensity(intensity: number): void {
-    this.filters.setIntensity(intensity);
+  setDisplacementScale(scale: number): void {
+    this.filters.setDisplacementScale(scale);
+  }
+
+  setDisplacementFrequency(frequency: number): void {
+    this.filters.setDisplacementFrequency(frequency);
+  }
+
+  setDisplacementOctaves(octaves: number): void {
+    this.filters.setDisplacementOctaves(octaves);
+  }
+
+  setMaskFrequency(frequency: number): void {
+    this.filters.setMaskFrequency(frequency);
+  }
+
+  setMaskOctaves(octaves: number): void {
+    this.filters.setMaskOctaves(octaves);
+  }
+
+  setMaskScale(scale: number): void {
+    this.filters.setMaskScale(scale);
   }
 }

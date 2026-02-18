@@ -180,7 +180,7 @@ Viewport priority order:
 Migration note:
 
 - `new Pluton2D(svg, params, { filterIntensity })` was removed
-- Use `scene.setFilterIntensity(...)`
+- Use `scene.setDisplacementScale(...)`
 
 <br />
 
@@ -203,11 +203,26 @@ If all draw callbacks are removed, pending renders stop unless camera/input requ
 
 ```ts
 scene.enableFilter(true); // default: false
-scene.setFilterIntensity(1.5); // default: 1.25
+scene.setDisplacementScale(2.75); // default: 2.75
+scene.setDisplacementFrequency(0.1); // default: 0.1
+scene.setDisplacementOctaves(1); // default: 1
+
+scene.enableMask(false); // default: false
+scene.setMaskFrequency(0.03); // default: 0.03
+scene.setMaskOctaves(1); // default: 1
+scene.setMaskScale(1.6); // default: 1.6
+
 scene.enableFill(true); // default: true
+
 scene.enableGrid(true); // default: true
+
 scene.enableAxes(true); // default: true
 ```
+
+The hand-drawn filter has two independent parts:
+
+- Displacement (`setDisplacementScale/Frequency/Octaves`) — wobble applied to strokes and fills.
+- Mask (`setMaskScale/Frequency/Octaves/Enabled`) — incomplete-line masking applied to geometry groups (fills and strokes). Disabled by default.
 
 Safari caveat: SVG filters can be expensive during zoom.
 
@@ -487,7 +502,7 @@ Pluton2D is optimized for technical drawing workflows: crisp SVG, dimensions, ha
 
 ### Performance issues during zoom (Safari)
 
-- Disable pencil filter: `scene.enableFilter(false)`
+- Disable filter: `scene.enableFilter(false)`
 
 <br />
 <br />

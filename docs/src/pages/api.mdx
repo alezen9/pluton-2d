@@ -59,22 +59,23 @@ Create groups once at setup, grab builders inside draw callbacks. Groups persist
 
 Engine idles when all draw callbacks unsubscribe (unless camera/input is active).
 
-#### Toggles
+#### Scene Controls
 
-| Method         | Signature                    | Default | Description                                                                |
-| -------------- | ---------------------------- | ------- | -------------------------------------------------------------------------- |
-| `enableFilter` | `(enabled: boolean) => void` | `false` | Pencil-style SVG filter. Can be slow on Safari with many paths during zoom |
-| `enableGrid`   | `(enabled: boolean) => void` | `true`  | Show/hide graph-paper background                                           |
-| `enableAxes`   | `(enabled: boolean) => void` | `true`  | Show/hide center axes                                                      |
-| `enableFill`   | `(enabled: boolean) => void` | `true`  | Toggle fills globally. When disabled, all fills hidden                     |
-| `enablePan`    | `(enabled: boolean) => void` | `false` | Enable pan (middle-mouse or shift+click)                                   |
-| `enableZoom`   | `(enabled: boolean) => void` | `false` | Enable wheel zoom (1x-20x)                                                 |
-
-#### Filter
-
-| Method               | Signature                     | Default | Description                                         |
-| -------------------- | ----------------------------- | ------- | --------------------------------------------------- |
-| `setFilterIntensity` | `(intensity: number) => void` | `1.25`  | Pencil displacement intensity. Higher = more wobble |
+| Method                     | Signature                     | Default | Description                                                                    |
+| -------------------------- | ----------------------------- | ------- | ------------------------------------------------------------------------------ |
+| `enableFilter`             | `(enabled: boolean) => void`  | `false` | Hand-drawn SVG filter. Can be slow on Safari with many paths during zoom      |
+| `setDisplacementScale`     | `(scale: number) => void`     | `2.75`  | Displacement scale for strokes and fills. Higher = more wobble                |
+| `setDisplacementFrequency` | `(frequency: number) => void` | `0.1`   | Displacement noise frequency for strokes and fills                            |
+| `setDisplacementOctaves`   | `(octaves: number) => void`   | `1`     | Displacement noise octaves for strokes and fills                              |
+| `enableMask`               | `(enabled: boolean) => void`  | `false` | Enable or disable the mask for geometry groups and dimension strokes          |
+| `setMaskFrequency`         | `(frequency: number) => void` | `0.03`  | Mask noise frequency. Higher = finer line-break pattern                       |
+| `setMaskOctaves`           | `(octaves: number) => void`   | `1`     | Mask noise octaves                                                            |
+| `setMaskScale`             | `(scale: number) => void`     | `1.6`   | Mask amplitude scale. Higher = denser line breaks (effective threshold lower) |
+| `enableGrid`               | `(enabled: boolean) => void`  | `true`  | Show/hide graph-paper background                                              |
+| `enableAxes`               | `(enabled: boolean) => void`  | `true`  | Show/hide center axes                                                         |
+| `enableFill`               | `(enabled: boolean) => void`  | `true`  | Toggle fills globally. When disabled, all fills hidden                        |
+| `enablePan`                | `(enabled: boolean) => void`  | `false` | Enable pan (middle-mouse or shift+click)                                     |
+| `enableZoom`               | `(enabled: boolean) => void`  | `false` | Enable wheel zoom (1x-20x)                                                    |
 
 #### Camera
 

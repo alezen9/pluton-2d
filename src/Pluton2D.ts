@@ -135,7 +135,7 @@ export class Pluton2D<
   }
 
   /**
-   * Enable or disable the hand-drawn pencil filter effect
+   * Enable or disable the hand-drawn filter effect
    * Initial state is disabled.
    * @param enabled - whether the filter is active
    */
@@ -144,11 +144,61 @@ export class Pluton2D<
   }
 
   /**
-   * Set the pencil filter intensity
-   * @param intensity - displacement intensity, clamped to 0+
+   * Set displacement scale for the hand-drawn filter. Affects strokes and fills.
+   * @param scale - displacement scale, clamped to 0+
    */
-  setFilterIntensity(intensity: number) {
-    this.defs.setPencilIntensity(intensity);
+  setDisplacementScale(scale: number) {
+    this.defs.setDisplacementScale(scale);
+  }
+
+  /**
+   * Set displacement noise frequency for the hand-drawn filter. Affects strokes and fills.
+   * @param frequency - noise baseFrequency, clamped to 0+
+   */
+  setDisplacementFrequency(frequency: number) {
+    this.defs.setDisplacementFrequency(frequency);
+  }
+
+  /**
+   * Set displacement noise octaves for the hand-drawn filter. Affects strokes and fills.
+   * @param octaves - number of noise octaves, clamped to 0+
+   */
+  setDisplacementOctaves(octaves: number) {
+    this.defs.setDisplacementOctaves(octaves);
+  }
+
+  /**
+   * Set mask noise frequency for the hand-drawn filter.
+   * @param frequency - noise baseFrequency, clamped to 0+
+   */
+  setMaskFrequency(frequency: number) {
+    this.defs.setMaskFrequency(frequency);
+  }
+
+  /**
+   * Set mask noise octaves for the hand-drawn filter.
+   * @param octaves - number of noise octaves, clamped to 0+
+   */
+  setMaskOctaves(octaves: number) {
+    this.defs.setMaskOctaves(octaves);
+  }
+
+  /**
+   * Set mask amplitude scale for the hand-drawn filter.
+   * Higher values push more noise pixels above the threshold, creating denser line breaks.
+   * @param scale - linear slope on noise alpha before thresholding, clamped to 0+
+   */
+  setMaskScale(scale: number) {
+    this.defs.setMaskScale(scale);
+  }
+
+  /**
+   * Enable or disable the mask in the hand-drawn filter.
+   * Applies to geometry groups and dimension strokes. Default: false.
+   * @param enabled - whether the mask is active
+   */
+  enableMask(enabled: boolean) {
+    this.scene.enableMask(enabled);
   }
 
   /**

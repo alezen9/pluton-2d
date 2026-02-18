@@ -53,7 +53,6 @@ export class GeometryGroupInternal implements GeometryGroup {
   private g: SVGGElement;
   private paths: PathEntry[] = [];
 
-  // tracks current write position during record cycle
   private activeIndex = 0;
   private translateX = 0;
   private translateY = 0;
@@ -65,19 +64,14 @@ export class GeometryGroupInternal implements GeometryGroup {
 
   constructor(parent: SVGGElement) {
     this.g = document.createElementNS(SVG_NS, "g");
+    this.g.setAttribute("class", "pluton-geometry-group");
     parent.appendChild(this.g);
   }
 
-  /**
-   * Begin recording phase
-   */
   beginRecord() {
     this.activeIndex = 0;
   }
 
-  /**
-   * Commit recorded paths to the DOM
-   */
   commit() {
     if (this.drawUsage === "static" && this.hasCommitted) return;
     for (let i = 0; i < this.activeIndex; i++) {
@@ -133,8 +127,10 @@ export class GeometryGroupInternal implements GeometryGroup {
       entry.builder.reset();
 
       if (className !== entry.lastClass) {
-        if (className) entry.path.setAttribute("class", className);
-        else entry.path.removeAttribute("class");
+        entry.path.setAttribute(
+          "class",
+          className ? `pluton-geometry-path ${className}` : "pluton-geometry-path",
+        );
         entry.lastClass = className;
       }
 
@@ -161,8 +157,10 @@ export class GeometryGroupInternal implements GeometryGroup {
 
     const builder = new PathBuilder();
     const path = document.createElementNS(SVG_NS, "path");
-
-    if (className) path.setAttribute("class", className);
+    path.setAttribute(
+      "class",
+      className ? `pluton-geometry-path ${className}` : "pluton-geometry-path",
+    );
     if (fill) path.style.setProperty("--hatch-fill-value", fill);
     if (stroke) path.style.setProperty("--stroke-value", stroke);
     if (fillRule) path.setAttribute("fill-rule", fillRule);

@@ -5,4 +5,5 @@ export type InitialToggles = {
   axesOn: boolean;
   hatchOn: boolean;
   filterOn: boolean;
+  maskOn: boolean;
 };

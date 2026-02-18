@@ -14,7 +14,8 @@ export class Scene {
   private worldLayer: SVGGElement;
   private geometryLayer: GeometryLayerInternal;
   private dimensionsLayer: DimensionsLayerInternal;
-  private pencilFilterEnabled = false;
+  private filterEnabled = false;
+  private maskEnabled = false;
   private background: Background;
 
   private lastCameraTransform = "";
@@ -102,15 +103,24 @@ export class Scene {
   }
 
   enableFilter(enabled: boolean) {
-    this.pencilFilterEnabled = enabled;
+    this.filterEnabled = enabled;
     this.applyFilter();
   }
 
+  enableMask(enabled: boolean) {
+    this.maskEnabled = enabled;
+    this.updateMaskClass();
+  }
+
   private applyFilter() {
-    const filterId = this.context.defs.pencilFilterId;
-    const filterValue = this.pencilFilterEnabled ? `url(#${filterId})` : "none";
+    const filterId = this.context.defs.displacementFilterId;
+    const filterValue = this.filterEnabled ? `url(#${filterId})` : "none";
 
     this.geometryLayer.root.style.filter = filterValue;
     this.dimensionsLayer.root.style.filter = filterValue;
+  }
+
+  private updateMaskClass() {
+    this.context.svg.classList.toggle("pluton-mask-on", this.maskEnabled);
   }
 }

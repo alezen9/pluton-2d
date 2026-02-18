@@ -21,7 +21,9 @@
   let gridOn = $state(getInitialToggle("gridOn", true));
   let axesOn = $state(getInitialToggle("axesOn", true));
   let hatchOn = $state(getInitialToggle("hatchOn", true));
+  const showFilterToggles = "filterOn" in initialToggles;
   let filterOn = $state(getInitialToggle("filterOn", false));
+  let maskOn = $state(getInitialToggle("maskOn", false));
   let showExportButton = $state(import.meta.env.DEV);
 
   const resetCamera = () => scene?.resetCamera();
@@ -94,7 +96,10 @@
     if (!scene) return;
     scene.enablePan(panOn);
     scene.enableZoom(zoomOn);
-    scene.enableFilter(filterOn);
+    if (showFilterToggles) {
+      scene.enableFilter(filterOn);
+      scene.enableMask(maskOn);
+    }
     scene.enableGrid(gridOn);
     scene.enableAxes(axesOn);
     scene.enableFill(hatchOn);
@@ -116,10 +121,16 @@
       <input type="checkbox" class="switch" bind:checked={hatchOn} />
       <span>Hatch</span>
     </label>
-    <label class="switch-row">
-      <input type="checkbox" class="switch" bind:checked={filterOn} />
-      <span>Pencil</span>
-    </label>
+    {#if showFilterToggles}
+      <label class="switch-row">
+        <input type="checkbox" class="switch" bind:checked={filterOn} />
+        <span>Filter</span>
+      </label>
+      <label class="switch-row">
+        <input type="checkbox" class="switch" bind:checked={maskOn} />
+        <span>Mask</span>
+      </label>
+    {/if}
   </div>
 </div>
 
@@ -169,7 +180,7 @@
 
   .switch-group {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--space-2) var(--space-3);
   }
 
