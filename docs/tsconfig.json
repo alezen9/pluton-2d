@@ -2,12 +2,11 @@
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
     "types": ["node"],
-    "baseUrl": ".",
     "paths": {
       "pluton-2d": ["../src/index.ts"],
       "pluton-2d/*": ["../src/*"],
-      "@components/*": ["src/components/*"],
-      "@views/*": ["src/views/*"],
+      "@components/*": ["./src/components/*"],
+      "@views/*": ["./src/views/*"],
       "@root/package.json": ["../package.json"]
     }
   }
