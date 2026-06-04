@@ -53,6 +53,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-jammy
     needs: changes
     steps:
       - uses: actions/checkout@v5
@@ -67,9 +69,6 @@ jobs:
 
       - name: Run unit tests
         run: npm run test:unit
-
-      - name: Install Playwright browser
-        run: npx playwright install --with-deps chromium
 
       - name: Run e2e tests
         run: npx playwright test --config playwright.ci.config.ts
