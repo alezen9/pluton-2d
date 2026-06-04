@@ -371,19 +371,54 @@ d.dimension({ className: "highlighted-dim" });
 
 <br />
 
-### Hatch fill
+### Fills
 
 Fill resolution order when fills are enabled (`scene.enableFill(true)`, default):
 
 - if `path({ fill })` is set, that value is used
 - otherwise, default hatch fill is used
 
+Use `fill: "none"` for stroke-only geometry.
+
+#### Hatch
+
 ```ts
 const blueFillId = scene.addHatchFill("#2563eb", 0.35);
 g.path({ fill: blueFillId });
 ```
 
-Use `fill: "none"` for stroke-only geometry.
+#### Linear / radial gradients
+
+Linear stops carry their own `at` position. The vector is implied by the first and last stop; intermediate stops are projected onto that line.
+
+```ts
+const verticalFade = scene.addLinearGradient([
+  { at: [0, 0], color: "#1d4ed8" },
+  { at: [0, 1], color: "#f59e0b" },
+]);
+
+const stressPlane = scene.addLinearGradient(
+  [
+    { at: [0, -150], color: "#2563eb" },
+    { at: [0,    0], color: "#f8f4ea" },
+    { at: [0,  150], color: "#dc2626" },
+  ],
+  { units: "userSpaceOnUse" },
+);
+
+const spotlight = scene.addRadialGradient(
+  [
+    { offset: 0, color: "#fff" },
+    { offset: 1, color: "#0f172a" },
+  ],
+);
+
+g.path({ fill: verticalFade });
+```
+
+Both return `url(#id)` and dedupe by content — calling them inside a `draw` callback with the same arguments returns the same id, no defs churn.
+
+`units` defaults to `"objectBoundingBox"` (positions in `[0,1]²` of the path's bounding box). Pass `units: "userSpaceOnUse"` to position the gradient in pluton world (Y-up) coords — useful when the gradient is driven by physical geometry (e.g. a stress plane across a known cross-section height).
 
 <br />
 <br />

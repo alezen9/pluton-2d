@@ -287,6 +287,82 @@ export class Pluton2D<
   }
 
   /**
+   * Add a linear gradient to the SVG defs.
+   *
+   * The gradient vector is derived from the first and last stop's `at` position;
+   * intermediate stops are projected onto that line. Identical inputs return the
+   * same reference, so calling this inside a draw callback is safe.
+   *
+   * @param stops - positioned color stops (minimum 2)
+   * @param stops[].at - position in `options.units` coords (defaults to objectBoundingBox `[0..1]`)
+   * @param stops[].color - any CSS color
+   * @param stops[].opacity - 0..1, optional
+   * @param options - global flow
+   * @param options.units - `"objectBoundingBox"` (default, stops follow the path bbox) or `"userSpaceOnUse"` (world coords)
+   * @param options.spread - `"pad"` | `"reflect"` | `"repeat"`. Defaults to `"pad"`
+   * @returns Gradient reference (url(#id)) to use as fill value in path options
+   * @example
+   * const fill = scene.addLinearGradient(
+   *   [
+   *     { at: [0, 0], color: "#1d4ed8" },
+   *     { at: [0, 1], color: "#f59e0b" },
+   *   ],
+   * );
+   * geom.path({ fill }).moveTo(...).close();
+   */
+  addLinearGradient(
+    stops: ReadonlyArray<{
+      at: [x: number, y: number];
+      color: string;
+      opacity?: number;
+    }>,
+    options?: {
+      units?: "userSpaceOnUse" | "objectBoundingBox";
+      spread?: "pad" | "reflect" | "repeat";
+    },
+  ): string {
+    return this.defs.createLinearGradient(stops, options);
+  }
+
+  /**
+   * Add a radial gradient to the SVG defs.
+   *
+   * Identical inputs return the same reference, so calling this inside a
+   * draw callback is safe — only truly unique gradients create new defs nodes.
+   *
+   * @param stops - color stops (minimum 2); `offset` ∈ [0,1] (0 at center, 1 at radius)
+   * @param stops[].color - any CSS color
+   * @param stops[].opacity - 0..1, optional
+   * @param options - placement & flow
+   * @param options.units - `"objectBoundingBox"` (default) or `"userSpaceOnUse"` (world coords)
+   * @param options.center - gradient center. Defaults to `[0.5, 0.5]`
+   * @param options.radius - outer radius. Defaults to `0.5`
+   * @param options.focal - focal point. Defaults to `center`
+   * @param options.spread - `"pad"` | `"reflect"` | `"repeat"`. Defaults to `"pad"`
+   * @returns Gradient reference (url(#id)) to use as fill value in path options
+   * @example
+   * const fill = scene.addRadialGradient(
+   *   [
+   *     { offset: 0, color: "#fff" },
+   *     { offset: 1, color: "#0f172a" },
+   *   ],
+   * );
+   * geom.path({ fill }).moveTo(...).close();
+   */
+  addRadialGradient(
+    stops: ReadonlyArray<{ offset: number; color: string; opacity?: number }>,
+    options?: {
+      units?: "userSpaceOnUse" | "objectBoundingBox";
+      center?: [x: number, y: number];
+      radius?: number;
+      focal?: [x: number, y: number];
+      spread?: "pad" | "reflect" | "repeat";
+    },
+  ): string {
+    return this.defs.createRadialGradient(stops, options);
+  }
+
+  /**
    * Clean up resources and remove event listeners
    */
   dispose() {

@@ -86,9 +86,44 @@ Engine idles when all draw callbacks unsubscribe (unless camera/input is active)
 
 #### Fills
 
-| Method         | Signature                                     | Description                                                                    |
-| -------------- | --------------------------------------------- | ------------------------------------------------------------------------------ |
-| `addHatchFill` | `(color: string, opacity?: number) => string` | Create 45-degree hatch pattern. Returns `url(#id)` for use in `path({ fill })` |
+| Method               | Signature                                                                            | Description                                                                                                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addHatchFill`       | `(color: string, opacity?: number) => string`                                        | Create 45-degree hatch pattern. Returns `url(#id)` for use in `path({ fill })`                                                  |
+| `addLinearGradient`  | `(stops: LinearGradientStop[], options?: LinearGradientOptions) => string`           | Create a linear gradient (vector implied by first/last stop's `at`). Returns `url(#id)`. Identical inputs return the same id    |
+| `addRadialGradient`  | `(stops: RadialGradientStop[], options?: RadialGradientOptions) => string`           | Create a radial gradient. Returns `url(#id)`. Identical inputs return the same id                                               |
+
+`LinearGradientStop`:
+
+| Field     | Type                            | Default | Description                                                              |
+| --------- | ------------------------------- | ------- | ------------------------------------------------------------------------ |
+| `at`      | `[number, number]`              | —       | Stop position in `options.units` coords. First/last define the vector    |
+| `color`   | `string`                        | —       | Any CSS color                                                            |
+| `opacity` | `number`                        | `1`     | Stop opacity, `0..1`                                                     |
+
+`RadialGradientStop`:
+
+| Field     | Type     | Default | Description                                  |
+| --------- | -------- | ------- | -------------------------------------------- |
+| `offset`  | `number` | —       | `0` at center, `1` at radius                 |
+| `color`   | `string` | —       | Any CSS color                                |
+| `opacity` | `number` | `1`     | Stop opacity, `0..1`                         |
+
+`LinearGradientOptions`:
+
+| Field    | Type                                       | Default              | Description                                                                                                                       |
+| -------- | ------------------------------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `units`  | `"userSpaceOnUse" \| "objectBoundingBox"`  | `"objectBoundingBox"` | `objectBoundingBox` makes positions follow the path bbox (`[0,1]²`). `userSpaceOnUse` uses pluton world (Y-up) coords             |
+| `spread` | `"pad" \| "reflect" \| "repeat"`           | `"pad"`              | Behavior past the endpoints                                                                                                       |
+
+`RadialGradientOptions`:
+
+| Field    | Type                                       | Default              | Description                                                                |
+| -------- | ------------------------------------------ | -------------------- | -------------------------------------------------------------------------- |
+| `units`  | `"userSpaceOnUse" \| "objectBoundingBox"`  | `"objectBoundingBox"` | See `LinearGradientOptions`                                                |
+| `center` | `[number, number]`                         | `[0.5, 0.5]`         | Gradient center                                                            |
+| `radius` | `number`                                   | `0.5`                | Outer radius                                                               |
+| `focal`  | `[number, number]`                         | `= center`           | Focal point                                                                |
+| `spread` | `"pad" \| "reflect" \| "repeat"`           | `"pad"`              | Behavior past the radius                                                   |
 
 #### Lifecycle
 
