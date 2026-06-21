@@ -1,6 +1,8 @@
 import type { DefsRegistry } from './defs/DefsRegistry';
 import type { Camera } from './Camera';
 
+const RESIZE_DEBOUNCE_MS = 120;
+
 export type CameraState = {
   readonly panX: number;
   readonly panY: number;
@@ -29,6 +31,8 @@ export class ContextInternal implements Context {
   private cachedViewport: Viewport | null = null;
   private customViewBox?: { width: number; height: number };
   private resizeObserver: ResizeObserver;
+  private resizeTimer: ReturnType<typeof setTimeout> | null = null;
+  private resizePending = false;
   private onResize?: () => void;
 
   constructor(
@@ -45,19 +49,35 @@ export class ContextInternal implements Context {
     this.customViewBox = viewBox;
 
     this.resizeObserver = new ResizeObserver(() => {
-      this.invalidateViewport();
-      this.onResize?.();
+      if (this.resizeTimer === null) {
+        this.syncViewport();
+      } else {
+        this.resizePending = true;
+        clearTimeout(this.resizeTimer);
+      }
+      this.resizeTimer = setTimeout(() => {
+        this.resizeTimer = null;
+        if (!this.resizePending) return;
+        this.resizePending = false;
+        this.syncViewport();
+      }, RESIZE_DEBOUNCE_MS);
     });
     this.resizeObserver.observe(svg);
   }
 
   dispose(): void {
+    if (this.resizeTimer !== null) clearTimeout(this.resizeTimer);
     this.resizeObserver.disconnect();
   }
 
   invalidateViewport(): void {
     this.cachedViewport = null;
   }
+
+  private syncViewport = (): void => {
+    this.invalidateViewport();
+    this.onResize?.();
+  };
 
   /**
    * Returns the viewport (coordinate space) dimensions.
