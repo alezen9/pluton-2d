@@ -1,4 +1,4 @@
-import { SVG_NS } from '../constants';
+import type { SvgNode } from "../SvgNode";
 import type { Viewport } from '../Context';
 import { upsertDef } from './utils';
 
@@ -36,13 +36,13 @@ export class GradientDefs {
   readonly graphPaperGradientId = 'pluton-gradient-graph-paper';
   readonly graphPaperMaskId = 'pluton-mask-graph-paper';
 
-  private defsEl: SVGDefsElement;
+  private defsEl: SvgNode;
   private linearCache = new Map<string, string>();
   private radialCache = new Map<string, string>();
   private linearCount = 0;
   private radialCount = 0;
 
-  constructor(defsEl: SVGDefsElement) {
+  constructor(defsEl: SvgNode) {
     this.defsEl = defsEl;
   }
 
@@ -74,7 +74,7 @@ export class GradientDefs {
     if (cached) return cached;
 
     const id = `pluton-gradient-linear-${this.linearCount++}`;
-    const grad = document.createElementNS(SVG_NS, 'linearGradient');
+    const grad = this.defsEl.create('linearGradient');
     grad.setAttribute('id', id);
     grad.setAttribute('gradientUnits', units);
     grad.setAttribute('x1', String(from[0]));
@@ -114,7 +114,7 @@ export class GradientDefs {
     if (cached) return cached;
 
     const id = `pluton-gradient-radial-${this.radialCount++}`;
-    const grad = document.createElementNS(SVG_NS, 'radialGradient');
+    const grad = this.defsEl.create('radialGradient');
     grad.setAttribute('id', id);
     grad.setAttribute('gradientUnits', units);
     grad.setAttribute('cx', String(center[0]));
@@ -134,7 +134,7 @@ export class GradientDefs {
     return fillValue;
   }
 
-  private createGraphPaperFadeGradient(viewport: Viewport): SVGRadialGradientElement {
+  private createGraphPaperFadeGradient(viewport: Viewport): SvgNode {
     const fadeStartPct = 0.65;
     const fadeEndPct = 1.0;
 
@@ -146,25 +146,25 @@ export class GradientDefs {
     const fadeStartRadius = halfDiag * fadeStartPct;
     const fadeEndRadius = halfDiag * fadeEndPct;
 
-    const grad = document.createElementNS(SVG_NS, 'radialGradient');
+    const grad = this.defsEl.create('radialGradient');
     grad.setAttribute('id', this.graphPaperGradientId);
     grad.setAttribute('gradientUnits', 'userSpaceOnUse');
     grad.setAttribute('cx', String(halfW));
     grad.setAttribute('cy', String(halfH));
     grad.setAttribute('r', String(fadeEndRadius));
 
-    const stop0 = document.createElementNS(SVG_NS, 'stop');
+    const stop0 = this.defsEl.create('stop');
     stop0.setAttribute('offset', '0');
     stop0.setAttribute('stop-color', 'white');
 
-    const stop1 = document.createElementNS(SVG_NS, 'stop');
+    const stop1 = this.defsEl.create('stop');
     stop1.setAttribute(
       'offset',
       fadeEndRadius === 0 ? '0' : String(fadeStartRadius / fadeEndRadius)
     );
     stop1.setAttribute('stop-color', 'white');
 
-    const stop2 = document.createElementNS(SVG_NS, 'stop');
+    const stop2 = this.defsEl.create('stop');
     stop2.setAttribute('offset', '1');
     stop2.setAttribute('stop-color', 'black');
 
@@ -172,8 +172,8 @@ export class GradientDefs {
     return grad;
   }
 
-  private createGraphPaperFadeMask(viewport: Viewport): SVGMaskElement {
-    const mask = document.createElementNS(SVG_NS, 'mask');
+  private createGraphPaperFadeMask(viewport: Viewport): SvgNode {
+    const mask = this.defsEl.create('mask');
     mask.setAttribute('id', this.graphPaperMaskId);
     mask.setAttribute('maskUnits', 'userSpaceOnUse');
     mask.setAttribute('x', '0');
@@ -181,14 +181,14 @@ export class GradientDefs {
     mask.setAttribute('width', String(viewport.width));
     mask.setAttribute('height', String(viewport.height));
 
-    const rect = document.createElementNS(SVG_NS, 'rect');
+    const rect = this.defsEl.create('rect');
     rect.setAttribute('x', '0');
     rect.setAttribute('y', '0');
     rect.setAttribute('width', String(viewport.width));
     rect.setAttribute('height', String(viewport.height));
     rect.setAttribute('fill', `url(#${this.graphPaperGradientId})`);
 
-    mask.appendChild(rect);
+    mask.append(rect);
     return mask;
   }
 }
@@ -216,14 +216,14 @@ function projectOffset(at: Vec2, from: Vec2, dx: number, dy: number, lengthSq: n
 }
 
 function appendStop(
-  grad: SVGLinearGradientElement | SVGRadialGradientElement,
+  grad: SvgNode,
   offset: number,
   color: string,
   opacity: number | undefined,
 ): void {
-  const el = document.createElementNS(SVG_NS, 'stop');
+  const el = grad.create('stop');
   el.setAttribute('offset', String(offset));
   el.setAttribute('stop-color', color);
   if (opacity !== undefined) el.setAttribute('stop-opacity', String(opacity));
-  grad.appendChild(el);
+  grad.append(el);
 }

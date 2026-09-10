@@ -1,3 +1,4 @@
+import type { SvgNode } from "../SvgNode";
 import type { Viewport } from "../Context";
 import { PatternDefs } from "./PatternDefs";
 import {
@@ -16,7 +17,7 @@ export class DefsRegistry {
   private lastWidth = 0;
   private lastHeight = 0;
 
-  constructor(defsEl: SVGDefsElement) {
+  constructor(defsEl: SvgNode) {
     this.patterns = new PatternDefs(defsEl);
     this.gradients = new GradientDefs(defsEl);
     this.filters = new FilterDefs(defsEl);

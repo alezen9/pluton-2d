@@ -1,10 +1,21 @@
 import { SVG_NS } from "./core/constants";
+import { SvgNode } from "./core/SvgNode";
 import { EventBus } from "./core/EventBus";
 import { ContextInternal } from "./core/Context";
 import { DefsRegistry } from "./core/defs/DefsRegistry";
 import { Camera } from "./core/Camera";
 import { Scene } from "./core/Scene";
 import { Engine } from "./core/Engine";
+
+type ViewBox = { width: number; height: number };
+
+type PlutonOptions<P> = { params?: P; viewBox?: ViewBox };
+type SsrRenderOptions<P> = ViewBox & { params: P };
+
+export type StaticScene<P extends Record<string, unknown>> = Omit<
+  Pluton2D<P>,
+  "enablePan" | "enableZoom" | "resetCamera" | "dispose"
+>;
 
 /**
  * Main Pluton2D instance for creating technical drawings
@@ -17,11 +28,45 @@ export class Pluton2D<
   private events: EventBus;
   private scene: Scene;
   private engine: Engine<P>;
-  private camera: Camera;
-  private defsEl: SVGDefsElement;
+  private camera: Camera | null;
+  private defsEl: SvgNode;
   private defs: DefsRegistry;
 
   private paramsState: P;
+  private hasScheduledInitialDraw = false;
+
+  static ssrRender<P extends Record<string, unknown>>(
+    options: SsrRenderOptions<P>,
+    setup: (scene: StaticScene<P>) => void,
+  ) {
+    const { width, height, params } = options;
+    if (
+      !Number.isFinite(width) ||
+      !Number.isFinite(height) ||
+      width <= 0 ||
+      height <= 0
+    ) {
+      throw new Error(
+        "Pluton2D SVG width and height must be positive finite numbers.",
+      );
+    }
+
+    const svg = new SvgNode("svg");
+    svg.setAttribute("xmlns", SVG_NS);
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+
+    const scene = new Pluton2D(svg, {
+      params: { ...params },
+      viewBox: { width, height },
+    });
+    try {
+      setup(scene);
+      scene.engine.render();
+      return svg.toString();
+    } finally {
+      scene.dispose();
+    }
+  }
 
   /**
    * Creates a new Pluton2D scene.
@@ -49,59 +94,61 @@ export class Pluton2D<
    * // No params (empty scene)
    * const scene = new Pluton2D(svg, {});
    */
-  constructor(
-    svg: SVGSVGElement,
-    options: {
-      params?: P;
-      viewBox?: { width: number; height: number };
-    } = {},
-  ) {
+  constructor(svg: SVGSVGElement, options?: PlutonOptions<P>);
+  constructor(svg: SvgNode, options: PlutonOptions<P> & { viewBox: ViewBox });
+  constructor(svg: SVGSVGElement | SvgNode, options: PlutonOptions<P> = {}) {
+    const element = svg instanceof SvgNode ? undefined : svg;
+    const root = svg instanceof SvgNode ? svg : new SvgNode("svg", svg);
     this.events = new EventBus();
 
-    svg.classList.add("pluton-root");
+    root.addClass("pluton-root");
 
-    this.defsEl = document.createElementNS(SVG_NS, "defs");
-    svg.insertBefore(this.defsEl, svg.firstChild);
+    this.defsEl = root.create("defs");
+    root.prepend(this.defsEl);
 
     this.defs = new DefsRegistry(this.defsEl);
     const defs = this.defs;
-    svg.style.setProperty(
-      "--pluton-default-hatch-fill",
-      `url(#${defs.hatchFill45Id})`,
-    );
+    root.setStyle("--pluton-default-hatch-fill", `url(#${defs.hatchFill45Id})`);
 
     const { params = {} as P, viewBox } = options;
 
-    this.engine = new Engine<P>(this.events, params);
+    this.engine = new Engine<P>(
+      this.events,
+      params,
+      element ? undefined : null,
+    );
     this.paramsState = this.engine.getParams();
 
-    this.camera = new Camera(svg, this.events, () => this.engine.requestFrame());
-    this.engine.setTickFn(() => this.camera.tick());
+    this.camera = element
+      ? new Camera(element, this.events, () => this.engine.requestFrame())
+      : null;
+    this.engine.setTickFn(() => this.camera?.tick() ?? false);
 
-    let handleResize: (() => void) | null = null;
-
-    this.context = new ContextInternal(svg, defs, this.camera, () => {
-      handleResize?.();
-    }, viewBox);
+    this.context = new ContextInternal(
+      root,
+      defs,
+      this.camera,
+      this.onResize,
+      viewBox,
+      element,
+    );
 
     defs.syncForViewport(this.context.viewport());
 
     this.scene = new Scene(this.context, this.events);
 
-    handleResize = () => {
-      this.context.invalidateViewport();
-      const viewport = this.context.viewport();
-      defs.syncForViewport(viewport);
-      this.scene.onViewportChanged(viewport);
-      this.scene.updateTransforms();
-      this.engine.scheduleRender();
-    };
-
     this.events.on("camera:changed", () => {
       this.scene.updateTransforms();
     });
-
   }
+
+  private onResize = () => {
+    const viewport = this.context.viewport();
+    this.defs.syncForViewport(viewport);
+    this.scene.onViewportChanged(viewport);
+    this.scene.updateTransforms();
+    this.engine.scheduleRender();
+  };
 
   /**
    * Reactive parameters that trigger redraw when mutated
@@ -131,7 +178,12 @@ export class Pluton2D<
    * @returns unsubscribe function to remove the callback
    */
   draw(callback: (params: P) => void) {
-    return this.engine.draw(callback);
+    const unsubscribe = this.engine.draw(callback);
+    if (this.camera && !this.hasScheduledInitialDraw) {
+      this.hasScheduledInitialDraw = true;
+      queueMicrotask(() => this.engine.render());
+    }
+    return unsubscribe;
   }
 
   /**
@@ -225,7 +277,7 @@ export class Pluton2D<
    * @param enabled - whether pan input is active
    */
   enablePan(enabled: boolean) {
-    this.camera.enablePan(enabled);
+    this.camera?.enablePan(enabled);
   }
 
   /**
@@ -234,7 +286,7 @@ export class Pluton2D<
    * @param enabled - whether zoom input is active
    */
   enableZoom(enabled: boolean) {
-    this.camera.enableZoom(enabled);
+    this.camera?.enableZoom(enabled);
   }
 
   /**
@@ -243,15 +295,15 @@ export class Pluton2D<
    * @param enabled - whether geometry fills are visible
    */
   enableFill(enabled: boolean) {
-    if (enabled) this.context.svg.classList.remove("pluton-no-fill");
-    else this.context.svg.classList.add("pluton-no-fill");
+    if (enabled) this.context.svg.removeClass("pluton-no-fill");
+    else this.context.svg.addClass("pluton-no-fill");
   }
 
   /**
    * Reset camera to initial position and zoom
    */
   resetCamera() {
-    this.camera.reset();
+    this.camera?.reset();
   }
 
   /**
@@ -270,7 +322,12 @@ export class Pluton2D<
    * scene.setViewScale(1.0);
    */
   setViewScale(scale: number): void {
-    this.camera.setScaleMultiplier(scale);
+    if (this.camera) {
+      this.camera.setScaleMultiplier(scale);
+      return;
+    }
+    this.context.setViewScale(scale);
+    this.scene.updateTransforms();
   }
 
   /**
@@ -366,13 +423,13 @@ export class Pluton2D<
    * Clean up resources and remove event listeners
    */
   dispose() {
-    this.camera.dispose();
+    this.camera?.dispose();
     this.scene.dispose();
     this.engine.dispose();
     this.context.dispose();
     this.events.clear();
     this.defsEl.remove();
-    this.context.svg.classList.remove("pluton-root");
-    this.context.svg.style.removeProperty("--pluton-default-hatch-fill");
+    this.context.svg.removeClass("pluton-root");
+    this.context.svg.removeStyle("--pluton-default-hatch-fill");
   }
 }

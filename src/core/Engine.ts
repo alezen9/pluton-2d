@@ -15,7 +15,7 @@ export class Engine<P extends Record<string, unknown>> {
   private paramsState: P;
   private autoRenderEnabled = false;
   private events: EventBus;
-  private scheduler: FrameScheduler;
+  private scheduler: FrameScheduler | null;
 
   private readonly frameBudget = 1000 / 60; // 60 FPS cap (~16.67ms)
   private lastFrameTime = 0;
@@ -24,7 +24,11 @@ export class Engine<P extends Record<string, unknown>> {
   private rafId: number | undefined;
   private tickFn: (() => boolean) | null = null;
 
-  constructor(events: EventBus, initialParams: P, scheduler: FrameScheduler = defaultScheduler) {
+  constructor(
+    events: EventBus,
+    initialParams: P,
+    scheduler: FrameScheduler | null = defaultScheduler,
+  ) {
     this.events = events;
     this.scheduler = scheduler;
 
@@ -75,12 +79,17 @@ export class Engine<P extends Record<string, unknown>> {
     };
   }
 
+  render() {
+    this.renderPending = false;
+    this.commit();
+  }
+
   dispose(): void {
     this.drawCallbacks.length = 0;
     this.autoRenderEnabled = false;
     this.renderPending = false;
     if (this.rafId !== undefined) {
-      this.scheduler.cancel(this.rafId);
+      this.scheduler?.cancel(this.rafId);
       this.rafId = undefined;
     }
   }
@@ -97,7 +106,7 @@ export class Engine<P extends Record<string, unknown>> {
   }
 
   private ensureLoop() {
-    if (this.rafId !== undefined) return;
+    if (!this.scheduler || this.rafId !== undefined) return;
     this.rafId = this.scheduler.request((now) => this.loop(now));
   }
 

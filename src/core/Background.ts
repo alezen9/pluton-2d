@@ -1,25 +1,25 @@
-import { SVG_NS } from './constants';
+import type { SvgNode } from "./SvgNode";
 import type { Context } from './Context';
 
 export class Background {
-  readonly root: SVGGElement;
-  private patternRect: SVGRectElement;
-  private axesGroup: SVGGElement;
-  private xAxis: SVGLineElement;
-  private yAxis: SVGLineElement;
+  readonly root: SvgNode;
+  private patternRect: SvgNode;
+  private axesGroup: SvgNode;
+  private xAxis: SvgNode;
+  private yAxis: SvgNode;
 
-  constructor(parent: SVGGElement, context: Context) {
-    this.root = document.createElementNS(SVG_NS, 'g');
-    this.root.classList.add('pluton-background');
-    parent.appendChild(this.root);
+  constructor(parent: SvgNode, context: Context) {
+    this.root = parent.create('g');
+    this.root.addClass('pluton-background');
+    parent.append(this.root);
 
     const viewport = context.viewport();
     const extent = this.computeExtent(viewport);
 
-    this.patternRect = document.createElementNS(SVG_NS, 'rect');
-    this.patternRect.classList.add('pluton-graph-paper');
+    this.patternRect = this.root.create('rect');
+    this.patternRect.addClass('pluton-graph-paper');
     this.patternRect.setAttribute('fill', `url(#${context.defs.graphPaperPatternId})`);
-    this.root.appendChild(this.patternRect);
+    this.root.append(this.patternRect);
     this.updatePatternRect(extent);
 
     const { axes, xAxis, yAxis } = this.createAxes();
@@ -36,11 +36,11 @@ export class Background {
   }
 
   enableGrid(enabled: boolean): void {
-    this.patternRect.style.display = enabled ? "" : "none";
+    this.patternRect.setStyle("display", enabled ? "" : "none");
   }
 
   enableAxes(enabled: boolean): void {
-    this.axesGroup.style.display = enabled ? "" : "none";
+    this.axesGroup.setStyle("display", enabled ? "" : "none");
   }
 
   private computeExtent(viewport: { width: number; height: number }): number {
@@ -67,21 +67,21 @@ export class Background {
   }
 
   private createAxes(): {
-    axes: SVGGElement;
-    xAxis: SVGLineElement;
-    yAxis: SVGLineElement;
+    axes: SvgNode;
+    xAxis: SvgNode;
+    yAxis: SvgNode;
   } {
-    const axes = document.createElementNS(SVG_NS, 'g');
-    axes.classList.add('pluton-axes');
+    const axes = this.root.create('g');
+    axes.addClass('pluton-axes');
 
-    const xAxis = document.createElementNS(SVG_NS, 'line');
-    xAxis.classList.add('pluton-axis', 'pluton-axis-x');
+    const xAxis = this.root.create('line');
+    xAxis.addClass('pluton-axis', 'pluton-axis-x');
 
-    const yAxis = document.createElementNS(SVG_NS, 'line');
-    yAxis.classList.add('pluton-axis', 'pluton-axis-y');
+    const yAxis = this.root.create('line');
+    yAxis.addClass('pluton-axis', 'pluton-axis-y');
 
     axes.append(xAxis, yAxis);
-    this.root.appendChild(axes);
+    this.root.append(axes);
     return { axes, xAxis, yAxis };
   }
 }

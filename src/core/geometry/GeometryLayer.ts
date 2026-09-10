@@ -1,3 +1,4 @@
+import type { SvgNode } from "../SvgNode";
 import { Layer } from "../Layer";
 import type { EventBus } from "../EventBus";
 import { GeometryGroupInternal, type GeometryGroup } from "./GeometryGroup";
@@ -17,7 +18,7 @@ export class GeometryLayerInternal
   private readonly unsubscribeBegin: () => void;
   private readonly unsubscribeEnd: () => void;
 
-  constructor(parent: SVGGElement, events: EventBus) {
+  constructor(parent: SvgNode, events: EventBus) {
     super(parent, "pluton-geometry");
 
     this.unsubscribeBegin = events.on("engine:commit-start", () =>
@@ -26,7 +27,7 @@ export class GeometryLayerInternal
     this.unsubscribeEnd = events.on("engine:commit-end", () => this.commit());
   }
 
-  protected createGroup(parent: SVGGElement) {
+  protected createGroup(parent: SvgNode) {
     return new GeometryGroupInternal(parent);
   }
 

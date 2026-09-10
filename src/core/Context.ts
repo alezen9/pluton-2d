@@ -1,5 +1,6 @@
-import type { DefsRegistry } from './defs/DefsRegistry';
-import type { Camera } from './Camera';
+import type { SvgNode } from "./SvgNode";
+import type { DefsRegistry } from "./defs/DefsRegistry";
+import type { Camera } from "./Camera";
 
 const RESIZE_DEBOUNCE_MS = 120;
 
@@ -18,35 +19,41 @@ export type Viewport = {
 };
 
 export interface Context {
-  readonly svg: SVGSVGElement;
+  readonly svg: SvgNode;
   readonly defs: DefsRegistry;
   viewport: () => Viewport;
   camera: () => CameraState | null;
 }
 
 export class ContextInternal implements Context {
-  readonly svg: SVGSVGElement;
+  readonly svg: SvgNode;
   readonly defs: DefsRegistry;
   private cameraRef: Camera | null;
   private cachedViewport: Viewport | null = null;
   private customViewBox?: { width: number; height: number };
-  private resizeObserver: ResizeObserver;
+  private resizeObserver: ResizeObserver | null = null;
   private resizeTimer: ReturnType<typeof setTimeout> | null = null;
   private resizePending = false;
+  private viewScale = 1;
+  private element?: SVGSVGElement;
   private onResize?: () => void;
 
   constructor(
-    svg: SVGSVGElement,
+    svg: SvgNode,
     defs: DefsRegistry,
     cameraRef: Camera | null,
     onResize?: () => void,
-    viewBox?: { width: number; height: number }
+    viewBox?: { width: number; height: number },
+    element?: SVGSVGElement,
   ) {
     this.svg = svg;
+    this.element = element;
     this.defs = defs;
     this.cameraRef = cameraRef;
     this.onResize = onResize;
     this.customViewBox = viewBox;
+
+    if (!element) return;
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeTimer === null) {
@@ -62,12 +69,12 @@ export class ContextInternal implements Context {
         this.syncViewport();
       }, RESIZE_DEBOUNCE_MS);
     });
-    this.resizeObserver.observe(svg);
+    this.resizeObserver.observe(element);
   }
 
   dispose(): void {
     if (this.resizeTimer !== null) clearTimeout(this.resizeTimer);
-    this.resizeObserver.disconnect();
+    this.resizeObserver?.disconnect();
   }
 
   invalidateViewport(): void {
@@ -98,30 +105,47 @@ export class ContextInternal implements Context {
         x: 0,
         y: 0,
         width: this.customViewBox.width,
-        height: this.customViewBox.height
+        height: this.customViewBox.height,
       };
       return this.cachedViewport;
     }
 
     // Priority 2: SVG viewBox attribute
-    const vb = this.svg.viewBox?.baseVal;
+    const vb = this.element?.viewBox?.baseVal;
     if (vb && vb.width && vb.height) {
-      this.cachedViewport = { x: vb.x, y: vb.y, width: vb.width, height: vb.height };
+      this.cachedViewport = {
+        x: vb.x,
+        y: vb.y,
+        width: vb.width,
+        height: vb.height,
+      };
       return this.cachedViewport;
     }
 
     // Priority 3: Pixel dimensions (for SVGs without explicit viewBox)
-    const rect = this.svg.getBoundingClientRect();
-    this.cachedViewport = { x: 0, y: 0, width: rect.width, height: rect.height };
+    if (!this.element)
+      throw new Error("Pluton2D server rendering requires a viewBox.");
+    const rect = this.element.getBoundingClientRect();
+    this.cachedViewport = {
+      x: 0,
+      y: 0,
+      width: rect.width,
+      height: rect.height,
+    };
     return this.cachedViewport;
   };
 
-  camera = (): CameraState | null => {
-    if (!this.cameraRef) return null;
+  setViewScale(scale: number) {
+    this.viewScale = Math.max(0.1, Math.min(10, scale));
+  }
+
+  camera = (): CameraState => {
+    if (!this.cameraRef)
+      return { panX: 0, panY: 0, scale: 1, multiplier: this.viewScale };
     const state = this.cameraRef.state();
     return {
       ...state,
-      multiplier: this.cameraRef.multiplier
+      multiplier: this.cameraRef.multiplier,
     };
   };
 }

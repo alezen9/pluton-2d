@@ -1,4 +1,4 @@
-import { SVG_NS } from "./constants";
+import type { SvgNode } from "./SvgNode";
 import type { Context } from "./Context";
 import type { EventBus } from "./EventBus";
 import { Background } from "./Background";
@@ -10,8 +10,8 @@ import type { Viewport } from "./Context";
 
 export class Scene {
   private context: Context;
-  private backgroundLayer: SVGGElement;
-  private worldLayer: SVGGElement;
+  private backgroundLayer: SvgNode;
+  private worldLayer: SvgNode;
   private geometryLayer: GeometryLayerInternal;
   private dimensionsLayer: DimensionsLayerInternal;
   private filterEnabled = false;
@@ -25,27 +25,27 @@ export class Scene {
 
     const svg = context.svg;
 
-    const backgroundContainer = document.createElementNS(SVG_NS, "g");
-    backgroundContainer.classList.add("pluton-background-container");
+    const backgroundContainer = svg.create("g");
+    backgroundContainer.addClass("pluton-background-container");
     backgroundContainer.setAttribute(
       "mask",
       `url(#${context.defs.graphPaperMaskId})`,
     );
-    svg.appendChild(backgroundContainer);
+    svg.append(backgroundContainer);
 
-    this.backgroundLayer = document.createElementNS(SVG_NS, "g");
-    this.backgroundLayer.classList.add("pluton-background-layer");
-    backgroundContainer.appendChild(this.backgroundLayer);
+    this.backgroundLayer = svg.create("g");
+    this.backgroundLayer.addClass("pluton-background-layer");
+    backgroundContainer.append(this.backgroundLayer);
 
     this.background = new Background(this.backgroundLayer, context);
 
-    const contentContainer = document.createElementNS(SVG_NS, "g");
-    contentContainer.classList.add("pluton-content-container");
-    svg.appendChild(contentContainer);
+    const contentContainer = svg.create("g");
+    contentContainer.addClass("pluton-content-container");
+    svg.append(contentContainer);
 
-    this.worldLayer = document.createElementNS(SVG_NS, "g");
-    this.worldLayer.classList.add("pluton-world-layer");
-    contentContainer.appendChild(this.worldLayer);
+    this.worldLayer = svg.create("g");
+    this.worldLayer.addClass("pluton-world-layer");
+    contentContainer.append(this.worldLayer);
 
     this.geometryLayer = new GeometryLayerInternal(this.worldLayer, events);
     this.dimensionsLayer = new DimensionsLayerInternal(this.worldLayer, events);
@@ -65,8 +65,8 @@ export class Scene {
   dispose() {
     this.geometryLayer.dispose();
     this.dimensionsLayer.dispose();
-    this.backgroundLayer.parentElement?.remove();
-    this.worldLayer.parentElement?.remove();
+    this.backgroundLayer.parent?.remove();
+    this.worldLayer.parent?.remove();
   }
 
   updateTransforms() {
@@ -83,8 +83,8 @@ export class Scene {
       const cameraT = `translate(${tx}px, ${ty}px) scale(${s}, ${-s})`;
 
       if (cameraT !== this.lastCameraTransform) {
-        this.backgroundLayer.style.transform = cameraT;
-        this.worldLayer.style.transform = cameraT;
+        this.backgroundLayer.setStyle("transform", cameraT);
+        this.worldLayer.setStyle("transform", cameraT);
         this.lastCameraTransform = cameraT;
       }
     }
@@ -116,11 +116,11 @@ export class Scene {
     const filterId = this.context.defs.displacementFilterId;
     const filterValue = this.filterEnabled ? `url(#${filterId})` : "none";
 
-    this.geometryLayer.root.style.filter = filterValue;
-    this.dimensionsLayer.root.style.filter = filterValue;
+    this.geometryLayer.root.setStyle("filter", filterValue);
+    this.dimensionsLayer.root.setStyle("filter", filterValue);
   }
 
   private updateMaskClass() {
-    this.context.svg.classList.toggle("pluton-mask-on", this.maskEnabled);
+    this.context.svg.toggleClass("pluton-mask-on", this.maskEnabled);
   }
 }

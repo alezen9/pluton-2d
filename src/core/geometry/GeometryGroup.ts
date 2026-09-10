@@ -1,5 +1,5 @@
+import type { SvgNode } from "../SvgNode";
 import { PathBuilder } from "./PathBuilder";
-import { SVG_NS } from "../constants";
 import type { BaseGroup } from "../Layer";
 import type { Prettify } from "../types";
 
@@ -41,7 +41,7 @@ export type GeometryGroup = Prettify<
 
 type PathEntry = {
   builder: PathBuilder;
-  path: SVGPathElement;
+  path: SvgNode;
   lastD: string;
   lastClass: string;
   lastFill: string;
@@ -50,7 +50,7 @@ type PathEntry = {
 };
 
 export class GeometryGroupInternal implements GeometryGroup {
-  private g: SVGGElement;
+  private g: SvgNode;
   private paths: PathEntry[] = [];
 
   private activeIndex = 0;
@@ -62,10 +62,10 @@ export class GeometryGroupInternal implements GeometryGroup {
   private drawUsage: "static" | "dynamic" = "dynamic";
   private hasCommitted = false;
 
-  constructor(parent: SVGGElement) {
-    this.g = document.createElementNS(SVG_NS, "g");
+  constructor(parent: SvgNode) {
+    this.g = parent.create("g");
     this.g.setAttribute("class", "pluton-geometry-group");
-    parent.appendChild(this.g);
+    parent.append(this.g);
   }
 
   beginRecord() {
@@ -135,14 +135,14 @@ export class GeometryGroupInternal implements GeometryGroup {
       }
 
       if (fill !== entry.lastFill) {
-        if (fill) entry.path.style.setProperty("--hatch-fill-value", fill);
-        else entry.path.style.removeProperty("--hatch-fill-value");
+        if (fill) entry.path.setStyle("--hatch-fill-value", fill);
+        else entry.path.removeStyle("--hatch-fill-value");
         entry.lastFill = fill;
       }
 
       if (stroke !== entry.lastStroke) {
-        if (stroke) entry.path.style.setProperty("--stroke-value", stroke);
-        else entry.path.style.removeProperty("--stroke-value");
+        if (stroke) entry.path.setStyle("--stroke-value", stroke);
+        else entry.path.removeStyle("--stroke-value");
         entry.lastStroke = stroke;
       }
 
@@ -156,16 +156,16 @@ export class GeometryGroupInternal implements GeometryGroup {
     }
 
     const builder = new PathBuilder();
-    const path = document.createElementNS(SVG_NS, "path");
+    const path = this.g.create("path");
     path.setAttribute(
       "class",
       className ? `pluton-geometry-path ${className}` : "pluton-geometry-path",
     );
-    if (fill) path.style.setProperty("--hatch-fill-value", fill);
-    if (stroke) path.style.setProperty("--stroke-value", stroke);
+    if (fill) path.setStyle("--hatch-fill-value", fill);
+    if (stroke) path.setStyle("--stroke-value", stroke);
     if (fillRule) path.setAttribute("fill-rule", fillRule);
 
-    this.g.appendChild(path);
+    this.g.append(path);
     this.paths.push({
       builder,
       path,
@@ -181,7 +181,7 @@ export class GeometryGroupInternal implements GeometryGroup {
   clear() {
     this.paths.length = 0;
     this.activeIndex = 0;
-    this.g.replaceChildren();
+    this.g.clear();
     this.hasCommitted = false;
 
     this.translateX = 0;

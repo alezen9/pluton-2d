@@ -1,4 +1,4 @@
-import { SVG_NS } from "../constants";
+import type { SvgNode } from "../SvgNode";
 import { DimensionsBuilder } from "./DimensionsBuilder";
 import type { BaseGroup } from "../Layer";
 import type { Prettify } from "../types";
@@ -8,7 +8,7 @@ type DimensionOptions = {
 };
 
 type TextCache = {
-  el: SVGTextElement;
+  el: SvgNode;
   lastTransform: string;
   lastAnchor: string;
   lastText: string;
@@ -16,9 +16,9 @@ type TextCache = {
 };
 
 type DimensionEntry = {
-  root: SVGGElement;
-  path: SVGPathElement;
-  filledPath: SVGPathElement;
+  root: SvgNode;
+  path: SvgNode;
+  filledPath: SvgNode;
   builder: DimensionsBuilder;
   lastD: string;
   lastFd: string;
@@ -41,7 +41,7 @@ export type DimensionsGroup = Prettify<
 >;
 
 export class DimensionsGroupInternal implements DimensionsGroup {
-  private g: SVGGElement;
+  private g: SvgNode;
 
   private entries: DimensionEntry[] = [];
   // tracks current dimension write position during record cycle
@@ -53,9 +53,9 @@ export class DimensionsGroupInternal implements DimensionsGroup {
   private drawUsage: "static" | "dynamic" = "dynamic";
   private hasCommitted = false;
 
-  constructor(parent: SVGGElement) {
-    this.g = document.createElementNS(SVG_NS, "g");
-    parent.appendChild(this.g);
+  constructor(parent: SvgNode) {
+    this.g = parent.create("g");
+    parent.append(this.g);
   }
 
   /**
@@ -107,7 +107,7 @@ export class DimensionsGroupInternal implements DimensionsGroup {
           cached.lastTransform = transform;
         }
         if (t.text !== cached.lastText) {
-          cached.el.textContent = t.text;
+          cached.el.setText(t.text);
           cached.lastText = t.text;
         }
       }
@@ -131,7 +131,7 @@ export class DimensionsGroupInternal implements DimensionsGroup {
   clear() {
     this.entries.length = 0;
     this.activeIndex = 0;
-    this.g.replaceChildren();
+    this.g.clear();
     this.hasCommitted = false;
 
     this.translateX = 0;
@@ -175,19 +175,19 @@ export class DimensionsGroupInternal implements DimensionsGroup {
       return e.builder;
     }
 
-    const root = document.createElementNS(SVG_NS, "g");
-    this.g.appendChild(root);
+    const root = this.g.create("g");
+    this.g.append(root);
 
-    const path = document.createElementNS(SVG_NS, "path");
+    const path = this.g.create("path");
     path.setAttribute(
       "class",
       `pluton-dim-stroke ${className}`,
     );
-    root.appendChild(path);
+    root.append(path);
 
-    const filledPath = document.createElementNS(SVG_NS, "path");
+    const filledPath = this.g.create("path");
     filledPath.setAttribute("class", `pluton-dim-filled ${className}`);
-    root.appendChild(filledPath);
+    root.append(filledPath);
 
     const builder = new DimensionsBuilder();
     const entry: DimensionEntry = {
@@ -220,11 +220,11 @@ export class DimensionsGroupInternal implements DimensionsGroup {
    * @returns newly created text cache
    */
   private createText(entry: DimensionEntry): TextCache {
-    const el = document.createElementNS(SVG_NS, "text");
+    const el = this.g.create("text");
     el.setAttribute("x", "0");
     el.setAttribute("y", "0");
     el.setAttribute("dominant-baseline", "middle");
-    entry.root.appendChild(el);
+    entry.root.append(el);
     const cached: TextCache = {
       el,
       lastTransform: "",

@@ -1,4 +1,4 @@
-import { SVG_NS } from "./constants";
+import type { SvgNode } from "./SvgNode";
 
 export type BaseGroup = {
   /**
@@ -31,13 +31,13 @@ type RecordableGroup = BaseGroup & {
 };
 
 export abstract class Layer<G extends RecordableGroup> {
-  readonly root: SVGGElement;
+  readonly root: SvgNode;
   private groups: G[] = [];
 
-  constructor(parent: SVGGElement, className: string) {
-    this.root = document.createElementNS(SVG_NS, "g");
-    this.root.classList.add("pluton-layer", className);
-    parent.appendChild(this.root);
+  constructor(parent: SvgNode, className: string) {
+    this.root = parent.create("g");
+    this.root.addClass("pluton-layer", className);
+    parent.append(this.root);
   }
 
   group() {
@@ -54,5 +54,5 @@ export abstract class Layer<G extends RecordableGroup> {
     for (const g of this.groups) g.commit();
   }
 
-  protected abstract createGroup(parent: SVGGElement): G;
+  protected abstract createGroup(parent: SvgNode): G;
 }

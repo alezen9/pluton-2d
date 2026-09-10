@@ -1,14 +1,14 @@
-import { SVG_NS } from '../constants';
+import type { SvgNode } from "../SvgNode";
 import { upsertDef } from './utils';
 
 export class PatternDefs {
   readonly hatchFill45Id = 'pluton-pattern-fill-hatch-45';
   readonly graphPaperPatternId = 'pluton-pattern-graph-paper';
 
-  private defsEl: SVGDefsElement;
+  private defsEl: SvgNode;
   private coloredHatchCache = new Map<string, string>();
 
-  constructor(defsEl: SVGDefsElement) {
+  constructor(defsEl: SvgNode) {
     this.defsEl = defsEl;
   }
 
@@ -38,15 +38,15 @@ export class PatternDefs {
     return fillValue;
   }
 
-  private createHatchPattern(id: string, color: string, opacity: number): SVGPatternElement {
-    const pattern = document.createElementNS(SVG_NS, 'pattern');
+  private createHatchPattern(id: string, color: string, opacity: number): SvgNode {
+    const pattern = this.defsEl.create('pattern');
     pattern.setAttribute('id', id);
     pattern.setAttribute('patternUnits', 'userSpaceOnUse');
     pattern.setAttribute('width', '8');
     pattern.setAttribute('height', '8');
     pattern.setAttribute('patternTransform', 'rotate(-45)');
 
-    const line = document.createElementNS(SVG_NS, 'line');
+    const line = this.defsEl.create('line');
     line.setAttribute('x1', '0');
     line.setAttribute('y1', '0');
     line.setAttribute('x2', '0');
@@ -55,35 +55,35 @@ export class PatternDefs {
     line.setAttribute('stroke', color);
     line.setAttribute('stroke-opacity', String(opacity));
 
-    pattern.appendChild(line);
+    pattern.append(line);
     return pattern;
   }
 
-  private createHatchFill45Pattern(): SVGPatternElement {
-    const pattern = document.createElementNS(SVG_NS, 'pattern');
+  private createHatchFill45Pattern(): SvgNode {
+    const pattern = this.defsEl.create('pattern');
     pattern.setAttribute('id', this.hatchFill45Id);
     pattern.setAttribute('patternUnits', 'userSpaceOnUse');
     pattern.setAttribute('width', '8');
     pattern.setAttribute('height', '8');
     pattern.setAttribute('patternTransform', 'rotate(-45)');
 
-    const line = document.createElementNS(SVG_NS, 'line');
+    const line = this.defsEl.create('line');
     line.setAttribute('x1', '0');
     line.setAttribute('y1', '0');
     line.setAttribute('x2', '0');
     line.setAttribute('y2', '8');
     line.setAttribute('stroke-width', '12.5');
-    line.classList.add('pluton-pattern-hatch');
+    line.addClass('pluton-pattern-hatch');
 
-    pattern.appendChild(line);
+    pattern.append(line);
     return pattern;
   }
 
-  private createGraphPaperPattern(): SVGPatternElement {
+  private createGraphPaperPattern(): SvgNode {
     const smallSize = 10;
     const majorSize = 50;
 
-    const pattern = document.createElementNS(SVG_NS, 'pattern');
+    const pattern = this.defsEl.create('pattern');
     pattern.setAttribute('id', this.graphPaperPatternId);
     pattern.setAttribute('patternUnits', 'userSpaceOnUse');
     pattern.setAttribute('x', '0');
@@ -91,8 +91,8 @@ export class PatternDefs {
     pattern.setAttribute('width', String(majorSize));
     pattern.setAttribute('height', String(majorSize));
 
-    const minorPath = document.createElementNS(SVG_NS, 'path');
-    minorPath.classList.add('pluton-pattern-graph-paper-minor');
+    const minorPath = this.defsEl.create('path');
+    minorPath.addClass('pluton-pattern-graph-paper-minor');
 
     const minorCount = Math.max(1, Math.floor(majorSize / smallSize));
     const cmds: string[] = [];
@@ -107,15 +107,15 @@ export class PatternDefs {
     }
 
     minorPath.setAttribute('d', cmds.join(' '));
-    pattern.appendChild(minorPath);
+    pattern.append(minorPath);
 
-    const majorPath = document.createElementNS(SVG_NS, 'path');
-    majorPath.classList.add('pluton-pattern-graph-paper-major');
+    const majorPath = this.defsEl.create('path');
+    majorPath.addClass('pluton-pattern-graph-paper-major');
     majorPath.setAttribute(
       'd',
       `M ${majorSize} 0 L ${majorSize} ${majorSize} M 0 ${majorSize} L ${majorSize} ${majorSize}`
     );
-    pattern.appendChild(majorPath);
+    pattern.append(majorPath);
 
     return pattern;
   }

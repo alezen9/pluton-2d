@@ -1,3 +1,4 @@
+import type { SvgNode } from "../SvgNode";
 import { Layer } from "../Layer";
 import type { EventBus } from "../EventBus";
 import {
@@ -20,7 +21,7 @@ export class DimensionsLayerInternal
   private readonly unsubscribeBegin: () => void;
   private readonly unsubscribeEnd: () => void;
 
-  constructor(parent: SVGGElement, events: EventBus) {
+  constructor(parent: SvgNode, events: EventBus) {
     super(parent, "pluton-dimensions");
 
     this.unsubscribeBegin = events.on("engine:commit-start", () =>
@@ -29,7 +30,7 @@ export class DimensionsLayerInternal
     this.unsubscribeEnd = events.on("engine:commit-end", () => this.commit());
   }
 
-  protected createGroup(parent: SVGGElement) {
+  protected createGroup(parent: SvgNode) {
     return new DimensionsGroupInternal(parent);
   }
 
