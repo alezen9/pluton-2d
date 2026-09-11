@@ -548,11 +548,11 @@ Pluton2D is optimized for technical drawing workflows: crisp SVG, dimensions, ha
 Call `Pluton2D.ssrRender(options, setup)` to render a complete SVG string during SSR or a static build. It uses the same geometry, dimensions, backgrounds, and definitions as the browser renderer. A small internal SVG tree produces the markup without a DOM or runtime dependencies.
 
 ```ts
-import { Pluton2D, type StaticScene } from "pluton-2d";
+import { Pluton2D } from "pluton-2d";
 
 type Params = { width: number; height: number };
 
-const setupDrawing = (scene: StaticScene<Params>) => {
+const setupDrawing = (scene: Pluton2D<Params>) => {
   const geometry = scene.geometry.group();
   scene.draw(({ width, height }) => {
     geometry.path()
@@ -574,4 +574,4 @@ The output includes a `viewBox` and the `pluton-root` class. Include `pluton-2d/
 
 `setupDrawing` also accepts a browser `Pluton2D` instance. For interactive takeover after mount, clear the rendered SVG's children, create the browser instance on that SVG, and call the shared setup function in the same synchronous mount callback. This rebuilds the drawing before the next paint; it does not adopt the server's DOM nodes. Retain the same viewBox for matching output, and call `scene.dispose()` on unmount.
 
-Browser instances batch the initial draw callbacks in a microtask after setup, before the next paint. Subsequent parameter changes use animation frames automatically. `ssrRender()` handles server setup, drawing, serialization, and cleanup in one call. Server setup excludes pointer controls, camera reset, and lifecycle methods; `setViewScale()` applies immediately.
+Browser instances batch the initial draw callbacks in a microtask after setup, before the next paint. Subsequent parameter changes use animation frames automatically. `ssrRender()` handles server setup, drawing, serialization, and cleanup in one call. `setViewScale()` applies immediately during server rendering.

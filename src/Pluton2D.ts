@@ -12,11 +12,6 @@ type ViewBox = { width: number; height: number };
 type PlutonOptions<P> = { params?: P; viewBox?: ViewBox };
 type SsrRenderOptions<P> = ViewBox & { params: P };
 
-export type StaticScene<P extends Record<string, unknown>> = Omit<
-  Pluton2D<P>,
-  "enablePan" | "enableZoom" | "resetCamera" | "dispose"
->;
-
 /**
  * Main Pluton2D instance for creating technical drawings
  * @template P - parameter type for reactive drawing
@@ -37,7 +32,7 @@ export class Pluton2D<
 
   static ssrRender<P extends Record<string, unknown>>(
     options: SsrRenderOptions<P>,
-    setup: (scene: StaticScene<P>) => void,
+    setup: (scene: Pluton2D<P>) => void,
   ) {
     const { width, height, params } = options;
     if (
